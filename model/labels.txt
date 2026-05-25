@@ -1,0 +1,206 @@
+# PlantVillage Disease Labels
+
+# This file contains class labels for the PlantVillage plant disease classification model
+# Total: 38 classes (39 if you include an "unknown" class at index 0)
+# Format: One label per line, index matches model output
+
+# IMPORTANT INSTRUCTIONS FOR STUDENTS:
+# ======================================
+# 1. These labels MUST match your model's training classes
+# 2. Order matters! Index 0 = first label, index 1 = second label, etc.
+# 3. If your model uses different classes, REPLACE these labels
+# 4. For TensorFlow Lite: Copy this file to android-app/app/src/main/assets/labels.txt
+# 5. For Backend: Use this as reference when mapping class index to disease name
+#
+# If you trained a custom model with only 6 classes (recommended for beginners):
+# - Delete all lines except the 6 classes you trained on
+# - Make sure the order matches your training script's class_names list
+#
+# Example 6-class model (Tomato + Potato only):
+# Tomato___healthy
+# Tomato___Early_blight
+# Tomato___Late_blight
+# Potato___healthy
+# Potato___Early_blight
+# Potato___Late_blight
+
+# Full 38-Class PlantVillage Dataset Labels
+# ==========================================
+
+Apple___Apple_scab
+Apple___Black_rot
+Apple___Cedar_apple_rust
+Apple___healthy
+Background_without_leaves
+Blueberry___healthy
+Cherry___healthy
+Cherry___Powdery_mildew
+Corn___Cercospora_leaf_spot Gray_leaf_spot
+Corn___Common_rust
+Corn___healthy
+Corn___Northern_Leaf_Blight
+Grape___Black_rot
+Grape___Esca_(Black_Measles)
+Grape___healthy
+Grape___Leaf_blight_(Isariopsis_Leaf_Spot)
+Orange___Haunglongbing_(Citrus_greening)
+Peach___Bacterial_spot
+Peach___healthy
+Pepper,_bell___Bacterial_spot
+Pepper,_bell___healthy
+Potato___Early_blight
+Potato___healthy
+Potato___Late_blight
+Raspberry___healthy
+Soybean___healthy
+Squash___Powdery_mildew
+Strawberry___healthy
+Strawberry___Leaf_scab
+Tomato___Bacterial_spot
+Tomato___Early_blight
+Tomato___healthy
+Tomato___Late_blight
+Tomato___Leaf_Mold
+Tomato___Septoria_leaf_spot
+Tomato___Spider_mites Two-spotted_spider_mite
+Tomato___Target_Spot
+Tomato___Tomato_mosaic_virus
+Tomato___Tomato_Yellow_Leaf_Curl_Virus
+
+# How to Use This File
+# ====================
+
+## In Android (TensorFlow Lite):
+# 1. Copy this file to: android-app/app/src/main/assets/labels.txt
+# 2. Load labels in Java:
+#
+#    private List<String> loadLabels() {
+#        List<String> labels = new ArrayList<>();
+#        try {
+#            BufferedReader reader = new BufferedReader(
+#                new InputStreamReader(getAssets().open("labels.txt"))
+#            );
+#            String line;
+#            while ((line = reader.readLine()) != null) {
+#                labels.add(line);
+#            }
+#            reader.close();
+#        } catch (IOException e) {
+#            e.printStackTrace();
+#        }
+#        return labels;
+#    }
+#
+# 3. Map prediction to label:
+#    int predictedClass = getMaxIndex(output); // index with highest probability
+#    String diseaseName = labels.get(predictedClass);
+
+## In Backend (FastAPI):
+# 1. Reference this file or create a Python list:
+#
+#    with open('labels.txt', 'r') as f:
+#        labels = [line.strip() for line in f.readlines()]
+#
+# 2. Or hardcode as Python list:
+#
+#    LABELS = [
+#        "Apple___Apple_scab",
+#        "Apple___Black_rot",
+#        # ... rest of labels
+#    ]
+#
+# 3. Map prediction to label:
+#    predicted_class = np.argmax(predictions[0])
+#    disease_name = labels[predicted_class]
+
+# Label Format Notes
+# ==================
+# - Format: {Crop}___{Disease} (three underscores)
+# - "healthy" means no disease
+# - Some labels have parenthetical notes: Grape___Esca_(Black_Measles)
+# - Some have spaces: Corn___Cercospora_leaf_spot Gray_leaf_spot
+# - "Background_without_leaves" = model detects non-leaf image
+
+# Creating Human-Readable Display Names
+# ======================================
+# These technical labels are not user-friendly. Convert them for display:
+#
+# def format_disease_name(label):
+#     # Remove crop name prefix if desired
+#     parts = label.split('___')
+#     if len(parts) == 2:
+#         crop, disease = parts
+#         # Replace underscores with spaces
+#         disease = disease.replace('_', ' ')
+#         # Capitalize words
+#         disease = disease.title()
+#         return f"{crop}: {disease}"
+#     return label.replace('_', ' ').title()
+#
+# Example:
+# "Tomato___Early_blight" → "Tomato: Early Blight"
+# "Potato___healthy" → "Potato: Healthy"
+
+# Mapping to disease_library.xml
+# ===============================
+# Your disease_library.xml should have entries matching these labels:
+#
+# <disease name="Tomato___Early_blight">
+#     <symptoms>Brown spots with concentric rings...</symptoms>
+#     <treatment>Remove affected leaves...</treatment>
+#     <prevention>Rotate crops...</prevention>
+# </disease>
+#
+# Tip: Use the exact label string as the XML 'name' attribute for easy matching
+
+# Validation Checklist
+# ====================
+# Before using this file:
+# [ ] Verified labels match your model's training classes
+# [ ] Verified label order matches model output indices
+# [ ] Verified no extra spaces or blank lines
+# [ ] Tested loading labels in Android (no IOException)
+# [ ] Tested mapping prediction index to label (correct disease name)
+# [ ] Created corresponding disease_library.xml entries for all labels
+# [ ] Tested with sample images covering multiple classes
+
+# Common Issues and Solutions
+# ===========================
+
+# Issue: "Index 5 out of bounds for labels list of size 4"
+# Solution: Your model has more output classes than you have labels.
+#           Add missing labels or use a model with fewer classes.
+
+# Issue: "Predicted class is always 0 or always same"
+# Solution: Check preprocessing. Input must match training preprocessing exactly:
+#           - Resize to correct size (e.g., 224x224)
+#           - Normalize pixel values (e.g., divide by 255.0)
+#           - Convert to RGB (not BGR)
+
+# Issue: "Disease name shows as 'Tomato___Early_blight' in UI"
+# Solution: Format the label for display (see format_disease_name function above)
+
+# Issue: "Some predictions are correct, others are random"
+# Solution: This is normal for limited datasets. Document accuracy in test results.
+#           Focus on mobile engineering, not model accuracy.
+
+# Issue: "Can't find label for prediction"
+# Solution: Verify predicted_class index is within range [0, len(labels)-1]
+#           Log the predicted index value for debugging
+
+# Credits and References
+# ======================
+# Dataset: PlantVillage (https://github.com/spMohanty/PlantVillage-Dataset)
+# Citation: Hughes, D. P., & Salathé, M. (2015). An open access repository of
+#           images on plant health to enable the development of mobile disease
+#           diagnostics. arXiv preprint arXiv:1511.08060.
+#
+# Alternative datasets:
+# - Plant Pathology 2020 FGVC7: https://www.kaggle.com/c/plant-pathology-2020-fgvc7
+# - Crop Diseases Dataset: https://www.kaggle.com/datasets/vipoooool/new-plant-diseases-dataset
+
+# Version History
+# ===============
+# v1.0 - Initial 38-class PlantVillage labels
+# Date: 2024-XX-XX
+# Last Updated: Replace with your date when you verify/modify these labels
