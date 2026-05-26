@@ -1,0 +1,590 @@
+# Week 01 Quiz: Project Understanding & Foundation
+
+## Instructions
+
+Answer all questions to verify your Week 01 understanding. This is self-assessment—be honest. Check your answers at the end.
+
+**Scoring:**
+- 10-12 correct: Excellent understanding, ready for Week 02
+- 7-9 correct: Good understanding, review missed topics
+- 4-6 correct: Needs improvement, re-read learning notes
+- 0-3 correct: Must review all Week 01 materials before proceeding
+
+**Time limit:** 20 minutes (if timed)
+
+---
+
+## Section 1: Multiple Choice (1 point each)
+
+### Question 1
+What is the primary problem that LeafGuard AI solves?
+
+A) Farmers cannot afford smartphones
+B) Plant diseases are rare and hard to find
+C) Farmers lack timely access to plant disease experts
+D) Machine learning is too complex for agriculture
+
+**Your Answer:** ____
+
+---
+
+### Question 2
+Which architecture pattern does LeafGuard AI use?
+
+A) MVC (Model-View-Controller)
+B) MVP (Model-View-Presenter)
+C) MVVM (Model-View-ViewModel)
+D) VIPER (View-Interactor-Presenter-Entity-Router)
+
+**Your Answer:** ____
+
+---
+
+### Question 3
+How many main activities does LeafGuard AI have (minimum)?
+
+A) 3 activities
+B) 6 activities
+C) 10 activities
+D) 1 activity with multiple fragments
+
+**Your Answer:** ____
+
+---
+
+### Question 4
+What is the purpose of the Repository layer in MVVM?
+
+A) Display UI to users
+B) Handle user interactions
+C) Abstract data sources and coordinate data access
+D) Store local database tables
+
+**Your Answer:** ____
+
+---
+
+### Question 5
+Which library does LeafGuard use for REST API communication?
+
+A) Volley
+B) OkHttp only
+C) Retrofit
+D) HttpURLConnection
+
+**Your Answer:** ____
+
+---
+
+### Question 6
+What database solution does LeafGuard use for local storage?
+
+A) SQLite directly
+B) Room Database
+C) Realm
+D) SharedPreferences
+
+**Your Answer:** ____
+
+---
+
+### Question 7
+What format is used to store disease information locally?
+
+A) JSON files
+B) XML files
+C) CSV files
+D) Binary files
+
+**Your Answer:** ____
+
+---
+
+### Question 8
+What is the backend framework used in LeafGuard AI?
+
+A) Django
+B) Flask
+C) FastAPI
+D) Express.js
+
+**Your Answer:** ____
+
+---
+
+### Question 9
+Which machine learning framework is used for on-device inference?
+
+A) TensorFlow Full
+B) TensorFlow Lite
+C) PyTorch Mobile
+D) Core ML
+
+**Your Answer:** ____
+
+---
+
+### Question 10
+What is the main benefit of using ViewModel over putting logic in Activity?
+
+A) ViewModel has better performance
+B) ViewModel survives configuration changes (like screen rotation)
+C) ViewModel uses less memory
+D) ViewModel is easier to write
+
+**Your Answer:** ____
+
+---
+
+## Section 2: True/False (1 point each)
+
+### Question 11
+LeafGuard AI works only in online mode and requires constant internet connection.
+
+**True** or **False**?
+
+**Your Answer:** ____
+
+---
+
+### Question 12
+The three tiers in three-tier architecture are: Presentation, Business Logic, and Data.
+
+**True** or **False**?
+
+**Your Answer:** ____
+
+---
+
+### Question 13
+In MVVM, Activities should directly access the database using DAO objects.
+
+**True** or **False**?
+
+**Your Answer:** ____
+
+---
+
+### Question 14
+Retrofit automatically converts JSON responses to Java objects using Gson or Moshi.
+
+**True** or **False**?
+
+**Your Answer:** ____
+
+---
+
+### Question 15
+Room Database provides compile-time verification of SQL queries.
+
+**True** or **False**?
+
+**Your Answer:** ____
+
+---
+
+## Section 3: Fill in the Blank (1 point each)
+
+### Question 16
+LeafGuard AI uses _____________ pattern to display lists of scan history efficiently.
+
+**Your Answer:** ____________________
+
+---
+
+### Question 17
+The _____________ annotation in Room marks a class as a database table.
+
+**Your Answer:** ____________________
+
+---
+
+### Question 18
+In Retrofit, the @POST annotation indicates an HTTP _____________ request.
+
+**Your Answer:** ____________________
+
+---
+
+### Question 19
+LeafGuard AI has two AI modes: cloud AI and _____________ AI.
+
+**Your Answer:** ____________________
+
+---
+
+### Question 20
+The _____________ holds UI state and survives configuration changes in MVVM.
+
+**Your Answer:** ____________________
+
+---
+
+## Section 4: Short Answer (2 points each)
+
+### Question 21
+List the 6 main activities in LeafGuard AI.
+
+**Your Answer:**
+1. ____________________
+2. ____________________
+3. ____________________
+4. ____________________
+5. ____________________
+6. ____________________
+
+---
+
+### Question 22
+Explain in 2-3 sentences why LeafGuard uses MVVM architecture instead of putting all logic in Activities.
+
+**Your Answer:**
+_________________________________________________________________
+_________________________________________________________________
+_________________________________________________________________
+
+---
+
+### Question 23
+Describe the data flow when a user scans a leaf in cloud AI mode. List at least 6 steps from button click to result display.
+
+**Your Answer:**
+1. ____________________
+2. ____________________
+3. ____________________
+4. ____________________
+5. ____________________
+6. ____________________
+
+---
+
+### Question 24
+What are THREE benefits of using Room Database instead of raw SQLite in Android?
+
+**Your Answer:**
+1. ____________________
+2. ____________________
+3. ____________________
+
+---
+
+### Question 25
+Name THREE CSE 2206 syllabus topics that LeafGuard AI demonstrates, and briefly explain how.
+
+**Your Answer:**
+
+**Topic 1:** ____________________
+**How:** ___________________________________________________________
+
+**Topic 2:** ____________________
+**How:** ___________________________________________________________
+
+**Topic 3:** ____________________
+**How:** ___________________________________________________________
+
+---
+
+## Section 5: Diagram Interpretation
+
+### Question 26 (3 points)
+Study this simplified architecture diagram:
+
+```
+┌─────────────────┐
+│   MainActivity  │
+│   (View)        │
+└────────┬────────┘
+         │ observes
+┌────────▼────────┐
+│  ScanViewModel  │
+│  (ViewModel)    │
+└────────┬────────┘
+         │ calls
+┌────────▼────────┐
+│ ScanRepository  │
+│ (Repository)    │
+└──┬────────────┬─┘
+   │            │
+   ▼            ▼
+┌──────┐  ┌──────────┐
+│ Room │  │ Retrofit │
+│  DB  │  │ API      │
+└──────┘  └──────────┘
+```
+
+Answer these questions:
+
+**A) Which layer does MainActivity belong to?**
+_________________________________________________________________
+
+**B) What design pattern does this diagram illustrate?**
+_________________________________________________________________
+
+**C) Why does ScanViewModel call ScanRepository instead of directly calling Room or Retrofit?**
+_________________________________________________________________
+_________________________________________________________________
+
+---
+
+## Section 6: Code Reading
+
+### Question 27 (3 points)
+Read this code snippet:
+
+```java
+public class ScanViewModel extends ViewModel {
+    private MutableLiveData<ScanResult> result = new MutableLiveData<>();
+
+    public void uploadImage(String path) {
+        repository.detectDisease(path, new Callback() {
+            @Override
+            public void onSuccess(DiseaseResult disease) {
+                result.setValue(ScanResult.success(disease));
+            }
+        });
+    }
+
+    public LiveData<ScanResult> getResult() {
+        return result;
+    }
+}
+```
+
+**A) What is the purpose of LiveData in this code?**
+_________________________________________________________________
+
+**B) Why does the result use setValue() instead of postValue() in onSuccess callback?**
+(Hint: Think about threading)
+_________________________________________________________________
+
+**C) How does the Activity observe this result?**
+_________________________________________________________________
+
+---
+
+## Section 7: Scenario-Based Questions
+
+### Question 28 (3 points)
+**Scenario:** A user opens LeafGuard AI, captures a leaf image, and then rotates their phone screen while waiting for the disease prediction result.
+
+**Question:** What happens to the network call and the result? Will the user see the result after rotation, or will it be lost? Explain why.
+
+**Your Answer:**
+_________________________________________________________________
+_________________________________________________________________
+_________________________________________________________________
+
+---
+
+### Question 29 (3 points)
+**Scenario:** You are in Week 07 implementing Room database. A classmate suggests: "Why use Room? Let's just use SharedPreferences to save scan history as JSON strings."
+
+**Question:** Explain THREE reasons why this is a bad idea and why Room is better for storing scan history.
+
+**Your Answer:**
+1. ____________________________________________________________________
+2. ____________________________________________________________________
+3. ____________________________________________________________________
+
+---
+
+### Question 30 (3 points)
+**Scenario:** During Week 11 testing, you discover that the app crashes when users have no internet connection and try to use cloud AI mode.
+
+**Question:** What architectural component should handle this error? Explain where and how you would implement the error handling.
+
+**Your Answer:**
+_________________________________________________________________
+_________________________________________________________________
+_________________________________________________________________
+
+---
+
+## Answer Key
+
+### Section 1: Multiple Choice
+1. C (Farmers lack timely access to plant disease experts)
+2. C (MVVM)
+3. B (6 activities: Main, Scan, Result, History, Library, Settings)
+4. C (Abstract data sources and coordinate data access)
+5. C (Retrofit)
+6. B (Room Database)
+7. B (XML files - disease_library.xml)
+8. C (FastAPI)
+9. B (TensorFlow Lite)
+10. B (ViewModel survives configuration changes)
+
+### Section 2: True/False
+11. False (LeafGuard has both online and offline modes)
+12. True
+13. False (Activities should access database through ViewModel and Repository)
+14. True
+15. True
+
+### Section 3: Fill in the Blank
+16. RecyclerView (or Adapter pattern)
+17. @Entity
+18. POST
+19. offline (or on-device)
+20. ViewModel
+
+### Section 4: Short Answer
+
+**21. Six main activities:**
+1. MainActivity
+2. ScanActivity
+3. ResultActivity
+4. HistoryActivity
+5. DiseaseLibraryActivity
+6. SettingsActivity
+
+**22. Why MVVM? (Sample answer)**
+LeafGuard uses MVVM because ViewModels survive configuration changes like screen rotation, preventing data loss and duplicate network calls. ViewModels also separate business logic from UI code, making the app more testable and maintainable. This separation allows Activities to focus solely on UI updates while ViewModels handle data processing.
+
+**23. Data flow in cloud AI mode (Sample answer):**
+1. User taps "Scan" button in MainActivity
+2. Camera intent launched, user captures image
+3. Image path passed to ScanViewModel
+4. ViewModel calls ScanRepository.detectDisease()
+5. Repository uses Retrofit to POST image to FastAPI backend
+6. Backend runs TensorFlow model inference
+7. Backend returns JSON with disease prediction
+8. Retrofit parses JSON to UploadResponse object
+9. Repository converts to DiseaseResult domain model
+10. Repository returns result to ViewModel
+11. ViewModel updates LiveData
+12. MainActivity observes LiveData change and updates UI
+13. ViewModel saves result to Room database
+
+**24. Three benefits of Room over SQLite (Sample answer):**
+1. Compile-time verification of SQL queries (catches errors before runtime)
+2. Less boilerplate code (no need to manually write ContentValues and Cursors)
+3. LiveData integration for automatic UI updates when data changes
+
+**25. Three CSE 2206 topics (Sample answer):**
+
+**Topic 1:** Activities
+**How:** LeafGuard implements 6 activities with proper lifecycle management (onCreate, onPause, onResume) and state saving/restoration.
+
+**Topic 2:** Retrofit (Networking)
+**How:** LeafGuard uses Retrofit to make HTTP POST requests to FastAPI backend, demonstrating REST API communication, JSON parsing, and asynchronous callbacks.
+
+**Topic 3:** Room Database
+**How:** LeafGuard implements Room with @Entity classes (ScanEntity), @Dao interfaces (ScanDao), and @Database class (AppDatabase) for local data persistence.
+
+### Section 5: Diagram Interpretation
+
+**26A) Which layer does MainActivity belong to?**
+Presentation Layer (or View layer)
+
+**26B) What design pattern does this diagram illustrate?**
+MVVM (Model-View-ViewModel) with Repository pattern
+
+**26C) Why does ScanViewModel call ScanRepository instead of directly calling Room or Retrofit?**
+Repository provides a single source of truth and abstracts the data sources. This allows the ViewModel to not care whether data comes from local database or network. Repository can implement caching strategies, decide when to fetch fresh data, and handle synchronization between local and remote data sources. It also makes testing easier—you can mock the Repository without mocking Room and Retrofit separately.
+
+### Section 6: Code Reading
+
+**27A) Purpose of LiveData:**
+LiveData allows the Activity to observe data changes reactively. When the result changes, the Activity's UI automatically updates without manual refresh. LiveData is also lifecycle-aware, so it only updates when the Activity is in active state (not destroyed).
+
+**27B) setValue() vs postValue():**
+This is a trick question if answered too quickly! In the callback (onSuccess), we're likely on a background thread (Retrofit callbacks often run on background threads). If on a background thread, we should use postValue() instead of setValue(). setValue() must be called on the main thread. The correct code should use postValue() here, or ensure the callback is on the main thread.
+
+**27C) How does Activity observe?**
+```java
+viewModel.getResult().observe(this, scanResult -> {
+    // Update UI with scanResult
+    if (scanResult.isSuccess()) {
+        textView.setText(scanResult.getData().getDiseaseName());
+    } else {
+        textView.setText("Error: " + scanResult.getErrorMessage());
+    }
+});
+```
+
+### Section 7: Scenario-Based Questions
+
+**28. Screen rotation scenario (Sample answer):**
+The network call continues in the background because it's initiated in the ViewModel, which survives configuration changes. When the Activity is recreated after rotation, it re-observes the same ViewModel. If the result arrives after rotation, the new Activity instance will receive it through LiveData observation and display it normally. If the result arrived before rotation, the LiveData will immediately deliver the last value to the new Activity. The user will see the result either way—no data is lost. This is the key benefit of MVVM architecture.
+
+**29. Why Room over SharedPreferences for scan history (Sample answer):**
+1. **Structured queries:** Room allows SQL queries like "get all scans from last week" or "find scans with confidence >90%". SharedPreferences would require loading all data and filtering in Java, which is inefficient.
+2. **Data relationships:** Room supports foreign keys and table relationships (e.g., scans belonging to users). SharedPreferences cannot enforce referential integrity.
+3. **Performance:** Room is optimized for large datasets with indexing and lazy loading. SharedPreferences would load entire JSON string into memory every time, causing performance issues with 100+ scans.
+
+**30. Network error handling (Sample answer):**
+The error should be handled in the Repository layer. When Retrofit's onFailure callback is triggered, the Repository should check if it's a network error (IOException) and return an appropriate error result to the ViewModel. The ViewModel then updates LiveData with an error state, which the Activity observes and displays to the user (e.g., "No internet connection. Please check your network and try again."). Additionally, the Repository could check network connectivity before making the API call using ConnectivityManager and provide immediate feedback. The Activity should never directly handle network errors—it should only display error messages provided by the ViewModel.
+
+---
+
+## Scoring Guide
+
+**Total Points Possible: 40**
+
+- Section 1 (MC): 10 points
+- Section 2 (T/F): 5 points
+- Section 3 (Fill): 5 points
+- Section 4 (Short): 10 points
+- Section 5 (Diagram): 3 points
+- Section 6 (Code): 3 points
+- Section 7 (Scenario): 9 points (3 points × 3 questions)
+
+**Your Score: _____ / 40**
+
+**Percentage: _____ %**
+
+**Grade:**
+- 36-40 (90-100%): Excellent - Proceed to Week 02 with confidence
+- 32-35 (80-89%): Good - Review missed concepts, then proceed
+- 28-31 (70-79%): Satisfactory - Review Week 01 learning notes before proceeding
+- 24-27 (60-69%): Needs Improvement - Re-study architecture and MVVM sections
+- Below 24 (<60%): Must Review - Complete learning notes again before Week 02
+
+---
+
+## Post-Quiz Actions
+
+### If you scored 90%+ (Excellent):
+1. ✅ You're ready for Week 02
+2. Help classmates who scored lower
+3. Review any questions you missed to solidify understanding
+4. Proceed with confidence
+
+### If you scored 70-89% (Good/Satisfactory):
+1. Review topics where you lost points
+2. Re-read relevant sections in learning-notes.md
+3. Redraw architecture diagram to solidify understanding
+4. Retake quiz after review (optional)
+5. Proceed to Week 02, but watch for these weak areas
+
+### If you scored below 70% (Needs Improvement):
+1. ⚠️ Do NOT proceed to Week 02 yet
+2. Re-read all Week 01 learning-notes.md
+3. Watch supplementary videos on MVVM, Room, Retrofit
+4. Redraw architecture and data flow diagrams
+5. Retake this quiz
+6. Only proceed when you score 70%+
+
+---
+
+## Reflection Question
+
+**Beyond the score, what does this quiz reveal about your understanding? Where do you need to focus more attention?**
+
+**Your Reflection:**
+_________________________________________________________________
+_________________________________________________________________
+_________________________________________________________________
+
+---
+
+**Quiz completed on:** _______________
+
+**Time taken:** _______________ minutes
+
+**Ready for Week 02?** Yes / No (circle one)
+
+---
+
+**Remember: Understanding beats memorization. If you can explain these concepts to someone else, you truly understand them. Good luck with Week 02!**
