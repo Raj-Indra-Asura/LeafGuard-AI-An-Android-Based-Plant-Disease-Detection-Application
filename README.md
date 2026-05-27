@@ -1,5 +1,7 @@
 # LeafGuard AI - 12-Week Learning Roadmap
 
+> **🎯 New! Unified Learning System:** Navigate seamlessly through all course materials with our [**Interactive Learning Path**](LEARNING_PATH.md) - featuring progressive navigation, exercises, solutions, and interactive notebooks!
+
 ## Project Overview
 
 **LeafGuard AI** is a complete Android plant disease detection application built as a structured 12-week learning project for CSE 2206 (Mobile Application Development). This repository provides a comprehensive roadmap that guides you through building a production-quality Android app from scratch, integrating AI/ML capabilities, backend services, and satisfying every requirement of the university course syllabus.
@@ -55,6 +57,7 @@ A fully functional Android mobile application featuring:
 ```
 LeafGuard-AI/
 ├── README.md                          # This file
+├── LEARNING_PATH.md                   # 🆕 Unified learning navigator
 ├── COURSE_OVERVIEW.md                 # CSE 2206 context
 ├── LEARNING_RULES.md                  # Strict learning rules
 ├── SYLLABUS_MAPPING.md               # Every syllabus topic mapped to weeks
@@ -64,6 +67,7 @@ LeafGuard-AI/
 ├── progress-tracker.md                # 12-week checkbox tracker
 │
 ├── roadmap/                           # 12 weekly learning packages
+│   ├── NAVIGATION_TEMPLATE.md        # 🆕 Navigation guide for weeks
 │   ├── week-01-project-understanding/
 │   ├── week-02-android-basics-ui/
 │   ├── week-03-camera-gallery/
@@ -84,6 +88,14 @@ LeafGuard-AI/
 │   ├── database/
 │   └── testing/
 │
+├── solutions/                         # 🆕 Exercise solutions
+│   ├── README.md                     # How to use solutions effectively
+│   ├── week-01/ through week-12/    # Week-by-week solutions
+│
+├── notebooks/                         # 🆕 Interactive Jupyter notebooks
+│   ├── README.md                     # Getting started with notebooks
+│   ├── week-01/ through week-12/    # Interactive learning materials
+│
 ├── android-app/                       # Your Android project goes here
 ├── backend-api/                       # Your FastAPI backend goes here
 ├── model/                             # ML models and labels
@@ -101,6 +113,27 @@ LeafGuard-AI/
 ├── reflection-journal/                # Weekly reflection prompts
 └── final-submission/                  # Submission checklist & scripts
 ```
+
+## 🚀 Quick Start Options
+
+### Option 1: Interactive Learning Path (Recommended)
+**Best for:** Visual learners who want seamless navigation
+
+➡️ **[Start with the Unified Learning Path](LEARNING_PATH.md)**
+
+Features:
+- Progressive week-by-week navigation
+- Direct links to all materials (exercises, solutions, notebooks)
+- Quick jump between any week or resource
+- Learning progress tracking
+- Multiple learning modalities
+
+### Option 2: Traditional Week-by-Week
+**Best for:** Sequential learners who prefer structured approach
+
+Start with Week 01 and follow the progression below.
+
+---
 
 ## How To Use This Roadmap
 
