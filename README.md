@@ -1,5 +1,7 @@
 # LeafGuard AI - 12-Week Learning Roadmap
 
+> **🎯 New! Unified Learning System:** Navigate seamlessly through all course materials with our [**Interactive Learning Path**](LEARNING_PATH.md) - featuring progressive navigation, exercises, solutions, and interactive notebooks!
+
 ## Project Overview
 
 **LeafGuard AI** is a complete Android plant disease detection application built as a structured 12-week learning project for CSE 2206 (Mobile Application Development). This repository provides a comprehensive roadmap that guides you through building a production-quality Android app from scratch, integrating AI/ML capabilities, backend services, and satisfying every requirement of the university course syllabus.
@@ -55,6 +57,7 @@ A fully functional Android mobile application featuring:
 ```
 LeafGuard-AI/
 ├── README.md                          # This file
+├── LEARNING_PATH.md                   # 🆕 Unified learning navigator
 ├── COURSE_OVERVIEW.md                 # CSE 2206 context
 ├── LEARNING_RULES.md                  # Strict learning rules
 ├── SYLLABUS_MAPPING.md               # Every syllabus topic mapped to weeks
@@ -64,6 +67,7 @@ LeafGuard-AI/
 ├── progress-tracker.md                # 12-week checkbox tracker
 │
 ├── roadmap/                           # 12 weekly learning packages
+│   ├── NAVIGATION_TEMPLATE.md        # 🆕 Navigation guide for weeks
 │   ├── week-01-project-understanding/
 │   ├── week-02-android-basics-ui/
 │   ├── week-03-camera-gallery/
@@ -84,6 +88,14 @@ LeafGuard-AI/
 │   ├── database/
 │   └── testing/
 │
+├── solutions/                         # 🆕 Exercise solutions
+│   ├── README.md                     # How to use solutions effectively
+│   ├── week-01/ through week-12/    # Week-by-week solutions
+│
+├── notebooks/                         # 🆕 Interactive Jupyter notebooks
+│   ├── README.md                     # Getting started with notebooks
+│   ├── week-01/ through week-12/    # Interactive learning materials
+│
 ├── android-app/                       # Your Android project goes here
 ├── backend-api/                       # Your FastAPI backend goes here
 ├── model/                             # ML models and labels
@@ -101,6 +113,27 @@ LeafGuard-AI/
 ├── reflection-journal/                # Weekly reflection prompts
 └── final-submission/                  # Submission checklist & scripts
 ```
+
+## 🚀 Quick Start Options
+
+### Option 1: Interactive Learning Path (Recommended)
+**Best for:** Visual learners who want seamless navigation
+
+➡️ **[Start with the Unified Learning Path](LEARNING_PATH.md)**
+
+Features:
+- Progressive week-by-week navigation
+- Direct links to all materials (exercises, solutions, notebooks)
+- Quick jump between any week or resource
+- Learning progress tracking
+- Multiple learning modalities
+
+### Option 2: Traditional Week-by-Week
+**Best for:** Sequential learners who prefer structured approach
+
+Start with Week 01 and follow the progression below.
+
+---
 
 ## How To Use This Roadmap
 
@@ -413,15 +446,45 @@ This learning roadmap is provided for educational purposes as part of CSE 2206 M
 
 ---
 
-## Quick Start Checklist
+## 🎯 Quick Start Checklist
 
 - [ ] Clone this repository
-- [ ] Read `COURSE_OVERVIEW.md`
-- [ ] Read `LEARNING_RULES.md`
-- [ ] Read `SYLLABUS_MAPPING.md`
-- [ ] Read `PROJECT_ARCHITECTURE.md`
-- [ ] Open `roadmap/week-01-project-understanding/README.md`
+- [ ] 🆕 **[Explore the Unified Learning Path](LEARNING_PATH.md)** ⭐ Recommended!
+- [ ] Or use the **[Quick Navigation Guide](QUICK_NAV.md)** for fast access
+- [ ] Read `COURSE_OVERVIEW.md` - Understand CSE 2206 context
+- [ ] Read `LEARNING_RULES.md` - Learn effective strategies
+- [ ] Read `SYLLABUS_MAPPING.md` - See topic coverage
+- [ ] Read `PROJECT_ARCHITECTURE.md` - Understand system design
+- [ ] Open `roadmap/week-01-project-understanding/README.md` - Start Week 01
 - [ ] Start Week 01 exercises
 - [ ] Begin filling out `progress-tracker.md`
 
-**Ready to start? Open `roadmap/week-01-project-understanding/README.md` now!**
+### 🚀 Multiple Ways to Start:
+
+**Option 1 (Recommended):** Use the **[Unified Learning Path](LEARNING_PATH.md)** for seamless navigation
+
+**Option 2:** Use the **[Quick Navigation Guide](QUICK_NAV.md)** to jump directly to what you need
+
+**Option 3:** Traditional approach - Open `roadmap/week-01-project-understanding/README.md` now!
+
+---
+
+## 📚 Navigation & Learning Resources
+
+### Core Navigation Documents
+- **[LEARNING_PATH.md](LEARNING_PATH.md)** - 🆕 Unified learning system with progressive navigation
+- **[QUICK_NAV.md](QUICK_NAV.md)** - 🆕 Quick access to any resource
+- **[CROSS_REFERENCE.md](CROSS_REFERENCE.md)** - 🆕 How all materials interconnect
+- **[progress-tracker.md](progress-tracker.md)** - Track your 12-week journey
+
+### Supplementary Learning Materials
+- **[solutions/](solutions/)** - 🆕 Exercise solutions and reference implementations
+- **[notebooks/](notebooks/)** - 🆕 Interactive Jupyter notebooks for hands-on learning
+- **[exercises/](exercises/)** - Practice problems organized by topic
+
+### Essential Reference Documents
+- **[GLOSSARY.md](GLOSSARY.md)** - Technical terms dictionary
+- **[COURSE_OVERVIEW.md](COURSE_OVERVIEW.md)** - CSE 2206 course context
+- **[SYLLABUS_MAPPING.md](SYLLABUS_MAPPING.md)** - Complete topic mapping
+- **[PROJECT_ARCHITECTURE.md](PROJECT_ARCHITECTURE.md)** - System architecture
+- **[LEARNING_RULES.md](LEARNING_RULES.md)** - How to learn effectively
