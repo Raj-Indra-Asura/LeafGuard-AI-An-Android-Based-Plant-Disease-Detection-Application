@@ -1058,7 +1058,7 @@ The index (0-based) must match your model's training class order exactly.
 
 ---
 
-## Appendix D: Testing with ngrok (Local Development)
+## Appendix C: Testing with ngrok (Local Development)
 
 When developing with a physical Android device (not emulator), you need to expose your
 local FastAPI server to the internet. **ngrok** creates a public tunnel to your localhost.
@@ -1116,7 +1116,7 @@ Then use: `http://192.168.x.x:8000/` as BASE_URL.
 
 ---
 
-## Appendix E: Confidence Threshold Guidelines
+## Appendix D: Confidence Threshold Guidelines
 
 Choosing the right confidence threshold prevents misleading users:
 

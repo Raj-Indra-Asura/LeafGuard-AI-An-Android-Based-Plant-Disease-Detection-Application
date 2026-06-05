@@ -76,10 +76,8 @@ public class DiseaseLibraryActivity extends AppCompatActivity {
         try {
             InputStream inputStream = getAssets().open("diseases.xml");
             diseases = parseDiseaseXml(inputStream);
-        } catch (IOException e) {
-            // assets/diseases.xml not present — load built-in fallback data
-            diseases = getFallbackDiseaseList();
-        } catch (XmlPullParserException e) {
+        } catch (IOException | XmlPullParserException e) {
+            // assets/diseases.xml not present or malformed — load built-in fallback data
             diseases = getFallbackDiseaseList();
         }
 
