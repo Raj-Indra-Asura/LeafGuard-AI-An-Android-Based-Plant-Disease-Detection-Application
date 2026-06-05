@@ -133,7 +133,7 @@ private void openCamera() {
 This implementation supports all Android versions from API 24 (minSdk) through current releases.
 
 - **API 30+ (Android 11+):** Uses the modern `PickVisualMedia` contract.
-- **API 24–29 (Android 7–9):** Uses the legacy `ACTION_GET_CONTENT` intent, which is available on all devices in this range.
+- **API 24–29 (Android 7–10):** Uses the legacy `ACTION_GET_CONTENT` intent, which is available on all devices in this range.
 
 ```java
 private ActivityResultLauncher<PickVisualMediaRequest> pickMediaLauncher;
@@ -150,7 +150,7 @@ private void setupGalleryLauncher() {
         }
     );
 
-    // Legacy picker — Android 7–10 (API 24–29)
+    // Legacy picker — Android 7–10 (API 24–29, i.e. Android 7.0 through 10)
     legacyPickLauncher = registerForActivityResult(
         new ActivityResultContracts.StartActivityForResult(),
         result -> {
@@ -171,7 +171,7 @@ private void openGallery() {
             .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
             .build());
     } else {
-        // Android 7–10 — legacy ACTION_GET_CONTENT
+        // Android 7–10 (API 24–29) — legacy ACTION_GET_CONTENT
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
         intent.addCategory(Intent.CATEGORY_OPENABLE);
