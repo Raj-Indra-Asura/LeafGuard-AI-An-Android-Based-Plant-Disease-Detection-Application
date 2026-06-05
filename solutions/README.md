@@ -89,19 +89,25 @@ Ways to extend or improve the solution
 - [Week 03 Solutions](week-03/) - Camera and gallery *(Coming Soon)*
 
 ### Backend Integration
-- [Week 04 Solutions](week-04/) - FastAPI backend *(Coming Soon)*
-- [Week 05 Solutions](week-05/) - Android networking *(Coming Soon)*
+- [Week 04 Solutions](week-04/) - FastAPI backend ✅
+  - [FastAPI /predict Endpoint](week-04/fastapi-predict-endpoint-solution.md)
+- [Week 05 Solutions](week-05/) - Android networking ✅
+  - [Retrofit Image Upload](week-05/retrofit-upload-solution.md)
 - [Week 06 Solutions](week-06/) - ML model integration *(Coming Soon)*
 
 ### Data & Offline
-- [Week 07 Solutions](week-07/) - Room database *(Coming Soon)*
+- [Week 07 Solutions](week-07/) - Room database ✅
+  - [Room Database Implementation](week-07/room-database-solution.md)
 - [Week 08 Solutions](week-08/) - XML parsing *(Coming Soon)*
-- [Week 09 Solutions](week-09/) - TensorFlow Lite *(Coming Soon)*
+- [Week 09 Solutions](week-09/) - TensorFlow Lite ✅
+  - [TFLite Classifier](week-09/tflite-classifier-solution.md)
 
 ### Polish & Completion
 - [Week 10 Solutions](week-10/) - Notifications & share *(Coming Soon)*
 - [Week 11 Solutions](week-11/) - Testing & debugging *(Coming Soon)*
 - [Week 12 Solutions](week-12/) - Final submission *(Coming Soon)*
+
+> **Note:** Solutions for Weeks 01–03, 06, 08, 10–12 are not yet available. Focus on attempting the exercises yourself first — the `android-app/` project skeleton and `backend-api/` starter code provide working reference implementations for most topics.
 
 ## 🎯 Academic Integrity
 
