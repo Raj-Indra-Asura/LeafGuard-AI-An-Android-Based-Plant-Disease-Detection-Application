@@ -359,4 +359,25 @@ Submission day checklist
 
 ## Next Step
 
-- Continue to **Week 12** when this week is stable and documented.
+- Continue to **[Week 12: Final Submission](../../roadmap/week-12-final-submission/README.md)** when this week is stable and documented.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+### Related Roadmap Materials
+- 📖 [Week 12 README](../../roadmap/week-12-final-submission/README.md) — Week overview & objectives
+- 📝 [Week 12 Exercises](../../roadmap/week-12-final-submission/exercises.md) — Practice problems
+- 💡 [Week 12 Solutions](../../solutions/week-12/README.md) — Reference solutions
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+### Week Progression
+
+| ← Previous | 🏠 | Next → |
+|:-----------|:--:|-------:|
+| [⬅ Week 11 Notebooks](../week-11/README.md) | [Notebooks Index](../README.md) | *(Last week)* |
+
+---

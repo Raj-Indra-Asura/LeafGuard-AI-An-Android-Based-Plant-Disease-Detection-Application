@@ -20,6 +20,27 @@ Remember to attempt each exercise yourself before checking solutions. Solutions 
 
 ## 🔗 Navigation
 
-- 📚 [Back to Week 01 Exercises](../../roadmap/week-01-*/exercises.md)
+- 📚 [Back to Week 01 Exercises](../../roadmap/week-01-project-understanding/exercises.md)
 - 🏠 [Solutions Index](../README.md)
 - 📖 [Learning Path](../../LEARNING_PATH.md)
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+### Back to Roadmap Week
+- 📖 [Week 01 README](../../roadmap/week-01-project-understanding/README.md) — Week overview
+- 📝 [Week 01 Exercises](../../roadmap/week-01-project-understanding/exercises.md) — Practice problems to solve first
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+- 📚 [Solutions Index](../README.md) — All week solutions
+
+### Week Progression
+
+| ← Previous | 🏠 | Next → |
+|:-----------|:--:|-------:|
+| *(First week)* | [Solutions Index](../README.md) | [Week 02 Solutions ➡](../week-02/README.md) |
+
+---

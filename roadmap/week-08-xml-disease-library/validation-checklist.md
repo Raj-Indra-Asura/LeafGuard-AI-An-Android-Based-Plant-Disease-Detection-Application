@@ -138,3 +138,38 @@
 5. **OutOfMemoryError** — do NOT load entire file as String; always use streaming XmlPullParser
 6. **Multiple parses** — without `isLoaded` flag, XML is parsed on every lookup (slow)
 7. **Context leak** — using Activity context in singleton; always use `getApplicationContext()`
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 📚 Week 08 — Navigation
+
+### All Files In This Week (Complete In Order)
+
+| Step | File | Description |
+|------|------|-------------|
+| 1 | [README.md](README.md) | Week Overview & Objectives |
+| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
+| 3 | [exercises.md](exercises.md) | Practice Exercises |
+| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
+| **5** | **validation-checklist.md** ← *You are here* | **Validation & Verification** |
+| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
+| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
+
+---
+
+### Within-Week Navigation
+
+[← Build Implementation Guide](build-task.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Validation & Verification** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Knowledge Assessment Quiz →](quiz.md)
+
+---
+
+### Week Progression
+
+| ← Previous Week | 🏠 Home | Next Week → |
+|:----------------|:-------:|------------:|
+| [⬅ Week 07: Room Database & History](../week-07-room-sqlite-history/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 09: TensorFlow Lite Offline AI ➡](../week-09-tensorflow-lite-offline-ai/README.md) |
+
+---

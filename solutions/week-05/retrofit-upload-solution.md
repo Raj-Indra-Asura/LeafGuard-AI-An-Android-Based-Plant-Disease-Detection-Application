@@ -292,3 +292,17 @@ A successful HTTP response with an empty body would still break the next screen.
 5. Watch Logcat and the OkHttp logs.
 6. Confirm navigation to `ResultActivity`.
 7. Verify disease, confidence, and recommendation text display correctly.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+- 📝 [Back to Week 05 Exercises](../../roadmap/week-05-android-networking/exercises.md) — Try it yourself first
+- 📖 [Week 05 README](../../roadmap/week-05-android-networking/README.md) — Week overview
+- 💡 [Solutions Index for Week 05](README.md) — Other solutions this week
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+---

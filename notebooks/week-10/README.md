@@ -322,4 +322,25 @@ private Double longitude;
 
 ## Next Step
 
-- Continue to **Week 11** when this week is stable and documented.
+- Continue to **[Week 11: Testing, Debugging & Performance](../../roadmap/week-11-testing-debugging-performance/README.md)** when this week is stable and documented.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+### Related Roadmap Materials
+- 📖 [Week 10 README](../../roadmap/week-10-notifications-share-location/README.md) — Week overview & objectives
+- 📝 [Week 10 Exercises](../../roadmap/week-10-notifications-share-location/exercises.md) — Practice problems
+- 💡 [Week 10 Solutions](../../solutions/week-10/README.md) — Reference solutions
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+### Week Progression
+
+| ← Previous | 🏠 | Next → |
+|:-----------|:--:|-------:|
+| [⬅ Week 09 Notebooks](../week-09/README.md) | [Notebooks Index](../README.md) | [Week 11 Notebooks ➡](../week-11/README.md) |
+
+---

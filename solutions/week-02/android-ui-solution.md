@@ -598,3 +598,17 @@ Strings, colors, and themes are centralized under `res/values/`.
 - [x] `ScanActivity.java` skeleton included
 - [x] strings, colors, and themes provided
 - [x] working activity navigation included
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+- 📝 [Back to Week 02 Exercises](../../roadmap/week-02-android-basics-ui/exercises.md) — Try it yourself first
+- 📖 [Week 02 README](../../roadmap/week-02-android-basics-ui/README.md) — Week overview
+- 💡 [Solutions Index for Week 02](README.md) — Other solutions this week
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+---

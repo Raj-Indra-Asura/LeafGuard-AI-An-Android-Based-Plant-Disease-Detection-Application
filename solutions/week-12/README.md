@@ -20,6 +20,27 @@ Remember to attempt each exercise yourself before checking solutions. Solutions 
 
 ## 🔗 Navigation
 
-- 📚 [Back to Week 12 Exercises](../../roadmap/week-12-*/exercises.md)
+- 📚 [Back to Week 12 Exercises](../../roadmap/week-12-final-submission/exercises.md)
 - 🏠 [Solutions Index](../README.md)
 - 📖 [Learning Path](../../LEARNING_PATH.md)
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+### Back to Roadmap Week
+- 📖 [Week 12 README](../../roadmap/week-12-final-submission/README.md) — Week overview
+- 📝 [Week 12 Exercises](../../roadmap/week-12-final-submission/exercises.md) — Practice problems to solve first
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+- 📚 [Solutions Index](../README.md) — All week solutions
+
+### Week Progression
+
+| ← Previous | 🏠 | Next → |
+|:-----------|:--:|-------:|
+| [⬅ Week 11 Solutions](../week-11/README.md) | [Solutions Index](../README.md) | *(Last week)* |
+
+---

@@ -598,3 +598,17 @@ LeafGuard AI uses layered MVVM architecture. Activities handle UI, ViewModels ho
 - [x] architecture diagram answered
 - [x] dependency list answered
 - [x] module breakdown answered
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+- 📝 [Back to Week 01 Exercises](../../roadmap/week-01-project-understanding/exercises.md) — Try it yourself first
+- 📖 [Week 01 README](../../roadmap/week-01-project-understanding/README.md) — Week overview
+- 💡 [Solutions Index for Week 01](README.md) — Other solutions this week
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+---

@@ -353,4 +353,25 @@ Treatment: " + prediction.getTreatment();
 
 ## Next Step
 
-- After this notebook, continue to **Week 06** and connect today's work to the next subsystem.
+- After this notebook, continue to **[Week 06: Cloud ML Model](../../roadmap/week-06-cloud-ml-model/README.md)** and connect today's work to the next subsystem.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+### Related Roadmap Materials
+- 📖 [Week 05 README](../../roadmap/week-05-android-networking/README.md) — Week overview & objectives
+- 📝 [Week 05 Exercises](../../roadmap/week-05-android-networking/exercises.md) — Practice problems
+- 💡 [Week 05 Solutions](../../solutions/week-05/README.md) — Reference solutions
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+### Week Progression
+
+| ← Previous | 🏠 | Next → |
+|:-----------|:--:|-------:|
+| [⬅ Week 04 Notebooks](../week-04/README.md) | [Notebooks Index](../README.md) | [Week 06 Notebooks ➡](../week-06/README.md) |
+
+---

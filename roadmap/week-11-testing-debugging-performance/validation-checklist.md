@@ -178,3 +178,38 @@ you must achieve all of the following:
 6. [ ] Reflection and evidence completed
 
 **Date Completed:** ___________
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 📚 Week 11 — Navigation
+
+### All Files In This Week (Complete In Order)
+
+| Step | File | Description |
+|------|------|-------------|
+| 1 | [README.md](README.md) | Week Overview & Objectives |
+| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
+| 3 | [exercises.md](exercises.md) | Practice Exercises |
+| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
+| **5** | **validation-checklist.md** ← *You are here* | **Validation & Verification** |
+| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
+| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
+
+---
+
+### Within-Week Navigation
+
+[← Build Implementation Guide](build-task.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Validation & Verification** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Knowledge Assessment Quiz →](quiz.md)
+
+---
+
+### Week Progression
+
+| ← Previous Week | 🏠 Home | Next Week → |
+|:----------------|:-------:|------------:|
+| [⬅ Week 10: Notifications, Share & Location](../week-10-notifications-share-location/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 12: Final Submission ➡](../week-12-final-submission/README.md) |
+
+---

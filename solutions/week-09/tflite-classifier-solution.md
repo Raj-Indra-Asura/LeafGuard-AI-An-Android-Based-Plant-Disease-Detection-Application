@@ -257,3 +257,17 @@ A good TFLite wrapper keeps four responsibilities separate:
 - cleanup
 
 That structure makes the offline pipeline easier to debug and easier to connect to the rest of the LeafGuard AI app.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+- 📝 [Back to Week 09 Exercises](../../roadmap/week-09-tensorflow-lite-offline-ai/exercises.md) — Try it yourself first
+- 📖 [Week 09 README](../../roadmap/week-09-tensorflow-lite-offline-ai/README.md) — Week overview
+- 💡 [Solutions Index for Week 09](README.md) — Other solutions this week
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+---

@@ -1176,3 +1176,38 @@ You have successfully completed Week 02 Build Task when:
 8. You can explain every aspect of your implementation
 
 **Congratulations! You now have a solid Android UI foundation. Week 03 will add camera and gallery functionality to make the scan feature functional.**
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 📚 Week 02 — Navigation
+
+### All Files In This Week (Complete In Order)
+
+| Step | File | Description |
+|------|------|-------------|
+| 1 | [README.md](README.md) | Week Overview & Objectives |
+| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
+| 3 | [exercises.md](exercises.md) | Practice Exercises |
+| **4** | **build-task.md** ← *You are here* | **Build Implementation Guide** |
+| 5 | [validation-checklist.md](validation-checklist.md) | Validation & Verification |
+| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
+| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
+
+---
+
+### Within-Week Navigation
+
+[← Practice Exercises](exercises.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Build Implementation Guide** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Validation & Verification →](validation-checklist.md)
+
+---
+
+### Week Progression
+
+| ← Previous Week | 🏠 Home | Next Week → |
+|:----------------|:-------:|------------:|
+| [⬅ Week 01: Project Understanding](../week-01-project-understanding/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 03: Camera & Gallery ➡](../week-03-camera-gallery/README.md) |
+
+---

@@ -299,3 +299,17 @@ Backup
 [ ] Code backed up on USB/cloud
 [ ] Report saved in multiple locations
 ```
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+- 📝 [Back to Week 12 Exercises](../../roadmap/week-12-final-submission/exercises.md) — Try it yourself first
+- 📖 [Week 12 README](../../roadmap/week-12-final-submission/README.md) — Week overview
+- 💡 [Solutions Index for Week 12](README.md) — Other solutions this week
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+---
