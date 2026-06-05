@@ -42,7 +42,7 @@
     <string name="history_empty_state">No saved scans yet. Save a result to see it appear here.</string>
     <string name="history_confidence_format">%1$.0f%% confidence</string>
     <string name="delete_history_item">Delete history item</string>
-    <string name="delete_stub_message">Deleted %1$s from scan history.</string>
+    <string name="history_item_deleted">Deleted %1$s from scan history.</string>
     <string name="result_unknown_disease">Unknown disease</string>
     <string name="placeholder_symptoms">Symptom details were not supplied.</string>
     <string name="placeholder_treatment">Treatment details were not supplied.</string>

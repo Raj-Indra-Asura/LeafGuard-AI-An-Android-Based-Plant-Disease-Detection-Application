@@ -44,7 +44,7 @@ public class TFLiteClassifier implements AutoCloseable {
     public TFLiteClassifier(Context context, String modelAssetName, String labelsAssetName, int inputSize)
             throws IOException {
         this.inputSize = inputSize;
-        loadModel(context, modelAssetName);
+        initializeModelOrFallback(context, modelAssetName);
         labels.addAll(loadLabels(context, labelsAssetName));
         if (labels.isEmpty()) {
             labels.add("Unknown disease");
@@ -54,7 +54,7 @@ public class TFLiteClassifier implements AutoCloseable {
         }
     }
 
-    private void loadModel(Context context, String modelAssetName) {
+    private void initializeModelOrFallback(Context context, String modelAssetName) {
         try {
             AssetFileDescriptor fileDescriptor = context.getAssets().openFd(modelAssetName);
             try (FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor())) {
@@ -109,6 +109,9 @@ public class TFLiteClassifier implements AutoCloseable {
             }
         }
         inputBuffer.rewind();
+        if (scaledBitmap != bitmap) {
+            scaledBitmap.recycle();
+        }
         return inputBuffer;
     }
 
@@ -153,6 +156,9 @@ public class TFLiteClassifier implements AutoCloseable {
             for (int x = 0; x < inputSize; x++) {
                 greenSum += Color.green(scaledBitmap.getPixel(x, y));
             }
+        }
+        if (scaledBitmap != bitmap) {
+            scaledBitmap.recycle();
         }
         return (greenSum / (float) pixelCount) / 255.0f;
     }

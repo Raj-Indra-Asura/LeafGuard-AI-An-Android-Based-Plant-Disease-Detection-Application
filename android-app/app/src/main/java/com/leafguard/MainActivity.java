@@ -230,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        RequestBody requestBody = RequestBody.create(MediaType.parse(getImageMimeType()), uploadFile);
+        RequestBody requestBody = RequestBody.create(MediaType.parse(getImageMimeType(selectedImageUri)), uploadFile);
         MultipartBody.Part imagePart = MultipartBody.Part.createFormData("image", uploadFile.getName(), requestBody);
         ApiService apiService = RetrofitClient.getInstance(getBackendBaseUrl()).create(ApiService.class);
         apiService.uploadImage(imagePart).enqueue(new Callback<PredictionResponse>() {
@@ -295,8 +295,8 @@ public class MainActivity extends AppCompatActivity {
         return MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
     }
 
-    private String getImageMimeType() {
-        String mimeType = getContentResolver().getType(selectedImageUri);
+    private String getImageMimeType(Uri imageUri) {
+        String mimeType = getContentResolver().getType(imageUri);
         if (mimeType == null || !mimeType.startsWith("image/")) {
             return "image/*";
         }
@@ -306,10 +306,10 @@ public class MainActivity extends AppCompatActivity {
     private String getBackendBaseUrl() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String baseUrl = prefs.getString(SettingsActivity.PREF_BACKEND_URL, SettingsActivity.DEFAULT_BACKEND_URL);
-        if (baseUrl == null || baseUrl.trim().isEmpty()) {
-            baseUrl = SettingsActivity.DEFAULT_BACKEND_URL;
+        if (baseUrl == null) {
+            baseUrl = "";
         }
-        baseUrl = baseUrl.trim();
+        baseUrl = baseUrl.trim().isEmpty() ? SettingsActivity.DEFAULT_BACKEND_URL : baseUrl.trim();
         return baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
     }
 
