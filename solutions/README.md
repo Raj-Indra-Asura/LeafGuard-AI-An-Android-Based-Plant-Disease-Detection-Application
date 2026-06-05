@@ -1,177 +1,42 @@
-# Solutions Directory
+# Solutions Index
 
-This directory contains reference implementations and solutions for the exercises in the LeafGuard AI learning roadmap.
+These solutions are reference guides for the 12-week LeafGuard AI learning path.
 
-## ⚠️ Important Learning Guidelines
+## How to use solutions correctly
 
-### When to Use Solutions
+1. Read the weekly `README.md`.
+2. Study `learning-notes.md`.
+3. Attempt `exercises.md` without looking here.
+4. Complete `build-task.md`.
+5. Use the solution guide only to compare your approach, debug mistakes, and improve your explanation.
+6. Update the weekly `reflection.md` after checking the solution.
 
-**DO use solutions when:**
-- You've genuinely attempted the exercise multiple times
-- You're stuck on a specific concept after researching
-- You want to verify your working solution matches best practices
-- You need to understand a specific implementation pattern
+Solutions are intentionally written as **mentor explanations plus reference snippets**, not blind copy-paste files. The goal is that you can explain the project in viva and rebuild it independently.
 
-**DON'T use solutions:**
-- As your first approach to any problem
-- To copy-paste without understanding
-- Instead of reading documentation and learning notes
-- Before attempting the exercise yourself
+## Weekly solutions
 
-## 📂 Directory Structure
+| Week | Topic | Solution guide |
+|---|---|---|
+| 01 | Project understanding and proposal | [Week 01](week-01/README.md) |
+| 02 | Android UI skeleton | [Week 02](week-02/README.md) |
+| 03 | Camera and gallery | [Week 03](week-03/README.md) |
+| 04 | FastAPI backend | [Week 04](week-04/README.md) |
+| 05 | Retrofit networking | [Week 05](week-05/README.md) |
+| 06 | Cloud ML integration | [Week 06](week-06/README.md) |
+| 07 | Room and SQLite history | [Week 07](week-07/README.md) |
+| 08 | XML disease library | [Week 08](week-08/README.md) |
+| 09 | TensorFlow Lite offline AI | [Week 09](week-09/README.md) |
+| 10 | Notifications, share, location | [Week 10](week-10/README.md) |
+| 11 | Testing and performance | [Week 11](week-11/README.md) |
+| 12 | Final submission | [Week 12](week-12/README.md) |
 
-```
-solutions/
-├── README.md (this file)
-├── week-01/
-│   ├── exercise-01-solution.md
-│   ├── exercise-02-solution.md
-│   └── ...
-├── week-02/
-│   ├── exercise-01-solution.md
-│   └── ...
-└── week-12/
-    └── ...
-```
+## Evidence standard
 
-## 🎓 How to Learn with Solutions
+For every week, a complete student submission should include:
 
-### The Right Approach
-
-1. **Read the exercise carefully** - Understand what's being asked
-2. **Research the concept** - Check learning-notes.md, documentation, GLOSSARY.md
-3. **Attempt the solution** - Write code yourself
-4. **Test your solution** - Does it work? Does it meet requirements?
-5. **Compare with solution** - Check for differences in approach
-6. **Understand differences** - Why is the solution different? What did you miss?
-7. **Refactor your code** - Apply what you learned
-
-### The Wrong Approach
-
-❌ Read exercise → Open solution → Copy code → Move on
-
-This approach will:
-- Prevent genuine learning
-- Make viva defense impossible
-- Leave you unable to solve similar problems
-- Result in project failure when features stop working
-
-## 📝 Solution Format
-
-Each solution includes:
-
-### 1. Problem Statement Recap
-Brief summary of what the exercise asks
-
-### 2. Concept Explanation
-Key concepts needed to solve this problem
-
-### 3. Step-by-Step Solution
-Detailed breakdown with explanations
-
-### 4. Complete Code
-Working implementation with comments
-
-### 5. Testing Approach
-How to verify the solution works
-
-### 6. Common Mistakes
-Errors students commonly make
-
-### 7. Extensions
-Ways to extend or improve the solution
-
-## 🔗 Week-by-Week Solutions
-
-### Foundation Phase
-- [Week 01 Solutions](week-01/) - Project understanding exercises *(Coming Soon)*
-- [Week 02 Solutions](week-02/) - Android basics and UI *(Coming Soon)*
-- [Week 03 Solutions](week-03/) - Camera and gallery *(Coming Soon)*
-
-### Backend Integration
-- [Week 04 Solutions](week-04/) - FastAPI backend *(Coming Soon)*
-- [Week 05 Solutions](week-05/) - Android networking *(Coming Soon)*
-- [Week 06 Solutions](week-06/) - ML model integration *(Coming Soon)*
-
-### Data & Offline
-- [Week 07 Solutions](week-07/) - Room database *(Coming Soon)*
-- [Week 08 Solutions](week-08/) - XML parsing *(Coming Soon)*
-- [Week 09 Solutions](week-09/) - TensorFlow Lite *(Coming Soon)*
-
-### Polish & Completion
-- [Week 10 Solutions](week-10/) - Notifications & share *(Coming Soon)*
-- [Week 11 Solutions](week-11/) - Testing & debugging *(Coming Soon)*
-- [Week 12 Solutions](week-12/) - Final submission *(Coming Soon)*
-
-## 🎯 Academic Integrity
-
-### This is a Learning Tool, Not a Shortcut
-
-Solutions are provided to:
-- Help you learn when genuinely stuck
-- Show best practices and patterns
-- Verify your approach is correct
-- Understand alternative implementations
-
-**Using solutions properly is allowed and encouraged.**
-**Copying solutions without understanding is academic dishonesty.**
-
-### CSE 2206 Project Rules
-
-Your project must demonstrate:
-1. Understanding of every line of code you write
-2. Ability to explain your implementation decisions
-3. Knowledge of Android and mobile development concepts
-4. Problem-solving skills, not just copy-paste ability
-
-During viva:
-- You will be asked to explain any part of your code
-- You will be asked "why" questions, not just "what"
-- You may be asked to modify code on the spot
-- You must demonstrate genuine understanding
-
-## 💡 Tips for Effective Learning
-
-### 1. Use the 30-Minute Rule
-Spend at least 30 minutes attempting before checking solutions
-
-### 2. Type, Don't Copy
-Always type out solution code manually - this builds muscle memory
-
-### 3. Experiment
-Modify the solution - what breaks? What improves? Why?
-
-### 4. Document Your Learning
-Write comments explaining what you learned
-
-### 5. Teach Someone
-Explain the solution to a classmate (without showing them the code)
-
-## 📚 Related Resources
-
-- [Exercises Index](../roadmap/) - All weekly exercises
-- [Learning Notes](../roadmap/) - Theoretical foundations
-- [GLOSSARY.md](../GLOSSARY.md) - Technical term definitions
-- [LEARNING_RULES.md](../LEARNING_RULES.md) - How to learn effectively
-
-## 🔄 Contributing Solutions
-
-Found a better approach? Want to add explanations?
-
-1. Ensure your solution works correctly
-2. Add detailed comments and explanations
-3. Follow existing solution format
-4. Test thoroughly before submitting
-
----
-
-## ⚡ Quick Navigation
-
-- 🏠 [Back to Learning Path](../LEARNING_PATH.md)
-- 📚 [Exercises Directory](../exercises/)
-- 📓 [Notebooks Directory](../notebooks/)
-- 📖 [Main README](../README.md)
-
----
-
-**Remember:** Solutions are a learning tool. Use them wisely to enhance your understanding, not replace your effort! 🚀
+- working code or document deliverable,
+- screenshot or terminal/API evidence,
+- explanation of why the implementation works,
+- edge cases tested,
+- reflection on what was difficult,
+- validation checklist completed.
