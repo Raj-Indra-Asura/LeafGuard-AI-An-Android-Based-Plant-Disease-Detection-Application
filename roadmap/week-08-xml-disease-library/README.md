@@ -32,14 +32,6 @@ By the end of Week 08, you will create and parse an XML-based disease library th
 
 ---
 
-## Prerequisites
-
-- Week 06 complete (know your ML model labels)
-- Understanding of XML structure
-- Basic file I/O concepts
-
----
-
 ## Key Concepts
 
 ### XML Structure
@@ -53,8 +45,32 @@ By the end of Week 08, you will create and parse an XML-based disease library th
         <symptoms>Water-soaked spots, white mold</symptoms>
         <treatment>Apply copper fungicide</treatment>
         <prevention>Use resistant varieties</prevention>
+        <severity>High</severity>
     </disease>
 </diseases>
+```
+
+### XmlPullParser Architecture
+
+```
+assets/disease_library.xml
+         |
+         v
+AssetManager.open("disease_library.xml")  → InputStream
+         |
+         v
+Xml.newPullParser()  → XmlPullParser instance
+         |
+         v
+Loop: parser.next()
+   START_TAG "disease"  → create new Disease object
+   START_TAG "label"    → read text → disease.setLabel(text)
+   START_TAG "symptoms" → read text → disease.setSymptoms(text)
+   ...
+   END_TAG "disease"    → add Disease to list
+         |
+         v
+Return List<Disease>
 ```
 
 ### XmlPullParser Flow
@@ -65,6 +81,85 @@ By the end of Week 08, you will create and parse an XML-based disease library th
 4. Extract data when inside target tags
 5. Build Disease objects
 6. Return list
+
+### Complete Parser Implementation
+
+```java
+public class DiseaseXmlParser {
+
+    public List<Disease> parse(InputStream inputStream) throws XmlPullParserException, IOException {
+        List<Disease> diseases = new ArrayList<>();
+        XmlPullParser parser = Xml.newPullParser();
+        parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
+        parser.setInput(inputStream, null);
+
+        int eventType = parser.getEventType();
+        Disease currentDisease = null;
+        String currentTag = null;
+
+        while (eventType != XmlPullParser.END_DOCUMENT) {
+            switch (eventType) {
+                case XmlPullParser.START_TAG:
+                    currentTag = parser.getName();
+                    if ("disease".equals(currentTag)) {
+                        currentDisease = new Disease();
+                    }
+                    break;
+
+                case XmlPullParser.TEXT:
+                    if (currentDisease != null && currentTag != null) {
+                        String text = parser.getText().trim();
+                        switch (currentTag) {
+                            case "label":      currentDisease.setLabel(text);      break;
+                            case "commonName": currentDisease.setCommonName(text); break;
+                            case "symptoms":   currentDisease.setSymptoms(text);   break;
+                            case "treatment":  currentDisease.setTreatment(text);  break;
+                            case "prevention": currentDisease.setPrevention(text); break;
+                            case "severity":   currentDisease.setSeverity(text);   break;
+                        }
+                    }
+                    break;
+
+                case XmlPullParser.END_TAG:
+                    if ("disease".equals(parser.getName()) && currentDisease != null) {
+                        diseases.add(currentDisease);
+                        currentDisease = null;
+                    }
+                    currentTag = null;
+                    break;
+            }
+            eventType = parser.next();
+        }
+        return diseases;
+    }
+}
+```
+
+### Lookup Integration with Predictions
+
+After the model returns a label (e.g., `"Tomato_Late_Blight"`), look up the Disease object to show enriched information:
+
+```java
+// In ResultActivity
+Map<String, Disease> diseaseMap = buildDiseaseMap(parseXml());
+
+Disease info = diseaseMap.get(predictionLabel);
+if (info != null) {
+    tvSymptoms.setText(info.getSymptoms());
+    tvTreatment.setText(info.getTreatment());
+    tvPrevention.setText(info.getPrevention());
+} else {
+    tvSymptoms.setText("Information not found in disease library.");
+}
+```
+
+---
+
+## Prerequisites
+
+- Week 06 complete (know your ML model labels)
+- Understanding of XML structure
+- Basic file I/O concepts
 
 ---
 
@@ -91,4 +186,4 @@ By the end of Week 08, you will create and parse an XML-based disease library th
 
 ---
 
-**Next:** Open `learning-notes.md` for detailed XML parsing concepts.
+**Next:** Open `learning-notes.md` for detailed XML parsing concepts (1,822 lines).

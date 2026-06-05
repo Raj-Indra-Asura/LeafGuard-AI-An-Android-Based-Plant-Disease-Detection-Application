@@ -3,6 +3,28 @@
 > This guide explains how to obtain, validate, convert, optimize, and integrate a plant disease model for the LeafGuard AI Android app.
 > It is intentionally long and detailed so students can work through the model pipeline step by step during the 12-week course.
 
+---
+
+## ⚡ Quick Start (5 minutes)
+
+If you just want a working `.tflite` model as fast as possible, run the script below.  
+It builds a small MobileNetV2-based stub model converted to TFLite format — enough to test your Android integration before you have a real trained model.
+
+```bash
+# From the repository root
+pip install tensorflow pillow numpy
+
+python3 model/generate_stub_model.py
+```
+
+This creates:
+- `android-app/app/src/main/assets/plant_disease_model.tflite` — placeholder TFLite model
+- `android-app/app/src/main/assets/labels.txt` — 38 PlantVillage class names
+
+> **Important:** The stub model outputs random predictions. Replace it with a real trained model by following Option B (Kaggle PlantVillage) or Option C (Google Colab training) below.
+
+---
+
 ## Table of Contents
 1. [Why there is no `.tflite` model in this repository](#1-why-there-is-no-tflite-model-in-this-repository)
 2. [Option A: Download a pre-trained model from TensorFlow Hub](#2-option-a-download-a-pre-trained-model-from-tensorflow-hub)

@@ -130,33 +130,57 @@ private void openCamera() {
 
 ### Step 4: Implement Gallery Picker (45 min)
 
+This implementation supports all Android versions from API 24 (minSdk) through current releases.
+
+- **API 30+ (Android 11+):** Uses the modern `PickVisualMedia` contract.
+- **API 24–29 (Android 7–10):** Uses the legacy `ACTION_GET_CONTENT` intent, which is available on all devices in this range.
+
 ```java
 private ActivityResultLauncher<PickVisualMediaRequest> pickMediaLauncher;
+private ActivityResultLauncher<Intent> legacyPickLauncher;
 
 private void setupGalleryLauncher() {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        pickMediaLauncher = registerForActivityResult(
-            new ActivityResultContracts.PickVisualMedia(),
-            uri -> {
+    // Modern picker — Android 11+ (API 30+)
+    pickMediaLauncher = registerForActivityResult(
+        new ActivityResultContracts.PickVisualMedia(),
+        uri -> {
+            if (uri != null) {
+                displayImage(uri);
+            }
+        }
+    );
+
+    // Legacy picker — Android 7–10 (API 24–29, i.e. Android 7.0 through 10)
+    legacyPickLauncher = registerForActivityResult(
+        new ActivityResultContracts.StartActivityForResult(),
+        result -> {
+            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                Uri uri = result.getData().getData();
                 if (uri != null) {
                     displayImage(uri);
                 }
             }
-        );
-    }
+        }
+    );
 }
 
 private void openGallery() {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        // Android 11+ — photo picker
         pickMediaLauncher.launch(new PickVisualMediaRequest.Builder()
             .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
             .build());
     } else {
-        // Legacy implementation for older devices
-        Toast.makeText(this, "Gallery picker not available on this Android version", Toast.LENGTH_SHORT).show();
+        // Android 7–10 (API 24–29) — legacy ACTION_GET_CONTENT
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        legacyPickLauncher.launch(Intent.createChooser(intent, "Select Image"));
     }
 }
 ```
+
+> **Note:** Call `setupGalleryLauncher()` inside `onCreate()` before any button click listener, since `registerForActivityResult` must be called before the activity reaches the STARTED state.
 
 ### Step 5: Implement Image Display (45 min)
 
