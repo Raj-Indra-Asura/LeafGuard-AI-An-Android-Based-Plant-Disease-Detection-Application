@@ -1,194 +1,218 @@
 # Week 8 Reflection Journal
 
-## API Integration with Retrofit
+## XML Disease Library
 
 **Date Range**: ________________
 **Student Name**: ________________
 
 ---
 
-## Part 1: Understanding Retrofit
+## Part 1: Understanding XML in Android
 
-**What is Retrofit and why use it for Android networking?**
+**In your own words, explain what XML (eXtensible Markup Language) is and how it differs from JSON:**
 ```
-[Explain REST client library, type safety, ease of use]
-```
-
-**How does Retrofit simplify API calls compared to manual HTTP requests?**
-```
-[Discuss code reduction, error handling, parsing]
+[Explain the syntax, structure, and use cases for XML. Why did we choose XML over JSON
+for the disease library? Mention the CSE 2206 requirement for XML parsing.]
 ```
 
----
-
-## Part 2: Retrofit Setup and Configuration
-
-**Show your Retrofit instance configuration:**
-```kotlin
-// Your Retrofit setup code
+**Why is the disease library stored in the assets/ folder rather than a database?**
 ```
-
-**Explain each component:**
-- Base URL:
-- Converters:
-- Interceptors:
-- OkHttp client:
-
-**Show your API service interface:**
-```kotlin
-// Your API interface
+[Discuss: static vs dynamic data, offline availability, read-only nature,
+file size considerations.]
 ```
 
 ---
 
-## Part 3: Making API Calls
+## Part 2: XML File Design
 
-**Show your disease detection API call:**
-```kotlin
-// Your detection call implementation
+**Show your disease_library.xml structure (simplified):**
+```xml
+<!-- Paste a sample with 2-3 disease entries showing the full tag structure -->
 ```
 
-**How do you handle:**
-- Success response:
-- Network errors:
-- Server errors:
-- Timeout:
+**Explain your design decisions:**
+- Root element name chosen:
+- Child element names chosen:
+- Why you used child elements instead of attributes:
+- How the label tag connects to the ML model output:
 
----
-
-## Part 4: Connecting Backend and Android
-
-**Describe the complete flow from Android to backend:**
+**How many diseases did you add to your XML file?**
 ```
-User captures image →
-[describe each step]
-← Results displayed
-```
-
-**What data format is exchanged?**
-```
-[Show JSON examples]
-```
-
-**How do you parse the response?**
-```kotlin
-// Your response parsing code
+Number: _____
+List them:
 ```
 
 ---
 
-## Part 5: Async Operations and Coroutines
+## Part 3: XmlPullParser Implementation
 
-**Why use coroutines for network calls?**
+**Explain the XmlPullParser event model (START_TAG, TEXT, END_TAG):**
 ```
-[Explain threading, UI responsiveness]
-```
-
-**Show your coroutine implementation:**
-```kotlin
-// Your suspend function network code
+[Walk through the parsing logic step by step. Draw a table or diagram showing
+what happens for each event type when parsing a <disease> entry.]
 ```
 
-**How do you handle loading states?**
+**Show your core parsing loop:**
+```java
+// Paste your DiseaseXmlParser.java parse() method
 ```
-[Discuss progress indicators, user feedback]
+
+**What state tracking variables did you use and why?**
+```
+[Explain currentDisease, currentTag, and any other variables]
 ```
 
 ---
 
-## Part 6: Error Handling and User Experience
+## Part 4: The Disease Model Class
 
-**What error scenarios did you handle?**
+**Show your Disease.java class:**
+```java
+// Paste your Disease.java
+```
+
+**Why did you choose these fields?**
+```
+[Explain each field and how it will be used in the UI]
+```
+
+---
+
+## Part 5: Performance — Caching Strategy
+
+**What happens if you parse the XML file every time the user views a disease result?**
+```
+[Discuss: repeated disk I/O, parsing time, XML parsing overhead]
+```
+
+**What caching approach did you implement?**
+```java
+// Show your caching code (Map<String, Disease> or similar)
+```
+
+**Where do you store the cached data to avoid re-parsing?**
+```
+[Discuss: singleton, Application class, ViewModel, static field]
+```
+
+---
+
+## Part 6: Integration with ResultActivity
+
+**Describe the flow when a prediction result is displayed:**
+```
+1. ML model returns label: "Tomato___Early_blight"
+2. [Continue the flow through your code]
+3. Disease symptoms appear on screen
+```
+
+**Show the method call that connects prediction result to XML data:**
+```java
+// Show how you look up disease info using the predicted label
+```
+
+**What happens if the predicted label is NOT found in the XML?**
+```
+[Describe your fallback/error handling]
+```
+
+---
+
+## Part 7: DiseaseLibraryActivity
+
+**How is the disease library accessed from the main menu?**
+```
+[Describe the navigation path]
+```
+
+**How did you display the list of diseases?**
+```
+[RecyclerView? ListView? What does the list item look like?]
+```
+
+**What happens when a user taps on a disease in the list?**
+```
+[Describe navigation to detail view or in-place expansion]
+```
+
+---
+
+## Part 8: SAX vs DOM vs XmlPullParser Comparison
+
+**Compare the three XML parsing approaches in Android:**
+
+| Approach | Memory Usage | Speed | Code Complexity | Best For |
+|----------|-------------|-------|----------------|---------|
+| DOM | | | | |
+| SAX | | | | |
+| XmlPullParser | | | | |
+
+**Why is XmlPullParser the recommended approach for Android?**
+```
+[Your explanation]
+```
+
+---
+
+## Part 9: Error Handling
+
+**What exceptions can XML parsing throw?**
 1.
 2.
-3.
-4.
 
-**Show your error handling code:**
-```kotlin
-// Your error handling implementation
+**What happens if disease_library.xml is missing or corrupted?**
+```
+[Describe your error handling strategy]
 ```
 
-**How do you communicate errors to users?**
-```
-[Discuss error messages, retry options]
-```
-
----
-
-## Part 7: Offline-First Architecture
-
-**How do you handle offline scenarios?**
-```
-[Discuss caching, Room integration, connectivity checks]
-```
-
-**Show your caching strategy:**
-```kotlin
-// Your cache implementation
-```
-
-**When do you use cached data vs fresh API data?**
-```
-[Explain strategy and user experience considerations]
-```
-
----
-
-## Part 8: Testing API Integration
-
-**How did you test API calls?**
-```
-[Discuss MockWebServer, testing strategies]
-```
-
-**Test cases:**
-- [ ] Successful API call
-- [ ] Network error
-- [ ] Invalid response
-- [ ] Timeout
-- [ ] No internet
-
----
-
-## Part 9: Integration with Rest of App
-
-**How does Retrofit connect to:**
-- ViewModel:
-- Repository:
-- Room Database:
-
-**Show the complete architecture:**
-```
-[Diagram or description of app architecture]
+**Show your try-catch block:**
+```java
+// Your error handling code
 ```
 
 ---
 
 ## Part 10: Self-Assessment
 
-**Rate understanding (1-5):**
+**Rate your understanding (1-5):**
 
-| Concept | Rating | Evidence |
-|---------|--------|----------|
-| Retrofit basics | | |
-| API interface design | | |
-| Coroutines with Retrofit | | |
-| Error handling | | |
-| Response parsing | | |
-| Offline handling | | |
+| Concept | Rating (1-5) | Evidence |
+|---------|-------------|---------|
+| XML syntax | | |
+| XmlPullParser events | | |
+| Parsing Disease objects | | |
+| Assets folder usage | | |
+| Caching parsed data | | |
+| ResultActivity integration | | |
+| DiseaseLibraryActivity | | |
 
 **Total hours spent**: _______ hours
 
 ---
 
-## Part 11: Challenges and Solutions
+## Part 11: CSE 2206 Exam Preparation
 
-**Major challenge this week:**
+**Practice answering this viva question:**
+*"Explain how you implemented XML parsing in your project and why you chose XmlPullParser over other approaches."*
+```
+[Write your answer in 5-8 sentences as if speaking to your examiner]
+```
+
+**Practice answering:**
+*"What is the purpose of the assets/ folder in Android development?"*
+```
+[Your answer]
+```
+
+---
+
+## Part 12: Challenges and Solutions
+
+**Biggest technical challenge this week:**
 ```
 Problem:
 Solution:
-Learning:
+What I learned:
 ```
 
 **Most confusing concept:**
@@ -196,33 +220,47 @@ Learning:
 [Describe and explain]
 ```
 
+**Something that surprised you:**
+```
+[Any unexpected behavior or insight]
+```
+
 ---
 
-## Part 12: Looking Ahead to Week 9
+## Part 13: Looking Ahead to Week 9
 
-**Week 9 covers camera integration and model deployment. Questions:**
+**Week 9 covers TensorFlow Lite offline AI. Based on what you know, what questions do you have?**
 1.
 2.
 3.
 
+**How does the XML disease library connect to Week 9's offline inference?**
+```
+[Think about: offline prediction → look up disease info in XML → display without internet]
+```
+
 **Your goal for Week 9:**
 ```
-[State objective]
+[State one clear objective]
 ```
 
 ---
 
 ## Evidence of Completion
 
-- [ ] Retrofit configured
-- [ ] API calls working
-- [ ] Error handling implemented
-- [ ] Offline support added
-- [ ] Testing completed
+- [ ] disease_library.xml created with 6+ diseases
+- [ ] Disease.java model class complete
+- [ ] DiseaseXmlParser.java working
+- [ ] Caching implemented (no re-parsing on every call)
+- [ ] ResultActivity shows symptoms/treatment from XML
+- [ ] DiseaseLibraryActivity shows full disease list
+- [ ] Error handling for missing/corrupted XML
 
 **Links to code:**
 
-**Demonstration:**
+**Screenshot of DiseaseLibraryActivity running:**
+
+**Screenshot of ResultActivity with XML data:**
 
 ---
 
