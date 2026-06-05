@@ -230,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        RequestBody requestBody = RequestBody.create(MediaType.parse("image/jpeg"), uploadFile);
+        RequestBody requestBody = RequestBody.create(MediaType.parse(getImageMimeType()), uploadFile);
         MultipartBody.Part imagePart = MultipartBody.Part.createFormData("image", uploadFile.getName(), requestBody);
         ApiService apiService = RetrofitClient.getInstance(getBackendBaseUrl()).create(ApiService.class);
         apiService.uploadImage(imagePart).enqueue(new Callback<PredictionResponse>() {
@@ -276,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
         try (InputStream inputStream = getContentResolver().openInputStream(imageUri);
              FileOutputStream outputStream = new FileOutputStream(uploadFile)) {
             if (inputStream == null) {
-                throw new IOException("Unable to open selected image");
+                throw new IOException("Unable to open selected image. The file may have been moved or deleted.");
             }
             byte[] buffer = new byte[8192];
             int bytesRead;
@@ -295,6 +295,14 @@ public class MainActivity extends AppCompatActivity {
         return MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
     }
 
+    private String getImageMimeType() {
+        String mimeType = getContentResolver().getType(selectedImageUri);
+        if (mimeType == null || !mimeType.startsWith("image/")) {
+            return "image/*";
+        }
+        return mimeType;
+    }
+
     private String getBackendBaseUrl() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String baseUrl = prefs.getString(SettingsActivity.PREF_BACKEND_URL, SettingsActivity.DEFAULT_BACKEND_URL);
@@ -306,7 +314,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openResult(PredictionResponse prediction) {
-        if (prediction.getConfidence() * 100f < getConfidenceThreshold()) {
+        if (getConfidencePercentage(prediction.getConfidence()) < getConfidenceThreshold()) {
             Toast.makeText(this, R.string.low_confidence_warning, Toast.LENGTH_LONG).show();
         }
 
@@ -318,6 +326,10 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(ResultActivity.EXTRA_PREVENTION, prediction.getPrevention());
         intent.putExtra(ResultActivity.EXTRA_IMAGE_URI, selectedImageUri.toString());
         startActivity(intent);
+    }
+
+    private float getConfidencePercentage(float confidence) {
+        return confidence * 100f;
     }
 
     private int getConfidenceThreshold() {

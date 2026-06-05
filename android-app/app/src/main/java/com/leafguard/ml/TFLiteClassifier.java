@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.util.Log;
 
 import com.leafguard.network.PredictionResponse;
 
@@ -23,8 +24,12 @@ import java.util.Locale;
 
 public class TFLiteClassifier implements AutoCloseable {
 
+    private static final String TAG = "TFLiteClassifier";
     private static final int PIXEL_SIZE = 3;
     private static final int BYTES_PER_CHANNEL = 4;
+    private static final int FALLBACK_TOMATO_EARLY_BLIGHT_INDEX = 0;
+    private static final int FALLBACK_TOMATO_LATE_BLIGHT_INDEX = 1;
+    private static final int FALLBACK_TOMATO_HEALTHY_INDEX = 2;
 
     private final int inputSize;
     private final List<String> labels = new ArrayList<>();
@@ -68,6 +73,7 @@ public class TFLiteClassifier implements AutoCloseable {
                 }
             }
         } catch (IOException | IllegalArgumentException exception) {
+            Log.w(TAG, "Unable to load a valid TFLite model asset; using the starter heuristic fallback.", exception);
             heuristicFallback = true;
             outputClasses = 3;
         }
@@ -113,13 +119,13 @@ public class TFLiteClassifier implements AutoCloseable {
         if (heuristicFallback || interpreter == null) {
             float averageGreen = averageGreen(bitmap);
             if (averageGreen > 0.48f) {
-                bestIndex = findLabelIndex("Tomato Healthy", 2);
+                bestIndex = findLabelIndex("Tomato Healthy", FALLBACK_TOMATO_HEALTHY_INDEX);
                 confidence = 0.78f;
             } else if (averageGreen > 0.32f) {
-                bestIndex = findLabelIndex("Tomato Early Blight", 0);
+                bestIndex = findLabelIndex("Tomato Early Blight", FALLBACK_TOMATO_EARLY_BLIGHT_INDEX);
                 confidence = 0.72f;
             } else {
-                bestIndex = findLabelIndex("Tomato Late Blight", 1);
+                bestIndex = findLabelIndex("Tomato Late Blight", FALLBACK_TOMATO_LATE_BLIGHT_INDEX);
                 confidence = 0.69f;
             }
         } else {

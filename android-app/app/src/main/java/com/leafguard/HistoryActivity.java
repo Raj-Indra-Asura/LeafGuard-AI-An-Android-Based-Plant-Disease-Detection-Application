@@ -72,8 +72,9 @@ public class HistoryActivity extends AppCompatActivity {
 
     private void deleteRecord(ScanRecord record) {
         databaseExecutor.execute(() -> {
-            AppDatabase.getInstance(getApplicationContext()).scanDao().deleteScanById(record.getId());
-            List<ScanRecord> scans = AppDatabase.getInstance(getApplicationContext()).scanDao().getAllScans();
+            AppDatabase database = AppDatabase.getInstance(getApplicationContext());
+            database.scanDao().deleteScanById(record.getId());
+            List<ScanRecord> scans = database.scanDao().getAllScans();
             runOnUiThread(() -> {
                 Toast.makeText(this, getString(R.string.delete_stub_message, record.getDiseaseName()), Toast.LENGTH_SHORT).show();
                 renderHistory(scans);
