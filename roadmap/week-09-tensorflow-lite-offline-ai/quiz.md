@@ -1,126 +1,239 @@
-# Week 09: Quiz
+# Week 09: Quiz - TensorFlow Lite Offline AI
 
-## Conceptual
+## Instructions
 
-1. **What is TensorFlow Lite?**
-   A) Cloud service  B) Mobile ML library  C) Database
+- Total questions: 30
+- Section A: 15 conceptual questions
+- Section B: 15 practical questions
+- Attempt the quiz before checking the answers section.
+- Use it for self-study, peer review, or viva preparation.
 
-   Answer: _____
+---
 
-2. **TFLite models typically use what format?**
+## Section A - Conceptual Questions
 
-   Answer: _____
+1. **What is TensorFlow Lite primarily designed for?**
+   - A. Database management on Android
+   - B. On-device machine learning inference
+   - C. Cloud-only deep learning training
+   - D. Android UI rendering
 
-3. **True/False: TFLite requires internet connection.**
+2. **What is the main difference between training and inference?**
+   - A. Training is for Android only, inference is for servers only
+   - B. Training learns weights from data, inference uses learned weights to make predictions
+   - C. They are the same process with different names
+   - D. Inference creates the dataset used for training
 
-   Answer: _____
+3. **Why is TensorFlow Lite useful for LeafGuard AI?**
+   - A. It removes the need for Android Studio
+   - B. It allows plant disease detection without internet
+   - C. It replaces the camera permission system
+   - D. It automatically improves all model accuracy
 
-4. **Where to place .tflite model?**
-   A) res/  B) assets/  C) database/
+4. **Where should `model.tflite` usually be stored in an Android app?**
+   - A. `res/layout/`
+   - B. `res/drawable/`
+   - C. `assets/`
+   - D. `database/`
 
-   Answer: _____
+5. **What is the purpose of `labels.txt`?**
+   - A. To store Gradle dependencies
+   - B. To map output indices to class names
+   - C. To record internet permissions
+   - D. To benchmark GPU speed
 
-5. **What does Interpreter.run() do?**
+6. **Why must label order match training order?**
+   - A. Because Android requires alphabetical labels
+   - B. Because wrong order maps correct output indices to wrong disease names
+   - C. Because TensorFlow Lite sorts labels internally
+   - D. Because labels change image resolution
 
-   Answer: _______________________________________________
+7. **Which normalization formula maps pixel values to `[0, 1]`?**
+   - A. `pixel * 255.0f`
+   - B. `pixel / 255.0f`
+   - C. `(pixel / 127.5f) - 1.0f`
+   - D. `(pixel - 0.485f) / 0.229f`
 
-6. **Why normalize pixel values?**
+8. **Which normalization formula commonly maps pixel values to `[-1, 1]`?**
+   - A. `pixel / 255.0f`
+   - B. `(pixel / 127.5f) - 1.0f`
+   - C. `pixel + 1.0f`
+   - D. `pixel * 0.5f`
 
-   Answer (one sentence): _______________________________________________
+9. **What is a TensorFlow Lite delegate?**
+   - A. A Java interface for RecyclerView
+   - B. A hardware-optimized execution path such as GPU or NNAPI
+   - C. A text file containing model labels
+   - D. A Gradle plugin for Android Studio
 
-7. **Typical TFLite inference time?**
-   A) 1-5ms  B) 50-200ms  C) 1000-2000ms
+10. **What is dynamic range quantization?**
+    - A. A way to rotate bitmaps
+    - B. A way to reduce model size by quantizing mainly the weights
+    - C. A method for improving network speed
+    - D. A replacement for labels.txt
 
-   Answer: _____
+11. **Why does full integer quantization need a representative dataset?**
+    - A. To calibrate activation ranges during conversion
+    - B. To display labels in the UI
+    - C. To enable camera permission
+    - D. To create XML layouts
 
-8. **True/False: TFLite models are less accurate than full models.**
+12. **What does a confidence threshold help with?**
+    - A. It improves Gradle sync speed
+    - B. It prevents the app from showing a strong label when the model is unsure
+    - C. It removes the need for testing
+    - D. It forces the model to be more accurate
 
-   Answer: _____
+13. **Why should TensorFlow Lite inference not run on the main thread?**
+    - A. Because Java does not allow loops on the main thread
+    - B. Because it can block the UI and harm user experience
+    - C. Because labels cannot be loaded on the main thread
+    - D. Because the camera API forbids it
 
-9. **What is quantization?**
+14. **Which statement about TensorFlow Lite `Interpreter` thread safety is correct?**
+    - A. It is fully thread-safe in all cases
+    - B. It should not be used by multiple threads at the same time without protection
+    - C. It can only run on the UI thread
+    - D. It automatically synchronizes all calls
 
-   Answer: _______________________________________________
+15. **In a hybrid LeafGuard architecture, when is cloud fallback especially useful?**
+    - A. When the offline confidence is low or the model is unavailable
+    - B. Only when airplane mode is on
+    - C. Only when GPU delegate is active
+    - D. Only for loading labels
 
-10. **Cloud vs offline - which is faster for small models?**
+---
 
-    Answer: _____
+## Section B - Practical Questions
 
-## Practical
+16. **Fill in the dependency:**
 
-11. **Add TFLite dependency:**
-    ```gradle
-    implementation 'org.tensorflow:tensorflow-_____:2.12.0'
-    ```
+```gradle
+implementation 'org.tensorflow:______________:2.12.0'
+```
 
-    Answer: _____
+17. **Which Java class runs a TensorFlow Lite model?**
 
-12. **Complete:**
-    ```java
-    Interpreter tflite = new Interpreter(___________());
-    ```
+```java
+______________ interpreter = new Interpreter(modelBuffer);
+```
 
-    Answer: _____
+18. **Complete the model loading call:**
 
-13. **What's wrong with this preprocessing?**
-    ```java
-    input[0][y][x][0] = (pixel >> 16) & 0xFF;  // Missing what?
-    ```
+```java
+AssetFileDescriptor fileDescriptor = assetManager.__________("model.tflite");
+```
 
-    Answer: _______________________________________________
+19. **Complete the preprocessing formula for `[0, 1]` normalization:**
 
-14. **How to run inference?**
-    ```java
-    tflite._____(input, output);
-    ```
+```java
+input[0][y][x][0] = ((pixel >> 16) & 0xFF) / __________;
+```
 
-    Answer: _____
+20. **Complete the inference call:**
 
-15. **Find predicted class:**
-    ```java
-    int predicted = _________(output[0]);
-    ```
+```java
+interpreter.__________(input, output);
+```
 
-    Answer: _____
+21. **Which helper method is commonly used to find the highest-probability class?**
+   - A. `sort()`
+   - B. `argmax()`
+   - C. `substring()`
+   - D. `inflate()`
 
-16. **True/False: Input must be exactly model's expected shape.**
+22. **Write the Java setting that enables NNAPI:**
 
-    Answer: _____
+```java
+Interpreter.Options options = new Interpreter.Options();
+options.___________________(true);
+```
 
-17. **Measure latency:**
-    ```java
-    long start = System.currentTimeMillis();
-    // inference
-    long latency = System.currentTimeMillis() - _____;
-    ```
+23. **Which Gradle dependency adds GPU delegate support?**
+   - A. `org.tensorflow:tensorflow-lite-gpu:2.12.0`
+   - B. `org.tensorflow:tensorflow-lite-ui:2.12.0`
+   - C. `org.tensorflow:tensorflow-gson:2.12.0`
+   - D. `org.tensorflow:tensorflow-lite-room:2.12.0`
 
-    Answer: _____
+24. **Fill in the confidence threshold logic:**
 
-18. **Test offline mode:**
+```java
+if (confidence < 0.5f) {
+    resultTextView.setText("______________");
+}
+```
 
-    Answer (one action): _______________________________________________
+25. **Which Java utility is the recommended Week 09 choice for background inference in a Java project?**
+   - A. `AsyncTask`
+   - B. `ExecutorService`
+   - C. `StrictMode`
+   - D. `ContentResolver`
 
-19. **What if model file missing?**
+26. **Complete the latency measurement:**
 
-    Answer: _______________________________________________
+```java
+long start = System.currentTimeMillis();
+// inference
+long latency = System.currentTimeMillis() - __________;
+```
 
-20. **Labels.txt format:**
+27. **What is wrong with this code if the model was trained with `[-1, 1]` normalization?**
 
-    Answer: _______________________________________________
+```java
+input[0][y][x][0] = ((pixel >> 16) & 0xFF) / 255.0f;
+```
+
+28. **Why is this code risky?**
+
+```java
+new Thread(() -> interpreter.run(input, output)).start();
+new Thread(() -> interpreter.run(input, output)).start();
+```
+
+29. **What should you do if `model.tflite` is missing from assets at runtime?**
+
+30. **Why is benchmarking over 100 runs better than measuring only one inference?**
 
 ---
 
 ## Answers
 
-1. B  2. .tflite  3. F  4. B  5. Runs inference on input  
-6. Match training preprocessing  7. B  8. T (slightly)  
-9. Reducing precision to int8  10. Offline (no network latency)  
-11. lite  12. loadModelFile  13. / 255.0f normalization  
-14. run  15. argmax  16. T  17. start  
-18. Enable airplane mode  19. IOException/FileNotFoundException  
-20. One label per line
+1. **B** - TensorFlow Lite is designed for on-device machine learning inference.
+2. **B** - Training learns weights; inference uses those learned weights.
+3. **B** - It allows plant disease prediction without internet.
+4. **C** - `assets/`.
+5. **B** - It maps output indices to class names.
+6. **B** - Wrong order means wrong labels even if model scores are correct.
+7. **B** - `pixel / 255.0f`.
+8. **B** - `(pixel / 127.5f) - 1.0f`.
+9. **B** - A delegate is a hardware-optimized execution path.
+10. **B** - Dynamic range quantization mainly quantizes weights.
+11. **A** - It calibrates activation ranges.
+12. **B** - It helps avoid misleading low-confidence predictions.
+13. **B** - Inference on the main thread can block the UI.
+14. **B** - `Interpreter` is not safe for simultaneous unsynchronized multi-threaded use.
+15. **A** - Cloud fallback is useful when offline confidence is low or offline mode fails.
+16. **tensorflow-lite**
+17. **Interpreter**
+18. **openFd**
+19. **255.0f**
+20. **run**
+21. **B** - `argmax()`.
+22. **setUseNNAPI**
+23. **A** - `org.tensorflow:tensorflow-lite-gpu:2.12.0`
+24. **Uncertain - try again**
+25. **B** - `ExecutorService`
+26. **start**
+27. The normalization is wrong for that model. The code produces `[0, 1]` input instead of `[-1, 1]`, so predictions may become unreliable.
+28. It is risky because `Interpreter` is not thread-safe. Running inference simultaneously on the same interpreter can cause unpredictable behavior or errors.
+29. Catch the loading exception, log the error, and show a clear user/developer message such as "Model file not found in assets" instead of crashing silently.
+30. Repeated benchmarking reduces warm-up and random variation effects, producing a more reliable average latency value.
 
 ---
 
-**Score:** _____ / 20
+## Scoring Guide
 
-**Pass:** ≥16
+- **27-30:** Excellent - ready for viva discussion
+- **23-26:** Good - revise delegates, preprocessing, and confidence handling
+- **18-22:** Fair - review model sourcing, normalization, and threading
+- **Below 18:** Re-read learning notes and redo the exercises

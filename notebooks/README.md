@@ -78,73 +78,77 @@ See [setup-guide.md](setup-guide.md) for detailed installation instructions.
 
 ## 📚 Week-by-Week Notebooks
 
+> **ℹ️ Status Note:** Interactive Jupyter `.ipynb` notebooks have not been created yet. All learning content is available in the detailed `learning-notes.md`, `exercises.md`, and `build-task.md` files in each week's roadmap folder — those files are the primary learning resource and are fully written.
+>
+> **Recommended alternative for interactive Python experiments:** Use [Google Colab](https://colab.research.google.com/) — free, browser-based, no installation needed. The `model/model-acquisition-guide.md` includes a complete Colab notebook setup for training your TFLite model.
+
 ### Foundation Phase (Weeks 1-3)
 
 #### Week 01: Project Understanding
-- 📓 Understanding mobile app architecture *(Coming Soon)*
-- 📓 Android vs iOS platform comparison *(Coming Soon)*
-- 📓 CSE 2206 syllabus mapping interactive guide *(Coming Soon)*
+- 📓 Understanding mobile app architecture *(Not yet available — see [roadmap/week-01](../roadmap/week-01-project-understanding/))*
+- 📓 Android vs iOS platform comparison *(Not yet available)*
+- 📓 CSE 2206 syllabus mapping interactive guide *(Not yet available)*
 
 #### Week 02: Android Basics & UI
-- 📓 Android Activity lifecycle interactive visualization *(Coming Soon)*
-- 📓 XML layouts deep dive with live preview *(Coming Soon)*
-- 📓 Material Design principles workshop *(Coming Soon)*
+- 📓 Android Activity lifecycle interactive visualization *(Not yet available — see [roadmap/week-02](../roadmap/week-02-android-basics-ui/))*
+- 📓 XML layouts deep dive with live preview *(Not yet available)*
+- 📓 Material Design principles workshop *(Not yet available)*
 
 #### Week 03: Camera & Gallery
-- 📓 Android Intents explained with examples *(Coming Soon)*
-- 📓 Runtime permissions system interactive guide *(Coming Soon)*
-- 📓 Image processing and Bitmap manipulation *(Coming Soon)*
+- 📓 Android Intents explained with examples *(Not yet available — see [roadmap/week-03](../roadmap/week-03-camera-gallery/))*
+- 📓 Runtime permissions system interactive guide *(Not yet available)*
+- 📓 Image processing and Bitmap manipulation *(Not yet available)*
 
 ### Backend Integration (Weeks 4-6)
 
 #### Week 04: FastAPI Backend
-- 📓 REST API fundamentals *(Coming Soon)*
-- 📓 Building FastAPI endpoints step-by-step *(Coming Soon)*
-- 📓 Multipart file upload handling *(Coming Soon)*
+- 📓 REST API fundamentals *(Not yet available — see [roadmap/week-04](../roadmap/week-04-fastapi-backend/))*
+- 📓 Building FastAPI endpoints step-by-step *(Not yet available — see [backend-api/main.py](../backend-api/main.py) for working starter code)*
+- 📓 Multipart file upload handling *(Not yet available)*
 
 #### Week 05: Android Networking
-- 📓 Retrofit architecture explained *(Coming Soon)*
-- 📓 JSON parsing with Gson *(Coming Soon)*
-- 📓 Async operations and callbacks *(Coming Soon)*
+- 📓 Retrofit architecture explained *(Not yet available — see [roadmap/week-05](../roadmap/week-05-android-networking/))*
+- 📓 JSON parsing with Gson *(Not yet available)*
+- 📓 Async operations and callbacks *(Not yet available)*
 
 #### Week 06: Cloud ML Model
-- 📓 CNN model architecture visualization *(Coming Soon)*
-- 📓 Image preprocessing pipeline *(Coming Soon)*
-- 📓 Model inference and prediction handling *(Coming Soon)*
+- 📓 CNN model architecture visualization *(Not yet available — see [roadmap/week-06](../roadmap/week-06-cloud-ml-model/))*
+- 📓 Image preprocessing pipeline *(Not yet available — see [model/model-acquisition-guide.md](../model/model-acquisition-guide.md))*
+- 📓 Model inference and prediction handling *(Not yet available)*
 
 ### Data & Offline (Weeks 7-9)
 
 #### Week 07: Room Database
-- 📓 Room architecture components *(Coming Soon)*
-- 📓 SQL basics for mobile developers *(Coming Soon)*
-- 📓 CRUD operations with Room *(Coming Soon)*
+- 📓 Room architecture components *(Not yet available — see [roadmap/week-07](../roadmap/week-07-room-sqlite-history/))*
+- 📓 SQL basics for mobile developers *(Not yet available)*
+- 📓 CRUD operations with Room *(Not yet available — see [solutions/week-07](../solutions/week-07/room-database-solution.md))*
 
 #### Week 08: XML Parsing
-- 📓 XML structure and parsing methods *(Coming Soon)*
-- 📓 XmlPullParser step-by-step guide *(Coming Soon)*
-- 📓 Data mapping and transformation *(Coming Soon)*
+- 📓 XML structure and parsing methods *(Not yet available — see [roadmap/week-08](../roadmap/week-08-xml-disease-library/))*
+- 📓 XmlPullParser step-by-step guide *(Not yet available)*
+- 📓 Data mapping and transformation *(Not yet available)*
 
 #### Week 09: TensorFlow Lite
-- 📓 TFLite model conversion process *(Coming Soon)*
-- 📓 On-device inference optimization *(Coming Soon)*
-- 📓 Cloud vs offline performance comparison *(Coming Soon)*
+- 📓 TFLite model conversion process *(Not yet available — see [roadmap/week-09](../roadmap/week-09-tensorflow-lite-offline-ai/))*
+- 📓 On-device inference optimization *(Not yet available — see [solutions/week-09](../solutions/week-09/tflite-classifier-solution.md))*
+- 📓 Cloud vs offline performance comparison *(Not yet available)*
 
 ### Polish & Completion (Weeks 10-12)
 
 #### Week 10: Notifications & Share
-- 📓 Android notification system explained *(Coming Soon)*
-- 📓 Intent sharing deep dive *(Coming Soon)*
-- 📓 Location services integration *(Coming Soon)*
+- 📓 Android notification system explained *(Not yet available — see [roadmap/week-10](../roadmap/week-10-notifications-share-location/))*
+- 📓 Intent sharing deep dive *(Not yet available)*
+- 📓 Location services integration *(Not yet available)*
 
 #### Week 11: Testing & Debugging
-- 📓 Android debugging techniques *(Coming Soon)*
-- 📓 Test case design patterns *(Coming Soon)*
-- 📓 Performance profiling guide *(Coming Soon)*
+- 📓 Android debugging techniques *(Not yet available — see [roadmap/week-11](../roadmap/week-11-testing-debugging-performance/))*
+- 📓 Test case design patterns *(Not yet available)*
+- 📓 Performance profiling guide *(Not yet available)*
 
 #### Week 12: Final Submission
-- 📓 APK building and signing *(Coming Soon)*
-- 📓 Documentation best practices *(Coming Soon)*
-- 📓 Viva preparation interactive guide *(Coming Soon)*
+- 📓 APK building and signing *(Not yet available — see [roadmap/week-12](../roadmap/week-12-final-submission/))*
+- 📓 Documentation best practices *(Not yet available)*
+- 📓 Viva preparation interactive guide *(Not yet available)*
 
 ## 🎨 Notebook Types
 
