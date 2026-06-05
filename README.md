@@ -349,9 +349,9 @@ Throughout this project, you'll build evidence for teacher demonstrations:
 
 ## Important Notes
 
-### This is NOT a Finished App
+### This is a Functional Starter, Not a Final Diagnostic Product
 
-This repository is a **learning system**, not a completed application. You must:
+This repository now includes connected starter flows for Android UI, cloud prediction, offline prediction, XML library, and history. It remains a **learning system**: replace starter/mock assets with trained models and real evidence before final submission. You must:
 
 - Walk every step yourself
 - Understand before implementing
@@ -363,11 +363,11 @@ This repository is a **learning system**, not a completed application. You must:
 
 After cloning this repository, you must:
 
-1. Create Android project in `android-app/` folder (Week 02)
-2. Create Python FastAPI project in `backend-api/` folder (Week 04)
-3. Find or train a plant disease ML model (Week 06)
-4. Convert model to TensorFlow Lite format (Week 09)
-5. Collect real leaf disease images for `sample-images/` (Week 06)
+1. Review and run the starter Android project in `android-app/` (Week 02)
+2. Review and run the starter Python FastAPI project in `backend-api/` (Week 04)
+3. Replace the backend mock/fallback with a trained plant disease ML model (Week 06)
+4. Replace the starter TensorFlow Lite placeholder with a converted trained model (Week 09)
+5. Supplement `sample-images/` with real licensed leaf disease images (Week 06)
 6. Fill in `SENIOR_REPO_ANALYSIS.md` table (Week 01)
 7. Take weekly screenshots and save in `docs/evidence/`
 

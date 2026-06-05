@@ -249,7 +249,7 @@ bb57b80 - Weeks 09-12: Complete all remaining roadmap files (28 files total)
 
 ## 11. OVERALL ASSESSMENT
 
-### Completion Score: 98/100
+### Completion Score: 92/100 documentation, 85/100 starter functionality
 
 **Strengths:**
 - ✅ All 84 weekly files present and complete
@@ -272,7 +272,9 @@ bb57b80 - Weeks 09-12: Complete all remaining roadmap files (28 files total)
 ## 12. NEXT STEPS REQUIRED
 
 ### Immediate (High Priority)
-None - repository is production-ready for student use
+1. Replace the bundled starter `android-app/app/src/main/assets/model.tflite` placeholder with a trained TensorFlow Lite model before claiming real offline diagnostic accuracy.
+2. Add a trained backend model at `backend-api/models/leafguard_model.keras` or set `USE_MOCK=true` explicitly when demonstrating mock mode.
+3. Supplement the committed synthetic sample images with real licensed field/dataset images before final accuracy testing.
 
 ### Soon (Medium Priority)
 1. Expand docs/viva-questions.md to include detailed answers for Q21-Q75
@@ -302,20 +304,19 @@ None - repository is production-ready for student use
 
 ## 13. VALIDATION CONCLUSION
 
-**STATUS: ✅ REPOSITORY IS COMPLETE AND READY FOR USE**
+**STATUS: ⚠️ FUNCTIONAL STARTER READY; REAL MODEL ASSETS STILL REQUIRED FOR FINAL SUBMISSION**
 
-The LeafGuard AI 12-week roadmap repository has been successfully initialized with:
+The LeafGuard AI 12-week roadmap repository now includes:
 - Complete 12-week learning structure (84 files)
 - Comprehensive documentation (150+ files)
-- Zero placeholder content
-- Full CSE 2206 syllabus mapping
-- Viva preparation materials
-- Evidence collection structure
-- GitHub automation templates
+- Android cloud detection wired to Retrofit/FastAPI
+- Android offline detection wired to the TensorFlow Lite classifier with a documented starter fallback
+- Disease Library and Settings reachable from the main app flow
+- History list, detail, share, and delete flows connected through Room DAO methods
+- Bundled `diseases.xml`, `labels.txt`, starter `model.tflite` placeholder, and synthetic sample images
+- Full CSE 2206 syllabus mapping, viva preparation materials, and evidence collection structure
 
-**Minor improvements** (expanding viva questions, creating GitHub metadata) are recommended but not blockers.
-
-**The repository can be used immediately by students** to begin their 12-week LeafGuard AI development journey.
+The repository can be used immediately for end-to-end learning and integration testing. For final diagnostic claims, students must replace starter/mock ML assets with trained models and real licensed test images.
 
 ---
 

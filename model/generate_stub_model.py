@@ -103,7 +103,7 @@ def build_and_convert():
 
     # Write outputs
     os.makedirs(ASSETS_DIR, exist_ok=True)
-    tflite_path = os.path.join(ASSETS_DIR, "plant_disease_model.tflite")
+    tflite_path = os.path.join(ASSETS_DIR, "model.tflite")
     labels_path = os.path.join(ASSETS_DIR, "labels.txt")
 
     with open(tflite_path, "wb") as f:
@@ -130,7 +130,7 @@ def verify_model():
         print("Skipping verification (numpy/tensorflow not available).")
         return
 
-    tflite_path = os.path.join(ASSETS_DIR, "plant_disease_model.tflite")
+    tflite_path = os.path.join(ASSETS_DIR, "model.tflite")
     if not os.path.exists(tflite_path):
         return
 
