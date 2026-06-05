@@ -441,4 +441,25 @@ Common failures and fixes
 
 ## Next Step
 
-- After this notebook, continue to **Week 04** and connect today's work to the next subsystem.
+- After this notebook, continue to **[Week 04: FastAPI Backend](../../roadmap/week-04-fastapi-backend/README.md)** and connect today's work to the next subsystem.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+### Related Roadmap Materials
+- 📖 [Week 03 README](../../roadmap/week-03-camera-gallery/README.md) — Week overview & objectives
+- 📝 [Week 03 Exercises](../../roadmap/week-03-camera-gallery/exercises.md) — Practice problems
+- 💡 [Week 03 Solutions](../../solutions/week-03/README.md) — Reference solutions
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+### Week Progression
+
+| ← Previous | 🏠 | Next → |
+|:-----------|:--:|-------:|
+| [⬅ Week 02 Notebooks](../week-02/README.md) | [Notebooks Index](../README.md) | [Week 04 Notebooks ➡](../week-04/README.md) |
+
+---

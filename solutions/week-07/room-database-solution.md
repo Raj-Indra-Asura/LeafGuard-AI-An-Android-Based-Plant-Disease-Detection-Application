@@ -302,3 +302,17 @@ A working Room setup for LeafGuard AI needs exactly three core classes:
 3. `AppDatabase` singleton
 
 After that, students can insert records from `ResultActivity` and load them inside `HistoryActivity` to build a functional scan history feature.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+- 📝 [Back to Week 07 Exercises](../../roadmap/week-07-room-sqlite-history/exercises.md) — Try it yourself first
+- 📖 [Week 07 README](../../roadmap/week-07-room-sqlite-history/README.md) — Week overview
+- 💡 [Solutions Index for Week 07](README.md) — Other solutions this week
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+---

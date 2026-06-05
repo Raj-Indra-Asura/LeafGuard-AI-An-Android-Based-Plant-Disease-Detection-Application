@@ -343,3 +343,38 @@ Assert.
 - **24-26:** Good
 - **21-23:** Review weak areas
 - **Below 21:** Re-read the notes and retry
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 📚 Week 11 — Navigation
+
+### All Files In This Week (Complete In Order)
+
+| Step | File | Description |
+|------|------|-------------|
+| 1 | [README.md](README.md) | Week Overview & Objectives |
+| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
+| 3 | [exercises.md](exercises.md) | Practice Exercises |
+| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
+| 5 | [validation-checklist.md](validation-checklist.md) | Validation & Verification |
+| **6** | **quiz.md** ← *You are here* | **Knowledge Assessment Quiz** |
+| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
+
+---
+
+### Within-Week Navigation
+
+[← Validation & Verification](validation-checklist.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Knowledge Assessment Quiz** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Reflection & Consolidation →](reflection.md)
+
+---
+
+### Week Progression
+
+| ← Previous Week | 🏠 Home | Next Week → |
+|:----------------|:-------:|------------:|
+| [⬅ Week 10: Notifications, Share & Location](../week-10-notifications-share-location/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 12: Final Submission ➡](../week-12-final-submission/README.md) |
+
+---

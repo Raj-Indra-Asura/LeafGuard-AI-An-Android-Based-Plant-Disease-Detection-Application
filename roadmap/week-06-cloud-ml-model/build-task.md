@@ -477,3 +477,38 @@ After completing this build task:
 3. Begin Week 07: Room/SQLite database for scan history storage
 
 Week 06 establishes your app's core AI functionality. All future weeks build on this foundation by adding features around the prediction capability you've created.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 📚 Week 06 — Navigation
+
+### All Files In This Week (Complete In Order)
+
+| Step | File | Description |
+|------|------|-------------|
+| 1 | [README.md](README.md) | Week Overview & Objectives |
+| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
+| 3 | [exercises.md](exercises.md) | Practice Exercises |
+| **4** | **build-task.md** ← *You are here* | **Build Implementation Guide** |
+| 5 | [validation-checklist.md](validation-checklist.md) | Validation & Verification |
+| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
+| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
+
+---
+
+### Within-Week Navigation
+
+[← Practice Exercises](exercises.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Build Implementation Guide** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Validation & Verification →](validation-checklist.md)
+
+---
+
+### Week Progression
+
+| ← Previous Week | 🏠 Home | Next Week → |
+|:----------------|:-------:|------------:|
+| [⬅ Week 05: Android Networking](../week-05-android-networking/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 07: Room Database & History ➡](../week-07-room-sqlite-history/README.md) |
+
+---

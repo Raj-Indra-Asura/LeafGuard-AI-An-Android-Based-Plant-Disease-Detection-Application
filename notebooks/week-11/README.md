@@ -321,4 +321,25 @@ Notes: Network latency ~1.2 seconds on local server
 
 ## Next Step
 
-- Continue to **Week 12** when this week is stable and documented.
+- Continue to **[Week 12: Final Submission](../../roadmap/week-12-final-submission/README.md)** when this week is stable and documented.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+### Related Roadmap Materials
+- 📖 [Week 11 README](../../roadmap/week-11-testing-debugging-performance/README.md) — Week overview & objectives
+- 📝 [Week 11 Exercises](../../roadmap/week-11-testing-debugging-performance/exercises.md) — Practice problems
+- 💡 [Week 11 Solutions](../../solutions/week-11/README.md) — Reference solutions
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+### Week Progression
+
+| ← Previous | 🏠 | Next → |
+|:-----------|:--:|-------:|
+| [⬅ Week 10 Notebooks](../week-10/README.md) | [Notebooks Index](../README.md) | [Week 12 Notebooks ➡](../week-12/README.md) |
+
+---

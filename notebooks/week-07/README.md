@@ -390,4 +390,25 @@ public class HistoryActivity extends AppCompatActivity {
 
 ## Next Step
 
-- Continue to **Week 08** when this week is stable and documented.
+- Continue to **[Week 08: XML Disease Library](../../roadmap/week-08-xml-disease-library/README.md)** when this week is stable and documented.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+### Related Roadmap Materials
+- 📖 [Week 07 README](../../roadmap/week-07-room-sqlite-history/README.md) — Week overview & objectives
+- 📝 [Week 07 Exercises](../../roadmap/week-07-room-sqlite-history/exercises.md) — Practice problems
+- 💡 [Week 07 Solutions](../../solutions/week-07/README.md) — Reference solutions
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+### Week Progression
+
+| ← Previous | 🏠 | Next → |
+|:-----------|:--:|-------:|
+| [⬅ Week 06 Notebooks](../week-06/README.md) | [Notebooks Index](../README.md) | [Week 08 Notebooks ➡](../week-08/README.md) |
+
+---

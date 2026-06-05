@@ -345,4 +345,25 @@ if confidence < CONFIDENCE_THRESHOLD:
 
 ## Next Step
 
-- After this notebook, continue to **Week 07** and connect today's work to the next subsystem.
+- After this notebook, continue to **[Week 07: Room Database & History](../../roadmap/week-07-room-sqlite-history/README.md)** and connect today's work to the next subsystem.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+### Related Roadmap Materials
+- 📖 [Week 06 README](../../roadmap/week-06-cloud-ml-model/README.md) — Week overview & objectives
+- 📝 [Week 06 Exercises](../../roadmap/week-06-cloud-ml-model/exercises.md) — Practice problems
+- 💡 [Week 06 Solutions](../../solutions/week-06/README.md) — Reference solutions
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+### Week Progression
+
+| ← Previous | 🏠 | Next → |
+|:-----------|:--:|-------:|
+| [⬅ Week 05 Notebooks](../week-05/README.md) | [Notebooks Index](../README.md) | [Week 07 Notebooks ➡](../week-07/README.md) |
+
+---

@@ -470,3 +470,17 @@ Location:
 - [x] last known location helper included
 - [x] `ResultActivity` integration included
 - [x] manifest updates included
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+- 📝 [Back to Week 10 Exercises](../../roadmap/week-10-notifications-share-location/exercises.md) — Try it yourself first
+- 📖 [Week 10 README](../../roadmap/week-10-notifications-share-location/README.md) — Week overview
+- 💡 [Solutions Index for Week 10](README.md) — Other solutions this week
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+---

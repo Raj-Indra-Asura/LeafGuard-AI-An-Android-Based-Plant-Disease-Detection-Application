@@ -494,4 +494,25 @@ public class MainActivity extends AppCompatActivity {
 
 ## Next Step
 
-- After this notebook, continue to **Week 02** and connect today's work to the next subsystem.
+- After this notebook, continue to **[Week 02: Android Basics & UI](../../roadmap/week-02-android-basics-ui/README.md)** and connect today's work to the next subsystem.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+### Related Roadmap Materials
+- 📖 [Week 01 README](../../roadmap/week-01-project-understanding/README.md) — Week overview & objectives
+- 📝 [Week 01 Exercises](../../roadmap/week-01-project-understanding/exercises.md) — Practice problems
+- 💡 [Week 01 Solutions](../../solutions/week-01/README.md) — Reference solutions
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+### Week Progression
+
+| ← Previous | 🏠 | Next → |
+|:-----------|:--:|-------:|
+| *(First week)* | [Notebooks Index](../README.md) | [Week 02 Notebooks ➡](../week-02/README.md) |
+
+---

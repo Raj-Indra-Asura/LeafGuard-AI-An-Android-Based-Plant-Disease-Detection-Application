@@ -455,4 +455,25 @@ public class MainActivity extends AppCompatActivity {
 
 ## Next Step
 
-- After this notebook, continue to **Week 03** and connect today's work to the next subsystem.
+- After this notebook, continue to **[Week 03: Camera & Gallery](../../roadmap/week-03-camera-gallery/README.md)** and connect today's work to the next subsystem.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+### Related Roadmap Materials
+- 📖 [Week 02 README](../../roadmap/week-02-android-basics-ui/README.md) — Week overview & objectives
+- 📝 [Week 02 Exercises](../../roadmap/week-02-android-basics-ui/exercises.md) — Practice problems
+- 💡 [Week 02 Solutions](../../solutions/week-02/README.md) — Reference solutions
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+### Week Progression
+
+| ← Previous | 🏠 | Next → |
+|:-----------|:--:|-------:|
+| [⬅ Week 01 Notebooks](../week-01/README.md) | [Notebooks Index](../README.md) | [Week 03 Notebooks ➡](../week-03/README.md) |
+
+---

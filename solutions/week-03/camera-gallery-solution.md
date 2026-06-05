@@ -532,3 +532,17 @@ public class ScanActivity extends AppCompatActivity {
 - [x] image preview displayed
 - [x] state preserved on rotation
 - [x] FileProvider configuration included
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+- 📝 [Back to Week 03 Exercises](../../roadmap/week-03-camera-gallery/exercises.md) — Try it yourself first
+- 📖 [Week 03 README](../../roadmap/week-03-camera-gallery/README.md) — Week overview
+- 💡 [Solutions Index for Week 03](README.md) — Other solutions this week
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+---

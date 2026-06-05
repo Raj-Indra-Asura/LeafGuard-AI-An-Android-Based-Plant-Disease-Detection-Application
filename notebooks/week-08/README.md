@@ -359,4 +359,25 @@ if (info != null) {
 
 ## Next Step
 
-- Continue to **Week 09** when this week is stable and documented.
+- Continue to **[Week 09: TensorFlow Lite Offline AI](../../roadmap/week-09-tensorflow-lite-offline-ai/README.md)** when this week is stable and documented.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+### Related Roadmap Materials
+- 📖 [Week 08 README](../../roadmap/week-08-xml-disease-library/README.md) — Week overview & objectives
+- 📝 [Week 08 Exercises](../../roadmap/week-08-xml-disease-library/exercises.md) — Practice problems
+- 💡 [Week 08 Solutions](../../solutions/week-08/README.md) — Reference solutions
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+### Week Progression
+
+| ← Previous | 🏠 | Next → |
+|:-----------|:--:|-------:|
+| [⬅ Week 07 Notebooks](../week-07/README.md) | [Notebooks Index](../README.md) | [Week 09 Notebooks ➡](../week-09/README.md) |
+
+---

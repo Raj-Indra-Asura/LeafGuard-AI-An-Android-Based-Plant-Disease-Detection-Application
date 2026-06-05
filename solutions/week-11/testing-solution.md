@@ -389,3 +389,17 @@ androidTestImplementation 'androidx.room:room-testing:2.6.1'
 - [x] XML parser tests included
 - [x] Room in-memory DAO test included
 - [x] 15-case report table included
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+- 📝 [Back to Week 11 Exercises](../../roadmap/week-11-testing-debugging-performance/exercises.md) — Try it yourself first
+- 📖 [Week 11 README](../../roadmap/week-11-testing-debugging-performance/README.md) — Week overview
+- 💡 [Solutions Index for Week 11](README.md) — Other solutions this week
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+---

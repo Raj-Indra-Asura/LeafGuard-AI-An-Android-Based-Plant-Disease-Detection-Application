@@ -576,3 +576,17 @@ curl -X POST http://127.0.0.1:8000/predict   -H "accept: application/json"   -F 
 - [x] 38 PlantVillage classes included
 - [x] `labels.txt` content included
 - [x] curl/Postman tests included
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+- 📝 [Back to Week 06 Exercises](../../roadmap/week-06-cloud-ml-model/exercises.md) — Try it yourself first
+- 📖 [Week 06 README](../../roadmap/week-06-cloud-ml-model/README.md) — Week overview
+- 💡 [Solutions Index for Week 06](README.md) — Other solutions this week
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+---

@@ -327,4 +327,25 @@ if (isInternetAvailable()) {
 
 ## Next Step
 
-- Continue to **Week 10** when this week is stable and documented.
+- Continue to **[Week 10: Notifications, Share & Location](../../roadmap/week-10-notifications-share-location/README.md)** when this week is stable and documented.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+### Related Roadmap Materials
+- 📖 [Week 09 README](../../roadmap/week-09-tensorflow-lite-offline-ai/README.md) — Week overview & objectives
+- 📝 [Week 09 Exercises](../../roadmap/week-09-tensorflow-lite-offline-ai/exercises.md) — Practice problems
+- 💡 [Week 09 Solutions](../../solutions/week-09/README.md) — Reference solutions
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+### Week Progression
+
+| ← Previous | 🏠 | Next → |
+|:-----------|:--:|-------:|
+| [⬅ Week 08 Notebooks](../week-08/README.md) | [Notebooks Index](../README.md) | [Week 10 Notebooks ➡](../week-10/README.md) |
+
+---

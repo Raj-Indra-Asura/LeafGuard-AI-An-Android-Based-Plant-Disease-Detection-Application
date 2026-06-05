@@ -385,4 +385,25 @@ python-dotenv==1.0.0
 
 ## Next Step
 
-- After this notebook, continue to **Week 05** and connect today's work to the next subsystem.
+- After this notebook, continue to **[Week 05: Android Networking](../../roadmap/week-05-android-networking/README.md)** and connect today's work to the next subsystem.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+### Related Roadmap Materials
+- 📖 [Week 04 README](../../roadmap/week-04-fastapi-backend/README.md) — Week overview & objectives
+- 📝 [Week 04 Exercises](../../roadmap/week-04-fastapi-backend/exercises.md) — Practice problems
+- 💡 [Week 04 Solutions](../../solutions/week-04/README.md) — Reference solutions
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+### Week Progression
+
+| ← Previous | 🏠 | Next → |
+|:-----------|:--:|-------:|
+| [⬅ Week 03 Notebooks](../week-03/README.md) | [Notebooks Index](../README.md) | [Week 05 Notebooks ➡](../week-05/README.md) |
+
+---

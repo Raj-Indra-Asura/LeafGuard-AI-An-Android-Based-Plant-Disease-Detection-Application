@@ -569,3 +569,17 @@ Call it after `readIntentExtras()` and before `renderResult()`.
 - [x] RecyclerView adapter included
 - [x] `DiseaseLibraryActivity.java` included
 - [x] `ResultActivity` integration included
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+- 📝 [Back to Week 08 Exercises](../../roadmap/week-08-xml-disease-library/exercises.md) — Try it yourself first
+- 📖 [Week 08 README](../../roadmap/week-08-xml-disease-library/README.md) — Week overview
+- 💡 [Solutions Index for Week 08](README.md) — Other solutions this week
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+---

@@ -261,3 +261,17 @@ Without `try/except`, broken files can crash the endpoint instead of returning a
 
 ## Next Improvement
 After Week 04, replace `run_prediction()` with a real TensorFlow or Keras model loaded from disk, then connect this endpoint to the Android app using Retrofit in Week 05.
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+- 📝 [Back to Week 04 Exercises](../../roadmap/week-04-fastapi-backend/exercises.md) — Try it yourself first
+- 📖 [Week 04 README](../../roadmap/week-04-fastapi-backend/README.md) — Week overview
+- 💡 [Solutions Index for Week 04](README.md) — Other solutions this week
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+---
