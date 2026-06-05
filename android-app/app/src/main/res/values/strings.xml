@@ -42,4 +42,24 @@
     <string name="placeholder_prevention">Prevention details were not supplied.</string>
     <string name="notification_channel_name">Leaf scan reminders</string>
     <string name="notification_channel_description">Reminds students to capture fresh leaf scans and review plant health.</string>
+    <!-- Disease Library -->
+    <string name="disease_library_screen_title">Disease Library</string>
+    <string name="disease_library_empty_state">No diseases loaded. Add assets/diseases.xml to populate this library.</string>
+    <!-- History Detail -->
+    <string name="history_detail_screen_title">Scan Detail</string>
+    <string name="detail_delete_button">Delete This Record</string>
+    <string name="detail_deleted_message">Record deleted from history.</string>
+    <string name="detail_invalid_id_error">Could not open scan record.</string>
+    <string name="detail_record_not_found">Scan record no longer exists.</string>
+    <!-- Settings -->
+    <string name="settings_screen_title">Settings</string>
+    <string name="settings_backend_section">Backend Server</string>
+    <string name="settings_backend_url_hint">Backend URL</string>
+    <string name="settings_backend_url_hint_note">Use http://10.0.2.2:8000 for an emulator pointing to your local machine. Change to your server IP for a real device.</string>
+    <string name="settings_confidence_section">Confidence Threshold</string>
+    <string name="settings_confidence_value_format">%1$d%%</string>
+    <string name="settings_confidence_hint_note">Predictions with confidence below this threshold will be shown with a low-confidence warning.</string>
+    <string name="settings_about_section">About</string>
+    <string name="settings_version_format">Version %1$s</string>
+    <string name="settings_reset_button">Reset to Defaults</string>
 </resources>
