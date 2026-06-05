@@ -632,7 +632,374 @@ You're not becoming a data scientist this week - you're learning to integrate AI
 
 ---
 
-## Appendix A: All 38 PlantVillage Disease Classes
+## Appendix A: CNN Architecture Theory
+
+Understanding *why* convolutional neural networks work helps you diagnose model problems, choose the right architecture, and explain your project in viva questions.
+
+### What is a Convolutional Neural Network?
+
+A **Convolutional Neural Network (CNN)** is a deep learning architecture specifically designed to process grid-structured data (images). It learns to detect features hierarchically — from simple edges in early layers to complex disease patterns in deeper layers.
+
+**Layer-by-layer progression for a leaf disease image:**
+
+```
+Input (224×224×3 pixels)
+        │
+        ▼
+Convolutional Layer 1 — learns edges, colour gradients
+  [Feature maps: 112×112×32]
+        │
+        ▼
+Pooling Layer 1 — reduces spatial size, keeps strong features
+  [Feature maps: 56×56×32]
+        │
+        ▼
+Convolutional Layer 2 — learns textures, simple shapes
+  [Feature maps: 56×56×64]
+        │
+        ▼
+Convolutional Layer 3 — learns complex patterns (lesion shapes)
+  [Feature maps: 28×28×128]
+        │
+        ▼
+Global Average Pooling — converts feature maps to 1D vector
+  [1280 values]
+        │
+        ▼
+Dense Layer — combines all patterns for classification
+  [38 values → softmax → probabilities]
+```
+
+### The Convolution Operation
+
+A **convolution** applies a small filter (kernel) across the image, computing dot products at each position. This detects local patterns regardless of where they appear in the image.
+
+**Example: 3×3 edge detection kernel**
+
+```
+Input patch (3×3):      Kernel (3×3):       Output (single value):
+┌───────────────┐    ┌───────────────┐
+│  50  60  70   │    │  -1  -1  -1   │     = (50×-1) + (60×-1) + (70×-1)
+│  60  70  80   │  × │   0   0   0   │       + (60×0) + (70×0) + (80×0)
+│  70  80  90   │    │   1   1   1   │       + (70×1) + (80×1) + (90×1)
+└───────────────┘    └───────────────┘     = -180 + 0 + 240 = 60 (horizontal edge)
+```
+
+**Key property**: The same kernel is applied across the entire image (weight sharing). This means the model can detect the same disease spot pattern whether it appears in the top-left or bottom-right of the image.
+
+### Why CNNs Excel at Image Classification
+
+| Property | Benefit for Disease Detection |
+|----------|------------------------------|
+| **Local connectivity** | Learns local symptoms (spots, lesions) |
+| **Weight sharing** | Same pattern recognized anywhere in image |
+| **Hierarchical features** | Low-level (colour) → mid-level (texture) → high-level (disease shape) |
+| **Translation invariance** | Disease spot in corner == spot in center |
+
+### Pooling: Reducing Spatial Resolution
+
+**Max pooling** keeps the strongest activation in each region, reducing computation:
+
+```
+Feature map 4×4:          After 2×2 Max Pooling → 2×2:
+┌──────────────────┐      ┌──────────┐
+│  1   3   2   4   │      │  3   4   │   ← takes max of each 2×2 block
+│  5   6   1   2   │  →   │  8   5   │
+│  7   8   1   3   │      └──────────┘
+│  2   4   4   5   │
+└──────────────────┘
+```
+
+Pooling reduces overfitting and makes the model robust to small spatial shifts.
+
+### Transfer Learning: Standing on Giants' Shoulders
+
+**Transfer learning** means starting from a model pre-trained on millions of images (ImageNet) and fine-tuning it for your specific task (plant diseases).
+
+**Why it works**: The lower layers (edge detectors, texture detectors) are universal — they work for any image recognition task. Only the upper layers need to be retrained for the specific classes.
+
+**MobileNetV2 architecture** (used in LeafGuard AI):
+
+```
+Pre-trained on ImageNet (1.2M images, 1000 classes)
+┌─────────────────────────────────────────────────────┐
+│  Feature Extractor (frozen or partially trained)     │
+│  Layers 1–150: universal image features             │
+└─────────────────────────────────────────────────────┘
+                          │
+                          ▼  Fine-tune with PlantVillage data
+┌─────────────────────────────────────────────────────┐
+│  Custom Classifier Head                              │
+│  GlobalAveragePooling → Dense(256) → Dense(38)      │
+│  Trained from scratch on disease images             │
+└─────────────────────────────────────────────────────┘
+```
+
+**Training code pattern** (Python/TensorFlow):
+
+```python
+import tensorflow as tf
+
+# Load MobileNetV2 WITHOUT the top classifier
+base_model = tf.keras.applications.MobileNetV2(
+    input_shape=(224, 224, 3),
+    include_top=False,      # Remove ImageNet classification head
+    weights='imagenet'      # Pre-trained weights
+)
+
+# Freeze base model weights (don't train these)
+base_model.trainable = False
+
+# Add new classifier head for 38 disease classes
+inputs = tf.keras.Input(shape=(224, 224, 3))
+x = base_model(inputs, training=False)
+x = tf.keras.layers.GlobalAveragePooling2D()(x)
+x = tf.keras.layers.Dropout(0.2)(x)
+outputs = tf.keras.layers.Dense(38, activation='softmax')(x)
+
+model = tf.keras.Model(inputs, outputs)
+
+# Compile: Adam optimizer, categorical cross-entropy loss
+model.compile(
+    optimizer=tf.keras.optimizers.Adam(learning_rate=0.001),
+    loss='categorical_crossentropy',
+    metrics=['accuracy']
+)
+
+# Train on PlantVillage dataset
+model.fit(
+    train_dataset,
+    validation_data=val_dataset,
+    epochs=30,
+    callbacks=[
+        tf.keras.callbacks.EarlyStopping(patience=5, restore_best_weights=True),
+        tf.keras.callbacks.ModelCheckpoint('best_model.h5', save_best_only=True)
+    ]
+)
+```
+
+**Fine-tuning phase** (optional — can improve accuracy by ~2-5%):
+
+```python
+# Unfreeze last 30 layers of base model for fine-tuning
+base_model.trainable = True
+for layer in base_model.layers[:-30]:
+    layer.trainable = False
+
+# Re-compile with lower learning rate (important!)
+model.compile(
+    optimizer=tf.keras.optimizers.Adam(learning_rate=1e-5),
+    loss='categorical_crossentropy',
+    metrics=['accuracy']
+)
+
+model.fit(train_dataset, epochs=10)
+```
+
+### Training Process: Epochs, Batches, Optimizers
+
+**Epoch**: One complete pass through the entire training dataset.
+- After each epoch, training accuracy and validation accuracy are reported.
+- Typical training: 30–100 epochs.
+
+**Batch**: A subset of training samples processed together before updating weights.
+- Batch size 32 = model sees 32 images, computes average loss, then updates weights.
+- Smaller batches: noisier updates but better generalization.
+- Larger batches: smoother updates but may overfit.
+
+**Training loop visualization**:
+
+```
+Epoch 1/30:
+  Batch 1 (images 1-32):   forward pass → loss = 3.52 → backprop → update weights
+  Batch 2 (images 33-64):  forward pass → loss = 3.48 → backprop → update weights
+  ...
+  Batch 1687 (last batch): forward pass → loss = 2.21 → backprop → update weights
+  
+  Epoch summary: train_acc = 0.42, val_acc = 0.38
+
+Epoch 2/30:
+  ... (weights carry forward, model is better now)
+  Epoch summary: train_acc = 0.61, val_acc = 0.57
+
+...
+
+Epoch 28/30:
+  Epoch summary: train_acc = 0.97, val_acc = 0.94  ← Best!
+  EarlyStopping patience count: 0
+  
+Epoch 30/30:
+  Epoch summary: train_acc = 0.97, val_acc = 0.93
+  EarlyStopping patience count: 2  → Continue...
+```
+
+**Adam Optimizer**: Adaptive learning rate optimizer that adjusts learning rates individually for each parameter. Generally the best default choice.
+
+**Loss function: Categorical Cross-Entropy**
+
+For a 38-class classification problem:
+
+```
+True label:    [0, 0, 0, ..., 1, ..., 0]   (one-hot, 1 at index 29 = Tomato Early Blight)
+Model output:  [0.01, 0.02, 0.01, ..., 0.87, ..., 0.02]  (softmax probabilities)
+
+Cross-entropy loss = -sum(true_label × log(prediction))
+                   = -log(0.87)   (only the correct class contributes)
+                   = 0.14         (low loss = good prediction)
+
+If model is confused (0.03 for correct class):
+Cross-entropy = -log(0.03) = 3.51  (high loss = bad prediction)
+```
+
+Loss decreases toward 0 as the model improves. A perfect model has loss = 0.
+
+---
+
+## Appendix B: Evaluation Metrics for Classification Models
+
+Understanding metrics beyond accuracy is critical for honest model evaluation.
+
+### Accuracy vs Precision vs Recall vs F1
+
+**Accuracy**: Percentage of all predictions that are correct.
+```
+Accuracy = (True Positives + True Negatives) / Total Predictions
+```
+
+**Problem with accuracy**: A model that always predicts "Healthy" would achieve ~29% accuracy on PlantVillage (since ~29% of images are healthy). That looks decent but is useless.
+
+**Confusion Matrix** (simplified 3-class example):
+
+```
+                Predicted:
+                Healthy  Early Blight  Late Blight
+Actual:
+Healthy           142         3             2
+Early Blight        4       138             5
+Late Blight         1         6           132
+```
+
+**From confusion matrix**:
+- **True Positives (TP)**: Diagonal cells — correct predictions for that class
+- **False Positives (FP)**: Column sum minus TP — predicted this class, was actually different
+- **False Negatives (FN)**: Row sum minus TP — was this class, predicted something else
+
+**Precision**: Of everything the model predicted as "Early Blight", how many actually were?
+```
+Precision = TP / (TP + FP)  =  138 / (138 + 3 + 6)  =  138 / 147  =  0.939
+```
+
+**Recall (Sensitivity)**: Of all actual "Early Blight" cases, how many did the model find?
+```
+Recall = TP / (TP + FN)  =  138 / (138 + 4 + 5)  =  138 / 147  =  0.939
+```
+
+**F1 Score**: Harmonic mean of Precision and Recall (penalizes imbalance between the two):
+```
+F1 = 2 × (Precision × Recall) / (Precision + Recall)
+   = 2 × (0.939 × 0.939) / (0.939 + 0.939)
+   = 0.939
+```
+
+**When to use each metric for LeafGuard AI**:
+
+| Metric | Use case |
+|--------|----------|
+| Accuracy | General model performance report |
+| Precision | Minimising false alarms (telling healthy plant it's diseased) |
+| Recall | Minimising missed detections (missing a disease in an infected plant) |
+| F1 | Balanced metric for viva/report |
+
+### Top-1 vs Top-5 Accuracy
+
+**Top-1 accuracy**: The single predicted class is correct. Standard metric.
+
+**Top-5 accuracy**: The correct class appears in the top 5 predictions. Used when there are many similar classes.
+
+```python
+# Compute top-5 accuracy
+import numpy as np
+
+def top_k_accuracy(predictions, true_label_idx, k=5):
+    """
+    predictions: (num_classes,) probability array
+    true_label_idx: int, index of correct class
+    """
+    top_k_indices = np.argsort(predictions)[::-1][:k]
+    return true_label_idx in top_k_indices
+
+# Example
+probs = [0.05, 0.03, 0.08, 0.65, 0.04, 0.15]  # index 3 is highest
+print(top_k_accuracy(probs, true_label_idx=5, k=5))  # True (5 is in top-3)
+```
+
+For LeafGuard AI, always report Top-1 accuracy since users need a single diagnosis, not a list.
+
+### Overfitting vs Underfitting
+
+```
+Training accuracy vs Validation accuracy over epochs:
+
+     100% ─────────────────────────
+                    ┌─── train acc
+      80% ───────────────────────────────
+                         ┌────── val acc
+      60%
+                              Overfit zone
+      40%
+      
+      0     5     10    15    20   25  epoch
+
+Underfitting (epochs 1-5):  Both train and val accuracy low
+Good fit (epoch ~15):        Train and val accuracy both high, close together
+Overfitting (epoch 20+):     Train accuracy keeps rising, val accuracy plateaus or drops
+```
+
+**Signs of overfitting in LeafGuard AI**:
+- Training accuracy 98%, validation accuracy 79%
+- Model memorized training images but can't generalize to new photos
+
+**Solutions**:
+- **Data augmentation**: Randomly flip, rotate, adjust brightness during training
+- **Dropout layers**: Randomly deactivate 20% of neurons during training
+- **Early stopping**: Stop training when validation accuracy stops improving
+- **L2 regularization**: Penalize large weight values
+
+```python
+# Data augmentation example
+data_augmentation = tf.keras.Sequential([
+    tf.keras.layers.RandomFlip('horizontal'),
+    tf.keras.layers.RandomRotation(0.2),
+    tf.keras.layers.RandomZoom(0.2),
+    tf.keras.layers.RandomContrast(0.2),
+])
+
+# Apply at start of model
+inputs = tf.keras.Input(shape=(224, 224, 3))
+x = data_augmentation(inputs)  # Only active during training
+x = base_model(x, training=False)
+...
+```
+
+### PlantVillage Dataset Statistics
+
+The original PlantVillage dataset used to train models for this project:
+
+| Stat | Value |
+|------|-------|
+| Total images | 54,309 |
+| Number of classes | 38 |
+| Images per class (avg) | ~1,429 |
+| Most images | Tomato (10 classes, ~18,000 images) |
+| Image resolution | Variable (resized to 224×224 for training) |
+| Background | White (lab conditions) |
+| Collection method | Controlled greenhouse photos |
+
+**Important limitation**: PlantVillage images were taken in controlled lab conditions with white backgrounds. Real-world field photos with soil, other plants, and variable lighting are harder for the model. This is called **domain shift** and is why real apps often perform worse than published accuracy numbers suggest.
+
+---
+
+## Appendix C: All 38 PlantVillage Disease Classes
 
 This is the complete list of classes in the PlantVillage dataset as used by this project.
 The index (0-based) must match your model's training class order exactly.
@@ -691,7 +1058,7 @@ The index (0-based) must match your model's training class order exactly.
 
 ---
 
-## Appendix B: Testing with ngrok (Local Development)
+## Appendix C: Testing with ngrok (Local Development)
 
 When developing with a physical Android device (not emulator), you need to expose your
 local FastAPI server to the internet. **ngrok** creates a public tunnel to your localhost.
@@ -749,7 +1116,7 @@ Then use: `http://192.168.x.x:8000/` as BASE_URL.
 
 ---
 
-## Appendix C: Confidence Threshold Guidelines
+## Appendix D: Confidence Threshold Guidelines
 
 Choosing the right confidence threshold prevents misleading users:
 

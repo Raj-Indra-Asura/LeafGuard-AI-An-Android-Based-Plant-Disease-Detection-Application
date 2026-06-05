@@ -22,4 +22,10 @@ public interface ScanDao {
 
     @Query("SELECT * FROM scan_history ORDER BY timestamp DESC LIMIT :limit")
     List<ScanRecord> getRecentScans(int limit);
+
+    @Query("SELECT * FROM scan_history WHERE id = :id LIMIT 1")
+    ScanRecord getScanById(long id);
+
+    @Query("DELETE FROM scan_history WHERE id = :id")
+    void deleteScanById(long id);
 }
