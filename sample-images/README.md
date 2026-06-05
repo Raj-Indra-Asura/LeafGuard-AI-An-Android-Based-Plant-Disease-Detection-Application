@@ -8,17 +8,17 @@ This folder contains sample test images for testing the LeafGuard AI application
 sample-images/
 ├── README.md (this file)
 ├── healthy/
-│   ├── tomato_healthy_01.jpg
+│   ├── tomato_healthy_01.png
 │   ├── tomato_healthy_02.jpg
 │   ├── potato_healthy_01.jpg
 │   └── ...
 ├── early_blight/
-│   ├── tomato_early_blight_01.jpg
+│   ├── tomato_early_blight_01.png
 │   ├── tomato_early_blight_02.jpg
 │   ├── potato_early_blight_01.jpg
 │   └── ...
 ├── late_blight/
-│   ├── tomato_late_blight_01.jpg
+│   ├── tomato_late_blight_01.png
 │   ├── potato_late_blight_02.jpg
 │   └── ...
 └── other_diseases/
@@ -55,17 +55,17 @@ You MUST collect at least **30 test images** covering:
 1. **Tomato Healthy** (3+ images)
    - Clear tomato leaf with no disease
    - Good lighting, in-focus
-   - File naming: `tomato_healthy_01.jpg`, `tomato_healthy_02.jpg`, etc.
+   - File naming: `tomato_healthy_01.png`, `tomato_healthy_02.jpg`, etc.
 
 2. **Tomato Early Blight** (3+ images)
    - Brown spots with concentric rings
    - Various stages of disease severity
-   - File naming: `tomato_early_blight_01.jpg`, etc.
+   - File naming: `tomato_early_blight_01.png`, etc.
 
 3. **Tomato Late Blight** (3+ images)
    - Dark lesions, water-soaked appearance
    - Clear disease symptoms visible
-   - File naming: `tomato_late_blight_01.jpg`, etc.
+   - File naming: `tomato_late_blight_01.png`, etc.
 
 4. **Potato Healthy** (3+ images)
    - Healthy potato plant leaves
@@ -91,8 +91,8 @@ You MUST collect at least **30 test images** covering:
 - Recommended: 1024x1024 pixels
 
 **Format**
-- Accepted: JPEG (.jpg, .jpeg), PNG (.png)
-- Preferred: JPEG for smaller file size
+- Accepted: PNG (.png), JPEG (.jpg, .jpeg)
+- Preferred: PNG for bundled synthetic samples; JPEG is fine for real camera/gallery photos
 - Avoid: BMP, GIF, TIFF (won't work on Android easily)
 
 **Content**
@@ -113,8 +113,8 @@ You MUST collect at least **30 test images** covering:
 {crop}_{disease}_{number}.jpg
 
 Examples:
-tomato_healthy_01.jpg
-tomato_early_blight_01.jpg
+tomato_healthy_01.png
+tomato_early_blight_01.png
 potato_late_blight_03.jpg
 pepper_bacterial_spot_02.jpg
 ```
@@ -204,8 +204,8 @@ Create `sample-images/TEST_RESULTS.md`:
 
 | Image | True Label | Predicted Label | Confidence | Correct? | Notes |
 |-------|-----------|-----------------|------------|----------|-------|
-| tomato_healthy_01.jpg | Healthy | Healthy | 98.5% | ✅ Yes | Good prediction |
-| tomato_early_blight_01.jpg | Early Blight | Early Blight | 92.3% | ✅ Yes | Clear symptoms |
+| tomato_healthy_01.png | Healthy | Healthy | 98.5% | ✅ Yes | Good prediction |
+| tomato_early_blight_01.png | Early Blight | Early Blight | 92.3% | ✅ Yes | Clear symptoms |
 | ... | ... | ... | ... | ... | ... |
 
 **Accuracy**: 28/30 = 93.3%
@@ -214,7 +214,7 @@ Create `sample-images/TEST_RESULTS.md`:
 
 | Image | True Label | Predicted Label | Confidence | Correct? | Latency (ms) |
 |-------|-----------|-----------------|------------|----------|--------------|
-| tomato_healthy_01.jpg | Healthy | Healthy | 97.8% | ✅ Yes | 145 ms |
+| tomato_healthy_01.png | Healthy | Healthy | 97.8% | ✅ Yes | 145 ms |
 | ... | ... | ... | ... | ... | ... |
 
 **Accuracy**: 26/30 = 86.7%

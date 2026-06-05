@@ -1,0 +1,14 @@
+Image Source Documentation for LeafGuard AI
+
+The committed sample images are original synthetic leaf illustrations generated for this repository with a small Python PNG generator. They are intended for validating Android image selection, upload, backend preprocessing, offline inference plumbing, and history save flows.
+
+Files:
+- healthy/tomato_healthy_01.png — generated healthy leaf illustration
+- early_blight/tomato_early_blight_01.png — generated leaf illustration with spot patterns
+- late_blight/tomato_late_blight_01.png — generated leaf illustration with darker lesion patterns
+
+License/rights:
+These generated images contain no third-party copyrighted content and may be used with this educational repository.
+
+Important limitation:
+These images are not expert-labeled field photographs and should not be used to measure real model accuracy. Replace or supplement them with PlantVillage/Kaggle/original photographs for final accuracy testing.
