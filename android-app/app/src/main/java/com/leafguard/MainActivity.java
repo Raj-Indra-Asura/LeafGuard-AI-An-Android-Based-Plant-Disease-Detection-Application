@@ -2,13 +2,19 @@ package com.leafguard;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.Toast;
+
+import androidx.preference.PreferenceManager;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -18,10 +24,25 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import com.leafguard.databinding.ActivityMainBinding;
+import com.leafguard.ml.TFLiteClassifier;
+import com.leafguard.network.ApiService;
+import com.leafguard.network.PredictionResponse;
+import com.leafguard.network.RetrofitClient;
 import com.leafguard.utils.NotificationHelper;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -37,6 +58,7 @@ public class MainActivity extends AppCompatActivity {
     private Uri pendingCameraUri;
     private String pendingPermissionAction;
     private boolean cloudMode = true;
+    private final ExecutorService detectionExecutor = Executors.newSingleThreadExecutor();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,8 +97,10 @@ public class MainActivity extends AppCompatActivity {
     private void setupButtons() {
         binding.buttonOpenCamera.setOnClickListener(view -> openCameraWithPermissionCheck());
         binding.buttonOpenGallery.setOnClickListener(view -> openGalleryWithPermissionCheck());
-        binding.buttonDetectDisease.setOnClickListener(view -> launchMockDetection());
+        binding.buttonDetectDisease.setOnClickListener(view -> detectDisease());
         binding.buttonHistory.setOnClickListener(view -> startActivity(new Intent(this, HistoryActivity.class)));
+        binding.buttonDiseaseLibrary.setOnClickListener(view -> startActivity(new Intent(this, DiseaseLibraryActivity.class)));
+        binding.buttonSettings.setOnClickListener(view -> startActivity(new Intent(this, SettingsActivity.class)));
     }
 
     private void setupActivityResults() {
@@ -182,37 +206,140 @@ public class MainActivity extends AppCompatActivity {
         binding.textImageHint.setText(getString(R.string.image_selected_message, imageUri.getLastPathSegment()));
     }
 
-    private void launchMockDetection() {
+    private void detectDisease() {
         if (selectedImageUri == null) {
             Toast.makeText(this, R.string.select_image_first, Toast.LENGTH_SHORT).show();
             return;
         }
 
-        binding.progressDetection.setVisibility(View.VISIBLE);
-        binding.buttonDetectDisease.setEnabled(false);
-        binding.buttonDetectDisease.postDelayed(() -> {
-            binding.progressDetection.setVisibility(View.GONE);
-            binding.buttonDetectDisease.setEnabled(true);
+        setDetectionInProgress(true);
+        if (cloudMode) {
+            runCloudDetection();
+        } else {
+            runOfflineDetection();
+        }
+    }
 
-            Intent intent = new Intent(MainActivity.this, ResultActivity.class);
-            intent.putExtra(ResultActivity.EXTRA_DISEASE_NAME,
-                    cloudMode ? "Tomato Early Blight" : "Tomato Healthy");
-            intent.putExtra(ResultActivity.EXTRA_CONFIDENCE, cloudMode ? 0.91f : 0.83f);
-            intent.putExtra(ResultActivity.EXTRA_SYMPTOMS,
-                    cloudMode
-                            ? "Brown lesions with concentric rings on older leaves."
-                            : "Leaf appears green, evenly colored, and free of lesions.");
-            intent.putExtra(ResultActivity.EXTRA_TREATMENT,
-                    cloudMode
-                            ? "Prune infected leaves, improve airflow, and apply a recommended fungicide."
-                            : "No treatment needed. Keep monitoring plant health.");
-            intent.putExtra(ResultActivity.EXTRA_PREVENTION,
-                    cloudMode
-                            ? "Avoid overhead watering and rotate crops between seasons."
-                            : "Continue balanced watering, spacing, and preventive scouting.");
-            intent.putExtra(ResultActivity.EXTRA_IMAGE_URI, selectedImageUri.toString());
-            startActivity(intent);
-        }, 1200L);
+    private void runCloudDetection() {
+        File uploadFile;
+        try {
+            uploadFile = copyUriToCacheFile(selectedImageUri);
+        } catch (IOException exception) {
+            setDetectionInProgress(false);
+            Toast.makeText(this, getString(R.string.image_prepare_error, exception.getMessage()), Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        RequestBody requestBody = RequestBody.create(MediaType.parse(getImageMimeType(selectedImageUri)), uploadFile);
+        MultipartBody.Part imagePart = MultipartBody.Part.createFormData("image", uploadFile.getName(), requestBody);
+        ApiService apiService = RetrofitClient.getInstance(getBackendBaseUrl()).create(ApiService.class);
+        apiService.uploadImage(imagePart).enqueue(new Callback<PredictionResponse>() {
+            @Override
+            public void onResponse(@NonNull Call<PredictionResponse> call, @NonNull Response<PredictionResponse> response) {
+                setDetectionInProgress(false);
+                PredictionResponse prediction = response.body();
+                if (!response.isSuccessful() || prediction == null) {
+                    Toast.makeText(MainActivity.this, R.string.cloud_prediction_failed, Toast.LENGTH_LONG).show();
+                    return;
+                }
+                openResult(prediction);
+            }
+
+            @Override
+            public void onFailure(@NonNull Call<PredictionResponse> call, @NonNull Throwable throwable) {
+                setDetectionInProgress(false);
+                Toast.makeText(MainActivity.this, getString(R.string.network_error_format, throwable.getMessage()), Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void runOfflineDetection() {
+        detectionExecutor.execute(() -> {
+            try (TFLiteClassifier classifier = new TFLiteClassifier(this)) {
+                Bitmap bitmap = loadBitmap(selectedImageUri);
+                PredictionResponse prediction = classifier.classify(bitmap);
+                runOnUiThread(() -> {
+                    setDetectionInProgress(false);
+                    openResult(prediction);
+                });
+            } catch (IOException | RuntimeException exception) {
+                runOnUiThread(() -> {
+                    setDetectionInProgress(false);
+                    Toast.makeText(this, getString(R.string.offline_prediction_failed, exception.getMessage()), Toast.LENGTH_LONG).show();
+                });
+            }
+        });
+    }
+
+    private File copyUriToCacheFile(Uri imageUri) throws IOException {
+        File uploadFile = new File(getCacheDir(), "leafguard_upload_" + System.currentTimeMillis() + ".jpg");
+        try (InputStream inputStream = getContentResolver().openInputStream(imageUri);
+             FileOutputStream outputStream = new FileOutputStream(uploadFile)) {
+            if (inputStream == null) {
+                throw new IOException("Unable to open selected image. The file may have been moved or deleted.");
+            }
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+        }
+        return uploadFile;
+    }
+
+    private Bitmap loadBitmap(Uri imageUri) throws IOException {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            ImageDecoder.Source source = ImageDecoder.createSource(getContentResolver(), imageUri);
+            return ImageDecoder.decodeBitmap(source).copy(Bitmap.Config.ARGB_8888, false);
+        }
+        return MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+    }
+
+    private String getImageMimeType(Uri imageUri) {
+        String mimeType = getContentResolver().getType(imageUri);
+        if (mimeType == null || !mimeType.startsWith("image/")) {
+            return "image/*";
+        }
+        return mimeType;
+    }
+
+    private String getBackendBaseUrl() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        String baseUrl = prefs.getString(SettingsActivity.PREF_BACKEND_URL, SettingsActivity.DEFAULT_BACKEND_URL);
+        if (baseUrl == null) {
+            baseUrl = "";
+        }
+        baseUrl = baseUrl.trim().isEmpty() ? SettingsActivity.DEFAULT_BACKEND_URL : baseUrl.trim();
+        return baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
+    }
+
+    private void openResult(PredictionResponse prediction) {
+        if (getConfidencePercentage(prediction.getConfidence()) < getConfidenceThreshold()) {
+            Toast.makeText(this, R.string.low_confidence_warning, Toast.LENGTH_LONG).show();
+        }
+
+        Intent intent = new Intent(MainActivity.this, ResultActivity.class);
+        intent.putExtra(ResultActivity.EXTRA_DISEASE_NAME, prediction.getDisease());
+        intent.putExtra(ResultActivity.EXTRA_CONFIDENCE, prediction.getConfidence());
+        intent.putExtra(ResultActivity.EXTRA_SYMPTOMS, prediction.getSymptoms());
+        intent.putExtra(ResultActivity.EXTRA_TREATMENT, prediction.getTreatment());
+        intent.putExtra(ResultActivity.EXTRA_PREVENTION, prediction.getPrevention());
+        intent.putExtra(ResultActivity.EXTRA_IMAGE_URI, selectedImageUri.toString());
+        startActivity(intent);
+    }
+
+    private float getConfidencePercentage(float confidence) {
+        return confidence * 100f;
+    }
+
+    private int getConfidenceThreshold() {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        return prefs.getInt(SettingsActivity.PREF_CONFIDENCE_THRESHOLD, SettingsActivity.DEFAULT_CONFIDENCE_THRESHOLD);
+    }
+
+    private void setDetectionInProgress(boolean inProgress) {
+        binding.progressDetection.setVisibility(inProgress ? View.VISIBLE : View.GONE);
+        binding.buttonDetectDisease.setEnabled(!inProgress && selectedImageUri != null);
     }
 
     private void updateModeDescription() {
@@ -252,6 +379,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        detectionExecutor.shutdown();
         binding = null;
     }
 }

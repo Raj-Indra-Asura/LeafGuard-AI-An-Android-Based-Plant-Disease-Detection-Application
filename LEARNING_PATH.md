@@ -67,8 +67,8 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection Journal](roadmap/week-01-project-understanding/reflection.md)
 
 ### Supplementary Materials
-- 📓 [Interactive Notebook](notebooks/week-01/) *(Coming Soon)*
-- 💡 [Solutions Guide](solutions/week-01/) *(Coming Soon)*
+- 📓 [Interactive Notebook](notebooks/week-01/) *(Available)*
+- 💡 [Solutions Guide](solutions/week-01/) *(Available)*
 - 🎯 [Code Examples](roadmap/week-01-project-understanding/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
@@ -110,8 +110,8 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-02-android-basics-ui/reflection.md)
 
 ### Supplementary Materials
-- 📓 [Interactive Notebook](notebooks/week-02/) *(Coming Soon)*
-- 💡 [Solutions Guide](solutions/week-02/) *(Coming Soon)*
+- 📓 [Interactive Notebook](notebooks/week-02/) *(Available)*
+- 💡 [Solutions Guide](solutions/week-02/) *(Available)*
 - 🎯 [Code Examples](roadmap/week-02-android-basics-ui/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
@@ -150,8 +150,8 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-03-camera-gallery/reflection.md)
 
 ### Supplementary Materials
-- 📓 [Interactive Notebook](notebooks/week-03/) *(Coming Soon)*
-- 💡 [Solutions Guide](solutions/week-03/) *(Coming Soon)*
+- 📓 [Interactive Notebook](notebooks/week-03/) *(Available)*
+- 💡 [Solutions Guide](solutions/week-03/) *(Available)*
 - 🎯 [Code Examples](roadmap/week-03-camera-gallery/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
@@ -190,8 +190,8 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-04-fastapi-backend/reflection.md)
 
 ### Supplementary Materials
-- 📓 [Interactive Notebook](notebooks/week-04/) *(Coming Soon)*
-- 💡 [Solutions Guide](solutions/week-04/) *(Coming Soon)*
+- 📓 [Interactive Notebook](notebooks/week-04/) *(Available)*
+- 💡 [Solutions Guide](solutions/week-04/) *(Available)*
 - 🎯 [Code Examples](roadmap/week-04-fastapi-backend/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
@@ -232,8 +232,8 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-05-android-networking/reflection.md)
 
 ### Supplementary Materials
-- 📓 [Interactive Notebook](notebooks/week-05/) *(Coming Soon)*
-- 💡 [Solutions Guide](solutions/week-05/) *(Coming Soon)*
+- 📓 [Interactive Notebook](notebooks/week-05/) *(Available)*
+- 💡 [Solutions Guide](solutions/week-05/) *(Available)*
 - 🎯 [Code Examples](roadmap/week-05-android-networking/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
@@ -274,8 +274,8 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-06-cloud-ml-model/reflection.md)
 
 ### Supplementary Materials
-- 📓 [Interactive Notebook](notebooks/week-06/) *(Coming Soon)*
-- 💡 [Solutions Guide](solutions/week-06/) *(Coming Soon)*
+- 📓 [Interactive Notebook](notebooks/week-06/) *(Available)*
+- 💡 [Solutions Guide](solutions/week-06/) *(Available)*
 - 🎯 [Code Examples](roadmap/week-06-cloud-ml-model/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
@@ -314,8 +314,8 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-07-room-sqlite-history/reflection.md)
 
 ### Supplementary Materials
-- 📓 [Interactive Notebook](notebooks/week-07/) *(Coming Soon)*
-- 💡 [Solutions Guide](solutions/week-07/) *(Coming Soon)*
+- 📓 [Interactive Notebook](notebooks/week-07/) *(Available)*
+- 💡 [Solutions Guide](solutions/week-07/) *(Available)*
 - 🎯 [Code Examples](roadmap/week-07-room-sqlite-history/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
@@ -354,8 +354,8 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-08-xml-disease-library/reflection.md)
 
 ### Supplementary Materials
-- 📓 [Interactive Notebook](notebooks/week-08/) *(Coming Soon)*
-- 💡 [Solutions Guide](solutions/week-08/) *(Coming Soon)*
+- 📓 [Interactive Notebook](notebooks/week-08/) *(Available)*
+- 💡 [Solutions Guide](solutions/week-08/) *(Available)*
 - 🎯 [Code Examples](roadmap/week-08-xml-disease-library/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
@@ -394,8 +394,8 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-09-tensorflow-lite-offline-ai/reflection.md)
 
 ### Supplementary Materials
-- 📓 [Interactive Notebook](notebooks/week-09/) *(Coming Soon)*
-- 💡 [Solutions Guide](solutions/week-09/) *(Coming Soon)*
+- 📓 [Interactive Notebook](notebooks/week-09/) *(Available)*
+- 💡 [Solutions Guide](solutions/week-09/) *(Available)*
 - 🎯 [Code Examples](roadmap/week-09-tensorflow-lite-offline-ai/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
@@ -434,8 +434,8 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-10-notifications-share-location/reflection.md)
 
 ### Supplementary Materials
-- 📓 [Interactive Notebook](notebooks/week-10/) *(Coming Soon)*
-- 💡 [Solutions Guide](solutions/week-10/) *(Coming Soon)*
+- 📓 [Interactive Notebook](notebooks/week-10/) *(Available)*
+- 💡 [Solutions Guide](solutions/week-10/) *(Available)*
 - 🎯 [Code Examples](roadmap/week-10-notifications-share-location/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
@@ -474,8 +474,8 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-11-testing-debugging-performance/reflection.md)
 
 ### Supplementary Materials
-- 📓 [Interactive Notebook](notebooks/week-11/) *(Coming Soon)*
-- 💡 [Solutions Guide](solutions/week-11/) *(Coming Soon)*
+- 📓 [Interactive Notebook](notebooks/week-11/) *(Available)*
+- 💡 [Solutions Guide](solutions/week-11/) *(Available)*
 - 🎯 [Code Examples](roadmap/week-11-testing-debugging-performance/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
@@ -515,8 +515,8 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-12-final-submission/reflection.md)
 
 ### Supplementary Materials
-- 📓 [Interactive Notebook](notebooks/week-12/) *(Coming Soon)*
-- 💡 [Solutions Guide](solutions/week-12/) *(Coming Soon)*
+- 📓 [Interactive Notebook](notebooks/week-12/) *(Available)*
+- 💡 [Solutions Guide](solutions/week-12/) *(Available)*
 - 🎯 [Code Examples](roadmap/week-12-final-submission/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
@@ -571,8 +571,8 @@ This unified learning system provides seamless navigation across all course mate
 - [docs/viva-questions.md](docs/) - 60+ viva practice questions
 
 ### Supplementary Directories
-- [solutions/](solutions/) - Exercise solutions *(Coming Soon)*
-- [notebooks/](notebooks/) - Jupyter notebooks *(Coming Soon)*
+- [solutions/](solutions/) - Exercise solutions *(Available)*
+- [notebooks/](notebooks/) - Jupyter notebooks *(Available)*
 - [code-examples/](roadmap/) - Minimal working examples
 - [reference-sheets/](docs/) - Quick reference guides *(Coming Soon)*
 

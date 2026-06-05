@@ -1,5 +1,6 @@
 package com.leafguard;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,7 +22,6 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -40,12 +40,14 @@ public class HistoryActivity extends AppCompatActivity {
         setSupportActionBar(binding.topAppBar);
         binding.topAppBar.setNavigationOnClickListener(view -> finish());
 
-        adapter = new HistoryAdapter(new ArrayList<>(), record ->
-                Toast.makeText(
-                        this,
-                        getString(R.string.delete_stub_message, record.getDiseaseName()),
-                        Toast.LENGTH_SHORT
-                ).show()
+        adapter = new HistoryAdapter(
+                new ArrayList<>(),
+                record -> {
+                    Intent intent = new Intent(this, HistoryDetailActivity.class);
+                    intent.putExtra(HistoryDetailActivity.EXTRA_SCAN_ID, record.getId());
+                    startActivity(intent);
+                },
+                this::deleteRecord
         );
 
         binding.recyclerHistory.setLayoutManager(new LinearLayoutManager(this));
@@ -68,6 +70,24 @@ public class HistoryActivity extends AppCompatActivity {
         binding.textEmptyState.setVisibility(hasItems ? View.GONE : View.VISIBLE);
     }
 
+    private void deleteRecord(ScanRecord record) {
+        databaseExecutor.execute(() -> {
+            AppDatabase database = AppDatabase.getInstance(getApplicationContext());
+            database.scanDao().deleteScanById(record.getId());
+            List<ScanRecord> scans = database.scanDao().getAllScans();
+            runOnUiThread(() -> {
+                Toast.makeText(this, getString(R.string.history_item_deleted, record.getDiseaseName()), Toast.LENGTH_SHORT).show();
+                renderHistory(scans);
+            });
+        });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadHistory();
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -77,15 +97,21 @@ public class HistoryActivity extends AppCompatActivity {
 
     private static class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.HistoryViewHolder> {
 
+        interface OnItemClickListener {
+            void onItemSelected(ScanRecord record);
+        }
+
         interface OnDeleteClickListener {
             void onDeleteRequested(ScanRecord record);
         }
 
         private final List<ScanRecord> items;
+        private final OnItemClickListener onItemClickListener;
         private final OnDeleteClickListener onDeleteClickListener;
 
-        HistoryAdapter(List<ScanRecord> items, OnDeleteClickListener onDeleteClickListener) {
+        HistoryAdapter(List<ScanRecord> items, OnItemClickListener onItemClickListener, OnDeleteClickListener onDeleteClickListener) {
             this.items = items;
+            this.onItemClickListener = onItemClickListener;
             this.onDeleteClickListener = onDeleteClickListener;
         }
 
@@ -105,7 +131,7 @@ public class HistoryActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull HistoryViewHolder holder, int position) {
-            holder.bind(items.get(position), onDeleteClickListener);
+            holder.bind(items.get(position), onItemClickListener, onDeleteClickListener);
         }
 
         @Override
@@ -128,7 +154,7 @@ public class HistoryActivity extends AppCompatActivity {
                 buttonDelete = itemView.findViewById(R.id.buttonDeleteHistoryItem);
             }
 
-            void bind(ScanRecord record, OnDeleteClickListener listener) {
+            void bind(ScanRecord record, OnItemClickListener itemListener, OnDeleteClickListener deleteListener) {
                 textDisease.setText(record.getDiseaseName());
                 textConfidence.setText(itemView.getContext().getString(
                         R.string.history_confidence_format,
@@ -136,7 +162,8 @@ public class HistoryActivity extends AppCompatActivity {
                 ));
                 textTimestamp.setText(DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT)
                         .format(new Date(record.getTimestamp())));
-                buttonDelete.setOnClickListener(view -> listener.onDeleteRequested(record));
+                itemView.setOnClickListener(view -> itemListener.onItemSelected(record));
+                buttonDelete.setOnClickListener(view -> deleteListener.onDeleteRequested(record));
             }
         }
     }
