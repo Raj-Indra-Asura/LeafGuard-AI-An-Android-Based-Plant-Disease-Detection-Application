@@ -628,3 +628,161 @@ Week 06 teaches you to integrate machine learning models as software components:
 - **Focus on engineering**: API integration, error handling, UI/UX matter more than model accuracy
 
 You're not becoming a data scientist this week - you're learning to integrate AI as a mobile engineer. This skill applies to any pre-trained model: language models, recommendation systems, computer vision, speech recognition. The principles are the same: understand the contract, handle errors, communicate uncertainty, test thoroughly.
+
+
+---
+
+## Appendix A: All 38 PlantVillage Disease Classes
+
+This is the complete list of classes in the PlantVillage dataset as used by this project.
+The index (0-based) must match your model's training class order exactly.
+
+| Index | Label | Crop | Status |
+|-------|-------|------|--------|
+| 0 | Apple___Apple_scab | Apple | Disease |
+| 1 | Apple___Black_rot | Apple | Disease |
+| 2 | Apple___Cedar_apple_rust | Apple | Disease |
+| 3 | Apple___healthy | Apple | Healthy |
+| 4 | Background_without_leaves | — | Non-leaf |
+| 5 | Blueberry___healthy | Blueberry | Healthy |
+| 6 | Cherry___healthy | Cherry | Healthy |
+| 7 | Cherry___Powdery_mildew | Cherry | Disease |
+| 8 | Corn___Cercospora_leaf_spot Gray_leaf_spot | Corn | Disease |
+| 9 | Corn___Common_rust | Corn | Disease |
+| 10 | Corn___healthy | Corn | Healthy |
+| 11 | Corn___Northern_Leaf_Blight | Corn | Disease |
+| 12 | Grape___Black_rot | Grape | Disease |
+| 13 | Grape___Esca_(Black_Measles) | Grape | Disease |
+| 14 | Grape___healthy | Grape | Healthy |
+| 15 | Grape___Leaf_blight_(Isariopsis_Leaf_Spot) | Grape | Disease |
+| 16 | Orange___Haunglongbing_(Citrus_greening) | Orange | Disease |
+| 17 | Peach___Bacterial_spot | Peach | Disease |
+| 18 | Peach___healthy | Peach | Healthy |
+| 19 | Pepper,_bell___Bacterial_spot | Pepper | Disease |
+| 20 | Pepper,_bell___healthy | Pepper | Healthy |
+| 21 | Potato___Early_blight | Potato | Disease |
+| 22 | Potato___healthy | Potato | Healthy |
+| 23 | Potato___Late_blight | Potato | Disease |
+| 24 | Raspberry___healthy | Raspberry | Healthy |
+| 25 | Soybean___healthy | Soybean | Healthy |
+| 26 | Squash___Powdery_mildew | Squash | Disease |
+| 27 | Strawberry___healthy | Strawberry | Healthy |
+| 28 | Strawberry___Leaf_scab | Strawberry | Disease |
+| 29 | Tomato___Bacterial_spot | Tomato | Disease |
+| 30 | Tomato___Early_blight | Tomato | Disease |
+| 31 | Tomato___healthy | Tomato | Healthy |
+| 32 | Tomato___Late_blight | Tomato | Disease |
+| 33 | Tomato___Leaf_Mold | Tomato | Disease |
+| 34 | Tomato___Septoria_leaf_spot | Tomato | Disease |
+| 35 | Tomato___Spider_mites Two-spotted_spider_mite | Tomato | Disease |
+| 36 | Tomato___Target_Spot | Tomato | Disease |
+| 37 | Tomato___Tomato_mosaic_virus | Tomato | Disease |
+| 38 | Tomato___Tomato_Yellow_Leaf_Curl_Virus | Tomato | Disease |
+
+**Summary by crop:**
+- Apple: 4 classes (3 diseases + 1 healthy)
+- Tomato: 10 classes (9 diseases + 1 healthy) ← most common in Indian agriculture
+- Potato: 3 classes (2 diseases + 1 healthy) ← second most important
+- Corn: 4 classes (3 diseases + 1 healthy)
+- Grape: 4 classes (3 diseases + 1 healthy)
+- Others: 14 classes
+
+**For beginners**: Start with a 6-class model (Tomato + Potato only) to reduce complexity.
+
+---
+
+## Appendix B: Testing with ngrok (Local Development)
+
+When developing with a physical Android device (not emulator), you need to expose your
+local FastAPI server to the internet. **ngrok** creates a public tunnel to your localhost.
+
+### Step 1: Install ngrok
+```bash
+# macOS
+brew install ngrok
+
+# Windows: Download from https://ngrok.com/download
+
+# Linux
+sudo snap install ngrok
+```
+
+### Step 2: Start FastAPI and ngrok
+```bash
+# Terminal 1: Start FastAPI
+cd backend-api
+uvicorn main:app --reload --port 8000
+
+# Terminal 2: Start ngrok tunnel
+ngrok http 8000
+```
+
+### Step 3: Get the public URL
+ngrok will display something like:
+```
+Forwarding: https://abc123.ngrok.io -> http://localhost:8000
+```
+
+### Step 4: Update Android app
+In `RetrofitClient.java`, change `BASE_URL`:
+```java
+// For emulator:
+private static final String BASE_URL = "http://10.0.2.2:8000/";
+
+// For physical device via ngrok (replace with your ngrok URL):
+private static final String BASE_URL = "https://abc123.ngrok.io/";
+```
+
+> ⚠️ ngrok free tier generates a new URL each session. Update BASE_URL each time.
+> For stable testing, use your local Wi-Fi IP (e.g., `http://192.168.1.100:8000/`).
+
+### Finding Your Local IP (for same Wi-Fi network)
+```bash
+# Linux/Mac
+ifconfig | grep "inet " | grep -v 127.0.0.1
+
+# Windows
+ipconfig | findstr IPv4
+```
+
+Then use: `http://192.168.x.x:8000/` as BASE_URL.
+
+---
+
+## Appendix C: Confidence Threshold Guidelines
+
+Choosing the right confidence threshold prevents misleading users:
+
+| Threshold | Meaning | Recommendation |
+|-----------|---------|----------------|
+| > 0.90 | Very high confidence | Show result as definitive |
+| 0.70 – 0.90 | High confidence | Show result with slight caution |
+| 0.50 – 0.70 | Medium confidence | Show result + "Please verify" |
+| 0.30 – 0.50 | Low confidence | Show top-3 results, ask user |
+| < 0.30 | Very low confidence | Show "Unable to detect clearly" |
+
+**Recommended implementation for LeafGuard AI:**
+
+```python
+# In FastAPI backend (main.py)
+CONFIDENCE_THRESHOLD = 0.50  # Minimum for a definitive prediction
+
+predicted_class = int(np.argmax(predictions[0]))
+confidence = float(predictions[0][predicted_class])
+
+if confidence < CONFIDENCE_THRESHOLD:
+    return {
+        "disease": "Unknown",
+        "confidence": confidence,
+        "low_confidence": True,
+        "recommendation": "Image quality may be too low. Retake photo in better lighting."
+    }
+```
+
+**For "Healthy" class:**
+- High confidence "healthy" (>0.85) = good news, tell the user
+- Low confidence "healthy" (<0.60) = uncertain, suggest re-scanning
+
+**Special case: Background_without_leaves (class 4)**
+- If model predicts this class, user likely didn't point at a leaf
+- Return: "No plant detected. Please capture a clear leaf image."

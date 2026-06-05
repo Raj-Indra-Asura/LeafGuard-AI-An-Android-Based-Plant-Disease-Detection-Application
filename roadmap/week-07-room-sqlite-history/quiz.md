@@ -2,9 +2,9 @@
 
 ## Instructions
 
-- **Total Questions:** 20 (10 conceptual + 10 practical)
-- **Time Limit:** 30 minutes
-- **Passing Score:** 16/20 (80%)
+- **Total Questions:** 35 (10 conceptual + 10 practical + 15 advanced)
+- **Time Limit:** 50 minutes
+- **Passing Score:** 28/35 (80%)
 
 ---
 
@@ -244,6 +244,171 @@ Your answer: _______________
 
 ---
 
+
+## Part 2: Advanced Questions
+
+### Question 21
+**Which statement best describes `LiveData` vs `Flow` in Room?**
+A) Both work only on the main thread
+B) `LiveData` is lifecycle-aware for UI, while `Flow` fits coroutine-based streams
+C) `Flow` cannot emit database updates
+D) `LiveData` requires Retrofit
+
+Your answer: _____
+
+---
+
+### Question 22
+**Why would you use a `TypeConverter` in Room?**
+A) To change XML into JSON
+B) To store unsupported types such as `ArrayList<String>` in a single column
+C) To improve RecyclerView scrolling
+D) To create foreign keys automatically
+
+Your answer: _____
+
+---
+
+### Question 23
+**Complete the converter method signature:**
+
+```java
+public class Converters {
+    @TypeConverter
+    public String fromDiseaseList(________________ value) {
+        // TODO
+    }
+}
+```
+
+Your answer: _______________
+
+---
+
+### Question 24
+**When is `@Ignore` useful in an Entity class?**
+A) When a field should not be stored in the Room table
+B) When you want to hide a class from RecyclerView
+C) When you want Room to delete a column
+D) When you want a field to become the primary key
+
+Your answer: _____
+
+---
+
+### Question 25
+**True or False:** A Room migration should preserve existing data whenever possible instead of deleting the whole database.
+
+Your answer: _____
+
+---
+
+### Question 26
+**Write the SQL statement used in a migration to add a new `plant_type` column to `scan_history`.**
+
+Your answer:
+_______________________________________________________________
+
+---
+
+### Question 27
+**Why are coroutines or `ExecutorService` preferred over `AsyncTask` for Room operations?**
+A) Because `AsyncTask` is deprecated and less flexible
+B) Because Room works only with coroutines
+C) Because Room forbids background threads
+D) Because `AsyncTask` automatically creates migrations
+
+Your answer: _____
+
+---
+
+### Question 28
+**What does `@ForeignKey` help enforce?**
+A) Bitmap compression rules
+B) Relationships between parent and child tables
+C) RecyclerView item animation
+D) Network timeout handling
+
+Your answer: _____
+
+---
+
+### Question 29
+**Which statement is true about Database Inspector in Android Studio?**
+A) It can inspect Room/SQLite tables while the app is running on a debuggable device
+B) It only works for Firebase
+C) It edits Java code automatically
+D) It replaces DAO interfaces
+
+Your answer: _____
+
+---
+
+### Question 30
+**What is the biggest advantage of `Room.inMemoryDatabaseBuilder()` in tests?**
+A) It stores data permanently between app launches
+B) It creates a fast temporary database isolated for test cases
+C) It removes the need for assertions
+D) It works only with Espresso tests
+
+Your answer: _____
+
+---
+
+### Question 31
+**Short answer:** If a scan can have many tags, why is storing `ArrayList<String>` directly as a field not supported without a converter?
+
+Your answer:
+_______________________________________________________________
+
+---
+
+### Question 32
+**Identify the missing annotation:**
+
+```java
+@Entity(
+    foreignKeys = @____________(
+        entity = ScanSession.class,
+        parentColumns = "session_id",
+        childColumns = "session_owner_id",
+        onDelete = ForeignKey.CASCADE
+    )
+)
+public class ScanPhoto {
+}
+```
+
+Your answer: _______________
+
+---
+
+### Question 33
+**What is a major risk of calling `fallbackToDestructiveMigration()` in a history app like LeafGuard?**
+A) The APK size increases
+B) User scan history may be deleted during schema upgrades
+C) RecyclerView stops updating
+D) The DAO becomes abstract
+
+Your answer: _____
+
+---
+
+### Question 34
+**True or False:** `Flow<List<ScanHistory>>` is collected using coroutine APIs such as `collect()`.
+
+Your answer: _____
+
+---
+
+### Question 35
+**Why should migration behavior be tested before release?**
+
+Your answer:
+_______________________________________________________________
+
+---
+
 ## Answer Key
 
 1. B  2. C  3. B  4. F  5. C  6. B  7. C  8. T  9. B  10. B  
@@ -251,9 +416,13 @@ Your answer: _______________
 14. synchronized  15. @PrimaryKey annotation on id  16. F  
 17. SimpleDateFormat or DateFormat  18. Refreshes RecyclerView  
 19. setNegativeButton  20. Should use :id not ?
+21. B  22. B  23. ArrayList<String>  24. A  25. T
+26. ALTER TABLE scan_history ADD COLUMN plant_type TEXT NOT NULL DEFAULT 'Unknown'
+27. A  28. B  29. A  30. B  31. Room cannot store complex list objects without conversion
+32. ForeignKey  33. B  34. T  35. To confirm schema upgrades preserve data and do not crash
 
 ---
 
-**Your Score:** _____ / 20
+**Your Score:** _____ / 35
 
-**Status:** [ ] PASS (≥16) | [ ] FAIL (<16)
+**Status:** [ ] PASS (≥28) | [ ] FAIL (<28)

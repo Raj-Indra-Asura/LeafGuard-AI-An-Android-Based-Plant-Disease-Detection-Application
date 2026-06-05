@@ -265,6 +265,367 @@ Collect real performance evidence for discussion and viva defense.
 
 ---
 
+
+---
+
+## Detailed Starter Pack for Exercises 3-8
+
+The file already contains eight exercises, so this section expands the most technical ones with starter code, reporting templates, and reflection prompts. Use these pages as your self-contained lab guide while working through Week 11.
+
+### Exercise 3 Support: Confidence Formatter Unit Test Walkthrough
+
+#### Suggested Helper Class
+
+```java
+public final class ConfidenceFormatter {
+
+    private ConfidenceFormatter() {
+    }
+
+    public static String format(float confidence) {
+        if (confidence < 0.0f || confidence > 1.0f) {
+            throw new IllegalArgumentException("Confidence must be between 0 and 1");
+        }
+        return String.format(Locale.US, "%.1f%%", confidence * 100.0f);
+    }
+}
+```
+
+#### Suggested Test Class
+
+```java
+public class ConfidenceFormatterTest {
+
+    @Test
+    public void format_returnsOneDecimalPercentage() {
+        assertEquals("87.3%", ConfidenceFormatter.format(0.8734f));
+    }
+
+    @Test
+    public void format_returnsZeroPercentForZero() {
+        assertEquals("0.0%", ConfidenceFormatter.format(0.0f));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void format_throwsForNegativeValue() {
+        ConfidenceFormatter.format(-0.1f);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void format_throwsForValueAboveOne() {
+        ConfidenceFormatter.format(1.5f);
+    }
+}
+```
+
+#### What Each Assertion Teaches You
+
+- first test checks normal formatting logic
+- second test checks a lower boundary value
+- third and fourth tests confirm that invalid inputs are rejected
+
+#### Reflection Questions
+
+1. Why is it useful to test both valid and invalid input?
+2. What bug might happen if the formatter accepted `1.5f` silently?
+3. Why does this kind of logic belong in a local unit test rather than an Espresso test?
+
+---
+
+### Exercise 4 Support: Mockito Test for a Fake API Response
+
+#### Simple Interface to Mock
+
+```java
+public interface PredictionGateway {
+    PredictionResponse predict(byte[] imageBytes) throws IOException;
+}
+```
+
+```java
+public class PredictionResponse {
+    private final String disease;
+    private final float confidence;
+
+    public PredictionResponse(String disease, float confidence) {
+        this.disease = disease;
+        this.confidence = confidence;
+    }
+
+    public String getDisease() {
+        return disease;
+    }
+
+    public float getConfidence() {
+        return confidence;
+    }
+}
+```
+
+#### Small Use-Case Class Under Test
+
+```java
+public class PredictionSummaryUseCase {
+
+    private final PredictionGateway gateway;
+
+    public PredictionSummaryUseCase(PredictionGateway gateway) {
+        this.gateway = gateway;
+    }
+
+    public String buildSummary(byte[] imageBytes) throws IOException {
+        PredictionResponse response = gateway.predict(imageBytes);
+        return response.getDisease() + " (" + Math.round(response.getConfidence() * 100) + "%)";
+    }
+}
+```
+
+#### Mockito Test Example
+
+```java
+@RunWith(MockitoJUnitRunner.class)
+public class PredictionSummaryUseCaseTest {
+
+    @Mock
+    private PredictionGateway gateway;
+
+    @Test
+    public void buildSummary_returnsExpectedTextFromFakeResponse() throws Exception {
+        byte[] fakeImage = new byte[]{1, 2, 3};
+        when(gateway.predict(fakeImage)).thenReturn(new PredictionResponse("Healthy", 0.97f));
+
+        PredictionSummaryUseCase useCase = new PredictionSummaryUseCase(gateway);
+        String summary = useCase.buildSummary(fakeImage);
+
+        assertEquals("Healthy (97%)", summary);
+        verify(gateway).predict(fakeImage);
+    }
+
+    @Test(expected = IOException.class)
+    public void buildSummary_throwsWhenGatewayFails() throws Exception {
+        byte[] fakeImage = new byte[]{9, 9, 9};
+        when(gateway.predict(fakeImage)).thenThrow(new IOException("Server timeout"));
+
+        PredictionSummaryUseCase useCase = new PredictionSummaryUseCase(gateway);
+        useCase.buildSummary(fakeImage);
+    }
+}
+```
+
+#### Why This Is Powerful
+
+You tested your business logic without:
+- internet
+- FastAPI server
+- Retrofit setup
+- emulator
+
+That is the value of mocking.
+
+---
+
+### Exercise 5 Support: Espresso Starter for MainActivity
+
+#### Suggested Test Class
+
+```java
+@RunWith(AndroidJUnit4.class)
+public class MainActivityEspressoTest {
+
+    @Rule
+    public ActivityScenarioRule<MainActivity> activityRule =
+            new ActivityScenarioRule<>(MainActivity.class);
+
+    @Test
+    public void cameraButton_isVisible() {
+        onView(withId(R.id.btnCamera))
+                .check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void galleryButton_isVisible() {
+        onView(withId(R.id.btnGallery))
+                .check(matches(isDisplayed()));
+    }
+
+    @Test
+    public void tappingCameraButton_doesNotCrash() {
+        onView(withId(R.id.btnCamera)).perform(click());
+    }
+}
+```
+
+#### Espresso Syntax Cheat Sheet
+
+| Action | Example |
+|--------|---------|
+| find a view | `onView(withId(R.id.btnCamera))` |
+| click it | `.perform(click())` |
+| assert visible | `.check(matches(isDisplayed()))` |
+| assert text | `.check(matches(withText("Healthy")))` |
+
+#### Common Espresso Errors
+
+- **NoMatchingViewException**
+  - means the target view was not found
+  - check the view ID and current screen
+- **PerformException**
+  - often means the view is off screen, disabled, or covered
+- **AppNotIdleException**
+  - means the app is still doing work and Espresso is waiting
+
+#### Reflection Questions
+
+1. Why is "does not crash" still a valid beginner UI test?
+2. What is missing from this test if you want to verify the full scan flow?
+3. Why is `ActivityScenarioRule` preferred over very old testing APIs?
+
+---
+
+### Exercise 6 Support: Heap Dump Observation Worksheet
+
+Use this worksheet while inspecting the Memory Profiler.
+
+| Observation Area | What to Check | Your Notes |
+|------------------|--------------|------------|
+| Number of Activity instances | Do old screens disappear after back press? | |
+| Bitmap objects | Are multiple large bitmaps alive at once? | |
+| Byte arrays | Do upload/compression operations create large arrays repeatedly? | |
+| RecyclerView adapters | Are adapters retained after leaving the screen? | |
+| Database objects | Is Room behaving normally without huge growth? | |
+
+#### Interpretation Prompts
+
+- Which object category took the most memory?
+- Was that expected?
+- Which allocation looks wasteful?
+- Can you fix it by downsampling, clearing references, or moving work off the main thread?
+
+#### Example Observation Paragraph
+
+> During the heap dump, the largest objects were camera bitmaps created during image preview. Two bitmap instances existed at the same time because the full-size image was decoded before creating the model-sized copy. After introducing `inSampleSize` and scaling earlier, memory usage dropped noticeably.
+
+---
+
+### Exercise 7 Support: LeakCanary Investigation Worksheet
+
+#### Leak Report Template
+
+| Item | Details |
+|------|---------|
+| Screen tested | |
+| Action sequence | |
+| Leak found? | Yes / No |
+| Leaking class | |
+| Reference chain summary | |
+| Proposed fix | |
+| Verified after fix? | |
+
+#### Common Places to Inspect in LeafGuard
+
+- Activity fields storing adapters or listeners
+- static helper classes holding `Context`
+- long-running executors not shut down
+- dialogs shown after Activity is finishing
+- image-processing callbacks that outlive the screen
+
+#### Example No-Leak Note
+
+> LeakCanary was run on MainActivity, ResultActivity, and HistoryActivity. No retained Activity leak was reported after repeated open-close cycles and one device rotation test. This suggests the current Activity lifecycle cleanup is acceptable for submission.
+
+---
+
+### Exercise 8 Support: Benchmark Worksheet and Calculation Guide
+
+#### Raw Timing Table
+
+| Run | Offline (ms) | Cloud (ms) |
+|-----|--------------|------------|
+| 1 | | |
+| 2 | | |
+| 3 | | |
+| 4 | | |
+| 5 | | |
+| 6 | | |
+| 7 | | |
+| 8 | | |
+| 9 | | |
+| 10 | | |
+
+#### Summary Table
+
+| Metric | Offline | Cloud |
+|--------|---------|-------|
+| Fastest | | |
+| Slowest | | |
+| Average | | |
+
+#### How to Calculate Average
+
+```text
+Average = (run1 + run2 + run3 + ... + run10) / 10
+```
+
+#### Example Interpretation Paragraph
+
+> Offline inference was consistently faster than cloud inference because the image stayed on the device and did not need upload or server processing. Cloud inference remained useful as a fallback strategy, but the timing data shows that TFLite is better for low-latency prediction when the model is already bundled with the app.
+
+#### Follow-Up Questions
+
+1. Was the fastest mode also the most stable mode?
+2. Did network quality affect cloud timing a lot?
+3. If cloud predictions were more accurate, how would you justify the slower speed?
+
+---
+
+## Self-Assessment Rubric for Week 11 Exercises
+
+Use this checklist before claiming Week 11 is complete.
+
+### Testing Skills
+- [ ] I can explain the difference between local unit tests and instrumented tests.
+- [ ] I wrote at least one assertion that checks expected output exactly.
+- [ ] I used a fake or mocked dependency in at least one test.
+
+### Debugging Skills
+- [ ] I can read the first important line of a stack trace.
+- [ ] I can identify whether a bug is caused by null data, thread misuse, or wrong assumptions.
+- [ ] I documented at least one real bug and fix.
+
+### Performance Skills
+- [ ] I captured profiler evidence instead of guessing.
+- [ ] I can explain why large bitmaps are dangerous.
+- [ ] I can compare offline and cloud timings with numbers.
+
+### Report-Writing Skills
+- [ ] I have screenshots for major tests.
+- [ ] I have a table of results, not just paragraphs.
+- [ ] My conclusions are based on evidence from the app.
+
+---
+
+## Suggested Submission Evidence for Exercises 3-8
+
+Collect these items while you work so Week 12 report writing is easier.
+
+| Exercise | Recommended Evidence |
+|----------|----------------------|
+| Exercise 3 | JUnit results panel + test code snippet |
+| Exercise 4 | Mockito test screenshot + explanation paragraph |
+| Exercise 5 | Espresso pass result + emulator screenshot |
+| Exercise 6 | Heap dump screenshot + short memory note |
+| Exercise 7 | LeakCanary report or no-leak statement |
+| Exercise 8 | Benchmark table + timing log snippet |
+
+### Minimal Evidence Folder Checklist
+
+- [ ] one screenshot from Android Studio test results
+- [ ] one Logcat screenshot showing timing or debugging information
+- [ ] one profiler screenshot
+- [ ] one screenshot of a working app feature after a test
+
+---
+
 ## Completion Summary
 
 - [ ] All 8 exercises attempted
