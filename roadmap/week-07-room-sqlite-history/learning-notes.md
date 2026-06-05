@@ -822,3 +822,520 @@ Delete Scan                →   ✅ Delete from database
 ---
 
 **Now you have solid theoretical foundation for Room database. Practice with exercises to build muscle memory!**
+
+---
+
+## 11. SQL Query Optimization and Indexing
+
+Database performance matters when a user has 1000+ scan records. Slow queries cause visible lag in RecyclerView scrolling.
+
+### Understanding Query Execution
+
+SQLite executes queries by scanning tables. Without indexes, every query scans every row:
+
+```
+getAllScans() with 1000 records:
+  Scan row 1:  timestamp = 2024-06-01 ...
+  Scan row 2:  timestamp = 2024-06-02 ...
+  ...
+  Scan row 1000: timestamp = 2024-06-03 ...
+  Sort all 1000 results by timestamp
+  Total: O(n log n) operations
+```
+
+With 100,000 records this becomes visibly slow (>200ms).
+
+### Adding Indexes with Room
+
+An index is a pre-sorted copy of a column, enabling O(log n) lookups instead of O(n) scans:
+
+```java
+// In ScanRecord.java entity
+@Entity(
+    tableName = "scan_history",
+    indices = {
+        @Index(value = {"timestamp"}, name = "index_scan_timestamp"),
+        @Index(value = {"disease_name"}, name = "index_scan_disease")
+    }
+)
+public class ScanRecord {
+    // ... fields
+}
+```
+
+**When to add indexes**:
+- Columns in `ORDER BY` clauses (timestamp)
+- Columns in `WHERE` clauses with frequent searches (disease_name)
+- Foreign key columns (if you add relationships)
+
+**When NOT to add indexes**:
+- Every column (indexes slow down INSERT/UPDATE as they must be maintained)
+- Rarely queried columns (overhead not worth it)
+
+### Using EXPLAIN QUERY PLAN
+
+Debug slow queries with SQLite's query planner:
+
+```sql
+EXPLAIN QUERY PLAN 
+SELECT * FROM scan_history ORDER BY timestamp DESC;
+
+-- Without index: "SCAN TABLE scan_history"  (bad — O(n))
+-- With index:    "SEARCH TABLE scan_history USING INDEX index_scan_timestamp"  (good — O(log n))
+```
+
+### Efficient Query Patterns
+
+**Pagination with LIMIT and OFFSET** (for infinite scroll):
+
+```java
+// DAO method for paginated loading
+@Query("SELECT * FROM scan_history ORDER BY timestamp DESC LIMIT :pageSize OFFSET :offset")
+List<ScanRecord> getScansPage(int pageSize, int offset);
+
+// Usage in Activity:
+// Page 1: getScansPage(20, 0)   → records 1-20
+// Page 2: getScansPage(20, 20)  → records 21-40
+```
+
+**Counting with COUNT** (faster than fetching all rows):
+
+```java
+@Query("SELECT COUNT(*) FROM scan_history")
+int getTotalScanCount();
+
+@Query("SELECT COUNT(*) FROM scan_history WHERE disease_name LIKE '%healthy%'")
+int getHealthyScanCount();
+```
+
+**Aggregation queries** (statistics screen):
+
+```java
+@Query("SELECT AVG(confidence) FROM scan_history")
+float getAverageConfidence();
+
+@Query("SELECT disease_name, COUNT(*) as scan_count FROM scan_history GROUP BY disease_name ORDER BY scan_count DESC LIMIT 5")
+List<DiseaseCountResult> getTopDiseases();
+```
+
+For the `getTopDiseases()` result, create a simple POJO:
+
+```java
+// DiseaseCountResult.java — no @Entity annotation (not a table, just a result)
+public class DiseaseCountResult {
+    public String disease_name;  // Must match SELECT column name
+    public int scan_count;        // Must match SELECT column alias
+}
+```
+
+### Search Query with LIKE
+
+Full-text search across disease names:
+
+```java
+@Query("SELECT * FROM scan_history WHERE disease_name LIKE '%' || :searchTerm || '%' ORDER BY timestamp DESC")
+List<ScanRecord> searchByDisease(String searchTerm);
+```
+
+**Warning**: `LIKE '%prefix%'` is slow on large tables (can't use index effectively). For large datasets, consider SQLite's FTS5 (Full Text Search) extension, though Room does not support it directly through annotations.
+
+---
+
+## 12. Room Database Testing with In-Memory Database
+
+Testing Room DAOs is easy because SQLite can run entirely in memory (no file I/O, tests run fast, database is empty at start of each test).
+
+### Setup: In-Memory Database in JUnit Tests
+
+```java
+// ScanDaoTest.java (in src/test or src/androidTest)
+import androidx.room.Room;
+import androidx.test.core.app.ApplicationProvider;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import static org.junit.Assert.*;
+
+public class ScanDaoTest {
+
+    private AppDatabase database;
+    private ScanDao dao;
+
+    @Before
+    public void setup() {
+        // In-memory database: data lost after each test (intentional)
+        database = Room.inMemoryDatabaseBuilder(
+                ApplicationProvider.getApplicationContext(),
+                AppDatabase.class
+        ).allowMainThreadQueries()  // Only for testing! Never in production.
+         .build();
+        dao = database.scanDao();
+    }
+
+    @After
+    public void teardown() {
+        database.close();
+    }
+
+    @Test
+    public void testInsertAndRetrieve() {
+        // Given
+        ScanRecord record = new ScanRecord();
+        record.setDiseaseName("Tomato___Early_blight");
+        record.setConfidence(0.91f);
+        record.setTimestamp(System.currentTimeMillis());
+
+        // When
+        long id = dao.insertScan(record);
+
+        // Then
+        List<ScanRecord> all = dao.getAllScans();
+        assertEquals(1, all.size());
+        assertEquals("Tomato___Early_blight", all.get(0).getDiseaseName());
+        assertTrue(id > 0);
+    }
+
+    @Test
+    public void testGetAllScans_orderedByTimestampDesc() {
+        // Insert three records with different timestamps
+        insertScanAtTime("Disease A", System.currentTimeMillis() - 2000);
+        insertScanAtTime("Disease B", System.currentTimeMillis() - 1000);
+        insertScanAtTime("Disease C", System.currentTimeMillis());
+
+        List<ScanRecord> result = dao.getAllScans();
+
+        assertEquals(3, result.size());
+        assertEquals("Disease C", result.get(0).getDiseaseName());  // Newest first
+        assertEquals("Disease A", result.get(2).getDiseaseName());  // Oldest last
+    }
+
+    @Test
+    public void testDelete() {
+        ScanRecord record = new ScanRecord();
+        record.setDiseaseName("Test Disease");
+        record.setTimestamp(System.currentTimeMillis());
+        long id = dao.insertScan(record);
+
+        dao.deleteScanById(id);
+
+        assertNull(dao.getScanById(id));
+        assertEquals(0, dao.getAllScans().size());
+    }
+
+    @Test
+    public void testGetScanById_returnsNullForMissingId() {
+        assertNull(dao.getScanById(99999L));
+    }
+
+    private void insertScanAtTime(String diseaseName, long timestamp) {
+        ScanRecord record = new ScanRecord();
+        record.setDiseaseName(diseaseName);
+        record.setTimestamp(timestamp);
+        record.setConfidence(0.80f);
+        dao.insertScan(record);
+    }
+}
+```
+
+**Key points**:
+- `inMemoryDatabaseBuilder` creates a fresh, empty database for each test
+- `allowMainThreadQueries()` disables the thread check — necessary in tests but forbidden in production
+- `@Before` creates the database, `@After` closes it
+- Tests are independent — each test starts with an empty database
+
+### Testing with AndroidJUnit4
+
+Run these tests as instrumented tests on an Android device/emulator:
+
+```java
+@RunWith(AndroidJUnit4.class)
+public class ScanDaoTest {
+    // ... same test code
+}
+```
+
+Or as local unit tests with Robolectric (faster, runs on JVM):
+
+```groovy
+// build.gradle
+testImplementation "org.robolectric:robolectric:4.11.1"
+testImplementation "androidx.room:room-testing:2.6.0"
+```
+
+---
+
+## 13. LiveData and Reactive Database Queries
+
+**LiveData** is an observable data holder. When the database changes, all active observers are automatically notified and the UI updates without polling.
+
+### LiveData vs Regular List
+
+**Regular query** (current implementation — requires manual refresh):
+
+```java
+// DAO
+@Query("SELECT * FROM scan_history ORDER BY timestamp DESC")
+List<ScanRecord> getAllScans();
+
+// Activity — must call loadHistory() every time data might change
+private void loadHistory() {
+    executor.execute(() -> {
+        List<ScanRecord> scans = dao.getAllScans();  // One-time read
+        runOnUiThread(() -> adapter.submitList(scans));
+    });
+}
+```
+
+**Problem**: If another part of the app inserts a new scan, `HistoryActivity` doesn't know — the user must manually pull-to-refresh or re-enter the activity.
+
+**LiveData query** (reactive — automatically updates):
+
+```java
+// DAO
+@Query("SELECT * FROM scan_history ORDER BY timestamp DESC")
+LiveData<List<ScanRecord>> getAllScansLive();  // Note: LiveData return type
+
+// Activity
+private void observeHistory() {
+    dao.getAllScansLive().observe(this, scans -> {
+        // Called automatically whenever the table changes
+        adapter.submitList(scans);
+        boolean hasItems = scans != null && !scans.isEmpty();
+        recyclerView.setVisibility(hasItems ? View.VISIBLE : View.GONE);
+        emptyText.setVisibility(hasItems ? View.GONE : View.VISIBLE);
+    });
+}
+```
+
+**LiveData lifecycle**: Room automatically runs the query on a background thread, posts results to the main thread, and stops observing when the Activity/Fragment is destroyed. No manual thread management needed.
+
+### LiveData Architecture Pattern
+
+```
+DAO (LiveData source)
+        │
+        ▼
+Repository (optional business logic layer)
+        │
+        ▼
+ViewModel (survives screen rotation, holds LiveData)
+        │
+        ▼
+Activity/Fragment (observes LiveData, updates UI)
+```
+
+### Adding ViewModel for LiveData
+
+```java
+// ScanHistoryViewModel.java
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.ViewModel;
+import java.util.List;
+
+public class ScanHistoryViewModel extends ViewModel {
+
+    private final ScanDao scanDao;
+    private final LiveData<List<ScanRecord>> allScans;
+
+    public ScanHistoryViewModel(Application application) {
+        AppDatabase db = AppDatabase.getInstance(application);
+        scanDao = db.scanDao();
+        allScans = scanDao.getAllScansLive();
+    }
+
+    public LiveData<List<ScanRecord>> getAllScans() {
+        return allScans;
+    }
+}
+```
+
+```java
+// Updated HistoryActivity.java
+private ScanHistoryViewModel viewModel;
+
+@Override
+protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    // ...
+
+    viewModel = new ViewModelProvider(this).get(ScanHistoryViewModel.class);
+    viewModel.getAllScans().observe(this, scans -> {
+        adapter.submitList(scans);
+    });
+}
+// No need for ExecutorService, loadHistory(), or runOnUiThread()!
+```
+
+**Key advantage**: If the user saves a scan in `ResultActivity`, the `HistoryActivity` (if open in the back stack) will automatically show the new record.
+
+### LiveData vs Flow (Advanced)
+
+For completeness, Kotlin Coroutines offers **Flow**, which is LiveData's modern replacement:
+
+| Feature | LiveData | Kotlin Flow |
+|---------|----------|-------------|
+| Language | Java and Kotlin | Kotlin only |
+| Threading | Room handles it | Need `flowOn(Dispatchers.IO)` |
+| Operators | Limited | Rich (map, filter, combine) |
+| Backpressure | No | Yes |
+| CSE 2206 focus | ✅ Use this | Advanced—optional |
+
+Since LeafGuard AI uses Java, **LiveData is the appropriate choice** for this course.
+
+---
+
+## 14. Database Migrations
+
+When you update your app and add new columns or tables, users who already have the old database version need their data migrated safely.
+
+### Version Numbers
+
+Every Room database has a version number. Increment it whenever you change the schema:
+
+```java
+@Database(
+    entities = {ScanRecord.class},
+    version = 2,          // ← Incremented from 1
+    exportSchema = false
+)
+public abstract class AppDatabase extends RoomDatabase {
+    // ...
+}
+```
+
+If you increment the version without providing a migration, Room will throw `IllegalStateException` at runtime.
+
+### Writing a Migration
+
+```java
+// Migration from version 1 to version 2
+// Added: latitude and longitude columns to scan_history
+static final Migration MIGRATION_1_2 = new Migration(1, 2) {
+    @Override
+    public void migrate(SupportSQLiteDatabase database) {
+        // Add new columns with DEFAULT values (required for existing rows)
+        database.execSQL(
+            "ALTER TABLE scan_history ADD COLUMN latitude REAL NOT NULL DEFAULT 0.0"
+        );
+        database.execSQL(
+            "ALTER TABLE scan_history ADD COLUMN longitude REAL NOT NULL DEFAULT 0.0"
+        );
+    }
+};
+```
+
+**Register migration in the database builder**:
+
+```java
+// AppDatabase.java
+public static AppDatabase getInstance(Context context) {
+    if (INSTANCE == null) {
+        synchronized (AppDatabase.class) {
+            if (INSTANCE == null) {
+                INSTANCE = Room.databaseBuilder(
+                        context.getApplicationContext(),
+                        AppDatabase.class,
+                        "leafguard_database"
+                )
+                .addMigrations(MIGRATION_1_2)  // ← Register migration
+                .build();
+            }
+        }
+    }
+    return INSTANCE;
+}
+```
+
+### What SQLite ALTER TABLE Can and Cannot Do
+
+| Operation | Supported? | Workaround |
+|-----------|-----------|------------|
+| Add column | ✅ Yes | — |
+| Rename column | ✅ Yes (SQLite 3.25+) | — |
+| Drop column | ⚠️ SQLite 3.35+ only | Create new table, copy data, drop old |
+| Change column type | ❌ No | Create new table, copy data, drop old |
+| Add NOT NULL without DEFAULT | ❌ No | Add with DEFAULT, then update |
+
+**Migration that requires table recreation** (advanced):
+
+```java
+static final Migration MIGRATION_2_3 = new Migration(2, 3) {
+    @Override
+    public void migrate(SupportSQLiteDatabase database) {
+        // Step 1: Create new table with desired schema
+        database.execSQL(
+            "CREATE TABLE scan_history_new (" +
+            "  id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL," +
+            "  disease_name TEXT NOT NULL DEFAULT ''," +
+            "  confidence REAL NOT NULL DEFAULT 0," +
+            "  timestamp INTEGER NOT NULL DEFAULT 0," +
+            "  image_uri TEXT" +  // ← New non-null column (impossible with ALTER)
+            ")"
+        );
+        // Step 2: Copy data
+        database.execSQL(
+            "INSERT INTO scan_history_new (id, disease_name, confidence, timestamp) " +
+            "SELECT id, disease_name, confidence, timestamp FROM scan_history"
+        );
+        // Step 3: Drop old table and rename
+        database.execSQL("DROP TABLE scan_history");
+        database.execSQL("ALTER TABLE scan_history_new RENAME TO scan_history");
+    }
+};
+```
+
+### Fallback: Destructive Migration (Development Only)
+
+During development (not in production — destroys user data!):
+
+```java
+INSTANCE = Room.databaseBuilder(...)
+        .fallbackToDestructiveMigration()  // Wipe and recreate on version mismatch
+        .build();
+```
+
+**Never use `fallbackToDestructiveMigration()` in a released app** — it deletes all user data on update.
+
+---
+
+## 15. CSE 2206 Exam Preparation: Advanced Questions
+
+These questions test deeper understanding beyond basic Room API usage.
+
+### Q: Why can't Room queries run on the main thread?
+
+**Answer**: Android's main thread (UI thread) must respond to user interactions within 16ms per frame (60 fps). A database query scanning 1000+ records can take 50-200ms. If the main thread is blocked, the UI freezes — this triggers Android's "Application Not Responding" (ANR) dialog after 5 seconds. Room enforces this rule at compile time when you use `LiveData`, and at runtime when you run queries synchronously (throws `IllegalStateException: Cannot access database on the main thread`).
+
+### Q: What is the difference between @Insert and @Query for inserting data?
+
+```java
+// Option 1: @Insert annotation (preferred for simple inserts)
+@Insert(onConflict = OnConflictStrategy.REPLACE)
+long insertScan(ScanRecord record);
+
+// Option 2: @Query annotation (needed for conditional inserts)
+@Query("INSERT INTO scan_history (disease_name, confidence) VALUES (:disease, :confidence)")
+void insertRaw(String disease, float confidence);
+```
+
+`@Insert` is preferred — Room generates optimal SQL, handles conflicts declaratively, and returns the new ID automatically.
+
+### Q: Explain the Singleton pattern in AppDatabase
+
+If multiple instances of `AppDatabase` were created, each would have its own database connection. SQLite allows only one writer at a time — multiple connections cause lock conflicts and data corruption. The Singleton pattern ensures only one `AppDatabase` object exists per app process, preventing these conflicts. The `synchronized` keyword makes it thread-safe if two threads try to create the instance simultaneously.
+
+### Q: What is OnConflictStrategy.REPLACE vs IGNORE?
+
+| Strategy | Behavior |
+|----------|----------|
+| `REPLACE` | Delete the conflicting old row, insert the new row. Old ID is lost. |
+| `IGNORE` | Keep the old row, silently drop the new insert. |
+| `ABORT` (default) | Roll back the transaction, throw an exception. |
+
+For LeafGuard AI scan history, `REPLACE` makes sense: if somehow the same record is saved twice (network retry), the latest version wins.
+
+### Q: How does RecyclerView's ViewHolder improve performance?
+
+Without ViewHolder, `onBindViewHolder()` would call `itemView.findViewById(R.id.textDisease)` every time a list item is scrolled into view. `findViewById` traverses the entire view hierarchy tree to find the view — O(n) where n = number of views in the item layout. With ViewHolder, references are looked up once in `onCreateViewHolder()` and stored as fields. `onBindViewHolder()` then directly sets text on the cached reference — O(1). For a list scrolling at 60fps with 20 visible items, this eliminates 20 × 60 = 1,200 `findViewById` calls per second.
+
+---
