@@ -1,0 +1,433 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  LeafGuard AI - Master Structure Diagram
+  Format : UML 2.x XMI (Eclipse UML2)
+  How to open: Astah Professional / Astah UML
+               File > Import > XMI 2.x (Eclipse UML2) > select this file
+
+  Packages modelled
+  -----------------
+  1. com.leafguard            Android Activity layer (Java)
+  2. com.leafguard.network    Retrofit / REST networking
+  3. com.leafguard.ml         On-device TFLite inference
+  4. com.leafguard.database   Room persistence (ScanRecord / DAO)
+  5. com.leafguard.utils      Notification helper
+  6. backend_api              Python / FastAPI server
+  7. model                    Keras & TFLite model resources
+-->
+<xmi:XMI xmi:version="2.1"
+         xmlns:xmi="http://www.omg.org/spec/XMI/20131001"
+         xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML">
+
+  <uml:Model xmi:id="_mdl" name="LeafGuardAI_MasterStructure">
+
+    <!-- ============================================================
+         PACKAGE 1 : Android UI Layer  (com.leafguard)
+         ============================================================ -->
+    <packagedElement xmi:type="uml:Package" xmi:id="_pkg_android" name="com.leafguard">
+
+      <!-- External super-class reference -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_appcompat" name="AppCompatActivity" visibility="public"/>
+
+      <!-- ─── MainActivity ─────────────────────────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_main" name="MainActivity" visibility="public">
+        <generalization xmi:id="_gen_main" general="_cls_appcompat"/>
+        <ownedAttribute xmi:id="_a_main_binding"     name="binding"            visibility="private"/>
+        <ownedAttribute xmi:id="_a_main_cloudmode"   name="cloudMode"          visibility="private"/>
+        <ownedAttribute xmi:id="_a_main_imguri"      name="selectedImageUri"   visibility="private"/>
+        <ownedAttribute xmi:id="_a_main_penduri"     name="pendingCameraUri"   visibility="private"/>
+        <ownedAttribute xmi:id="_a_main_executor"    name="detectionExecutor"  visibility="private"/>
+        <ownedOperation xmi:id="_op_main_create"   name="onCreate"             visibility="protected"/>
+        <ownedOperation xmi:id="_op_main_setupbtn" name="setupButtons"         visibility="private"/>
+        <ownedOperation xmi:id="_op_main_modetgl"  name="setupModeToggle"      visibility="private"/>
+        <ownedOperation xmi:id="_op_main_detect"   name="detectDisease"        visibility="private"/>
+        <ownedOperation xmi:id="_op_main_cloud"    name="runCloudDetection"    visibility="private"/>
+        <ownedOperation xmi:id="_op_main_offline"  name="runOfflineDetection"  visibility="private"/>
+        <ownedOperation xmi:id="_op_main_result"   name="openResult"           visibility="private">
+          <ownedParameter xmi:id="_p_main_pred" name="prediction" direction="in"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_main_camuri"   name="createImageUri"       visibility="private"/>
+        <ownedOperation xmi:id="_op_main_copy"     name="copyUriToCacheFile"   visibility="private">
+          <ownedParameter xmi:id="_p_main_uri" name="imageUri" direction="in"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_main_loadbmp"  name="loadBitmap"           visibility="private">
+          <ownedParameter xmi:id="_p_main_bmpuri" name="imageUri" direction="in"/>
+          <ownedParameter xmi:id="_p_main_bmpret" name="return"    direction="return"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_main_notif"    name="requestNotificationPermissionIfNeeded" visibility="private"/>
+      </packagedElement>
+
+      <!-- ─── ResultActivity ───────────────────────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_result" name="ResultActivity" visibility="public">
+        <generalization xmi:id="_gen_result" general="_cls_appcompat"/>
+        <ownedAttribute xmi:id="_a_result_exdisease" name="EXTRA_DISEASE_NAME"  visibility="public"  isStatic="true" isReadOnly="true"/>
+        <ownedAttribute xmi:id="_a_result_exconf"    name="EXTRA_CONFIDENCE"    visibility="public"  isStatic="true" isReadOnly="true"/>
+        <ownedAttribute xmi:id="_a_result_exsymp"    name="EXTRA_SYMPTOMS"      visibility="public"  isStatic="true" isReadOnly="true"/>
+        <ownedAttribute xmi:id="_a_result_extreat"   name="EXTRA_TREATMENT"     visibility="public"  isStatic="true" isReadOnly="true"/>
+        <ownedAttribute xmi:id="_a_result_exprev"    name="EXTRA_PREVENTION"    visibility="public"  isStatic="true" isReadOnly="true"/>
+        <ownedAttribute xmi:id="_a_result_exuri"     name="EXTRA_IMAGE_URI"     visibility="public"  isStatic="true" isReadOnly="true"/>
+        <ownedAttribute xmi:id="_a_result_binding"   name="binding"             visibility="private"/>
+        <ownedAttribute xmi:id="_a_result_disease"   name="diseaseName"         visibility="private"/>
+        <ownedAttribute xmi:id="_a_result_conf"      name="confidence"          visibility="private"/>
+        <ownedAttribute xmi:id="_a_result_symp"      name="symptoms"            visibility="private"/>
+        <ownedAttribute xmi:id="_a_result_treat"     name="treatment"           visibility="private"/>
+        <ownedAttribute xmi:id="_a_result_prev"      name="prevention"          visibility="private"/>
+        <ownedAttribute xmi:id="_a_result_imguri"    name="imageUri"            visibility="private"/>
+        <ownedAttribute xmi:id="_a_result_executor"  name="databaseExecutor"    visibility="private"/>
+        <ownedOperation xmi:id="_op_result_create"  name="onCreate"        visibility="protected"/>
+        <ownedOperation xmi:id="_op_result_read"    name="readIntentExtras" visibility="private"/>
+        <ownedOperation xmi:id="_op_result_render"  name="renderResult"     visibility="private"/>
+        <ownedOperation xmi:id="_op_result_buttons" name="setupButtons"     visibility="private"/>
+        <ownedOperation xmi:id="_op_result_share"   name="shareResult"      visibility="private"/>
+        <ownedOperation xmi:id="_op_result_destroy" name="onDestroy"        visibility="protected"/>
+      </packagedElement>
+
+      <!-- ─── HistoryActivity ──────────────────────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_history" name="HistoryActivity" visibility="public">
+        <generalization xmi:id="_gen_history" general="_cls_appcompat"/>
+        <ownedAttribute xmi:id="_a_history_binding"  name="binding"          visibility="private"/>
+        <ownedAttribute xmi:id="_a_history_executor" name="databaseExecutor" visibility="private"/>
+        <ownedAttribute xmi:id="_a_history_adapter"  name="adapter"          visibility="private"/>
+        <ownedOperation xmi:id="_op_history_create"  name="onCreate"         visibility="protected"/>
+        <ownedOperation xmi:id="_op_history_load"    name="loadHistory"      visibility="private"/>
+        <ownedOperation xmi:id="_op_history_render"  name="renderHistory"    visibility="private">
+          <ownedParameter xmi:id="_p_hist_scans" name="scans" direction="in"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_history_delete"  name="deleteRecord"     visibility="private">
+          <ownedParameter xmi:id="_p_hist_rec" name="record" direction="in"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_history_resume"  name="onResume"         visibility="protected"/>
+        <ownedOperation xmi:id="_op_history_destroy" name="onDestroy"        visibility="protected"/>
+      </packagedElement>
+
+      <!-- ─── HistoryDetailActivity ────────────────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_histdet" name="HistoryDetailActivity" visibility="public">
+        <generalization xmi:id="_gen_histdet" general="_cls_appcompat"/>
+        <ownedAttribute xmi:id="_a_hd_exid"      name="EXTRA_SCAN_ID"    visibility="public"  isStatic="true" isReadOnly="true"/>
+        <ownedAttribute xmi:id="_a_hd_binding"   name="binding"          visibility="private"/>
+        <ownedAttribute xmi:id="_a_hd_executor"  name="databaseExecutor" visibility="private"/>
+        <ownedOperation xmi:id="_op_hd_create"   name="onCreate"         visibility="protected"/>
+        <ownedOperation xmi:id="_op_hd_load"     name="loadRecord"       visibility="private">
+          <ownedParameter xmi:id="_p_hd_id" name="scanId" direction="in"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_hd_render"   name="renderRecord"     visibility="private">
+          <ownedParameter xmi:id="_p_hd_rec" name="record" direction="in"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_hd_buttons"  name="setupButtons"     visibility="private">
+          <ownedParameter xmi:id="_p_hd_btnid" name="scanId" direction="in"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_hd_destroy"  name="onDestroy"        visibility="protected"/>
+      </packagedElement>
+
+      <!-- ─── DiseaseLibraryActivity ───────────────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_library" name="DiseaseLibraryActivity" visibility="public">
+        <generalization xmi:id="_gen_library" general="_cls_appcompat"/>
+        <ownedOperation xmi:id="_op_lib_create" name="onCreate" visibility="protected"/>
+      </packagedElement>
+
+      <!-- ─── SettingsActivity ─────────────────────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_settings" name="SettingsActivity" visibility="public">
+        <generalization xmi:id="_gen_settings" general="_cls_appcompat"/>
+        <ownedOperation xmi:id="_op_set_create" name="onCreate" visibility="protected"/>
+      </packagedElement>
+
+    </packagedElement>
+    <!-- end com.leafguard -->
+
+
+    <!-- ============================================================
+         PACKAGE 2 : Network Layer  (com.leafguard.network)
+         ============================================================ -->
+    <packagedElement xmi:type="uml:Package" xmi:id="_pkg_network" name="com.leafguard.network">
+
+      <!-- ─── ApiService (Retrofit Interface) ──────────────────── -->
+      <packagedElement xmi:type="uml:Interface" xmi:id="_iface_api" name="ApiService" visibility="public">
+        <ownedOperation xmi:id="_op_api_predict" name="predict" visibility="public">
+          <ownedParameter xmi:id="_p_api_img"  name="image"  direction="in"/>
+          <ownedParameter xmi:id="_p_api_ret"  name="return" direction="return"/>
+        </ownedOperation>
+      </packagedElement>
+
+      <!-- ─── RetrofitClient ───────────────────────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_retrofit" name="RetrofitClient" visibility="public">
+        <ownedOperation xmi:id="_op_ret_inst" name="getInstance"  visibility="public" isStatic="true">
+          <ownedParameter xmi:id="_p_ret_url"  name="baseUrl" direction="in"/>
+          <ownedParameter xmi:id="_p_ret_ret"  name="return"  direction="return"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_ret_api"  name="getApiService" visibility="public" isStatic="true">
+          <ownedParameter xmi:id="_p_ret_url2" name="baseUrl" direction="in"/>
+          <ownedParameter xmi:id="_p_ret_ret2" name="return"  direction="return"/>
+        </ownedOperation>
+      </packagedElement>
+
+      <!-- ─── PredictionResponse (data class) ──────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_predresp" name="PredictionResponse" visibility="public">
+        <ownedAttribute xmi:id="_a_pr_disease"    name="disease"    visibility="public"/>
+        <ownedAttribute xmi:id="_a_pr_confidence" name="confidence" visibility="public"/>
+        <ownedAttribute xmi:id="_a_pr_symptoms"   name="symptoms"   visibility="public"/>
+        <ownedAttribute xmi:id="_a_pr_treatment"  name="treatment"  visibility="public"/>
+        <ownedAttribute xmi:id="_a_pr_prevention" name="prevention" visibility="public"/>
+      </packagedElement>
+
+    </packagedElement>
+    <!-- end com.leafguard.network -->
+
+
+    <!-- ============================================================
+         PACKAGE 3 : ML Layer  (com.leafguard.ml)
+         ============================================================ -->
+    <packagedElement xmi:type="uml:Package" xmi:id="_pkg_ml" name="com.leafguard.ml">
+
+      <!-- ─── TFLiteClassifier ─────────────────────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_tflite" name="TFLiteClassifier" visibility="public">
+        <ownedOperation xmi:id="_op_tfl_classify" name="classify" visibility="public">
+          <ownedParameter xmi:id="_p_tfl_bitmap" name="bitmap" direction="in"/>
+          <ownedParameter xmi:id="_p_tfl_ret"    name="return" direction="return"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_tfl_close" name="close" visibility="public"/>
+      </packagedElement>
+
+    </packagedElement>
+    <!-- end com.leafguard.ml -->
+
+
+    <!-- ============================================================
+         PACKAGE 4 : Database Layer  (com.leafguard.database)
+         ============================================================ -->
+    <packagedElement xmi:type="uml:Package" xmi:id="_pkg_db" name="com.leafguard.database">
+
+      <!-- ─── AppDatabase (Room) ───────────────────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_appdb" name="AppDatabase" visibility="public" isAbstract="true">
+        <ownedOperation xmi:id="_op_db_inst" name="getInstance" visibility="public" isStatic="true">
+          <ownedParameter xmi:id="_p_db_ctx" name="context" direction="in"/>
+          <ownedParameter xmi:id="_p_db_ret" name="return"  direction="return"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_db_dao" name="scanDao" visibility="public" isAbstract="true">
+          <ownedParameter xmi:id="_p_db_dao_ret" name="return" direction="return"/>
+        </ownedOperation>
+      </packagedElement>
+
+      <!-- ─── ScanDao (Room DAO Interface) ────────────────────── -->
+      <packagedElement xmi:type="uml:Interface" xmi:id="_iface_scandao" name="ScanDao" visibility="public">
+        <ownedOperation xmi:id="_op_dao_all" name="getAllScans" visibility="public">
+          <ownedParameter xmi:id="_p_dao_allret" name="return" direction="return"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_dao_byid" name="getScanById" visibility="public">
+          <ownedParameter xmi:id="_p_dao_id"    name="id"     direction="in"/>
+          <ownedParameter xmi:id="_p_dao_byret" name="return" direction="return"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_dao_insert" name="insertScan" visibility="public">
+          <ownedParameter xmi:id="_p_dao_insrec" name="record" direction="in"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_dao_delid" name="deleteScanById" visibility="public">
+          <ownedParameter xmi:id="_p_dao_delid" name="id" direction="in"/>
+        </ownedOperation>
+      </packagedElement>
+
+      <!-- ─── ScanRecord (Room Entity) ─────────────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_scanrec" name="ScanRecord" visibility="public">
+        <ownedAttribute xmi:id="_a_sr_id"         name="id"          visibility="private"/>
+        <ownedAttribute xmi:id="_a_sr_disease"    name="diseaseName" visibility="private"/>
+        <ownedAttribute xmi:id="_a_sr_confidence" name="confidence"  visibility="private"/>
+        <ownedAttribute xmi:id="_a_sr_symptoms"   name="symptoms"    visibility="private"/>
+        <ownedAttribute xmi:id="_a_sr_treatment"  name="treatment"   visibility="private"/>
+        <ownedAttribute xmi:id="_a_sr_prevention" name="prevention"  visibility="private"/>
+        <ownedAttribute xmi:id="_a_sr_imageuri"   name="imageUri"    visibility="private"/>
+        <ownedAttribute xmi:id="_a_sr_timestamp"  name="timestamp"   visibility="private"/>
+        <ownedOperation xmi:id="_op_sr_getid"      name="getId"          visibility="public"/>
+        <ownedOperation xmi:id="_op_sr_getdisease" name="getDiseaseName" visibility="public"/>
+        <ownedOperation xmi:id="_op_sr_getconf"    name="getConfidence"  visibility="public"/>
+        <ownedOperation xmi:id="_op_sr_getsymp"    name="getSymptoms"    visibility="public"/>
+        <ownedOperation xmi:id="_op_sr_gettreat"   name="getTreatment"   visibility="public"/>
+        <ownedOperation xmi:id="_op_sr_getprev"    name="getPrevention"  visibility="public"/>
+        <ownedOperation xmi:id="_op_sr_getts"      name="getTimestamp"   visibility="public"/>
+      </packagedElement>
+
+    </packagedElement>
+    <!-- end com.leafguard.database -->
+
+
+    <!-- ============================================================
+         PACKAGE 5 : Utilities  (com.leafguard.utils)
+         ============================================================ -->
+    <packagedElement xmi:type="uml:Package" xmi:id="_pkg_utils" name="com.leafguard.utils">
+
+      <!-- ─── NotificationHelper ───────────────────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_notif" name="NotificationHelper" visibility="public">
+        <ownedAttribute xmi:id="_a_notif_cid"  name="CHANNEL_ID"  visibility="public" isStatic="true" isReadOnly="true"/>
+        <ownedOperation xmi:id="_op_notif_ch"  name="createChannel" visibility="public" isStatic="true">
+          <ownedParameter xmi:id="_p_notif_ctx" name="context" direction="in"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_notif_send" name="sendScanReminderNotification" visibility="public" isStatic="true">
+          <ownedParameter xmi:id="_p_notif_ctx2"  name="context" direction="in"/>
+          <ownedParameter xmi:id="_p_notif_title" name="title"   direction="in"/>
+          <ownedParameter xmi:id="_p_notif_msg"   name="message" direction="in"/>
+        </ownedOperation>
+      </packagedElement>
+
+    </packagedElement>
+    <!-- end com.leafguard.utils -->
+
+
+    <!-- ============================================================
+         PACKAGE 6 : Backend API  (Python / FastAPI)
+         ============================================================ -->
+    <packagedElement xmi:type="uml:Package" xmi:id="_pkg_backend" name="backend_api">
+
+      <!-- ─── LeafGuardAPI (main.py FastAPI app) ───────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_fastapiapp" name="LeafGuardAPI" visibility="public">
+        <ownedAttribute xmi:id="_a_fa_diseaseinfo"  name="DISEASE_INFO"  visibility="private" isStatic="true"/>
+        <ownedAttribute xmi:id="_a_fa_classnames"   name="CLASS_NAMES"   visibility="private" isStatic="true"/>
+        <ownedAttribute xmi:id="_a_fa_predictor"    name="predictor"     visibility="private" isStatic="true"/>
+        <ownedOperation xmi:id="_op_fa_health"     name="GET_health_check"  visibility="public"/>
+        <ownedOperation xmi:id="_op_fa_diseases"   name="GET_list_diseases" visibility="public"/>
+        <ownedOperation xmi:id="_op_fa_predict"    name="POST_predict"      visibility="public">
+          <ownedParameter xmi:id="_p_fa_img"  name="image"  direction="in"/>
+          <ownedParameter xmi:id="_p_fa_ret"  name="return" direction="return"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_fa_preprocess" name="preprocess_image" visibility="private">
+          <ownedParameter xmi:id="_p_fa_bytes" name="rawBytes" direction="in"/>
+          <ownedParameter xmi:id="_p_fa_preret" name="return"  direction="return"/>
+        </ownedOperation>
+      </packagedElement>
+
+      <!-- ─── ModelPredictor (model_loader.py) ─────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_predictor" name="ModelPredictor" visibility="public">
+        <ownedAttribute xmi:id="_a_mp_classnames" name="classNames"   visibility="public"/>
+        <ownedAttribute xmi:id="_a_mp_model"      name="model"        visibility="public"/>
+        <ownedAttribute xmi:id="_a_mp_usemock"    name="useMock"      visibility="public"/>
+        <ownedAttribute xmi:id="_a_mp_loaded"     name="modelLoaded"  visibility="public"/>
+        <ownedOperation xmi:id="_op_mp_predict"    name="predict"       visibility="public">
+          <ownedParameter xmi:id="_p_mp_batch" name="imageBatch" direction="in"/>
+          <ownedParameter xmi:id="_p_mp_ret"   name="return"     direction="return"/>
+        </ownedOperation>
+        <ownedOperation xmi:id="_op_mp_mockpred"   name="_mock_predict" visibility="private">
+          <ownedParameter xmi:id="_p_mp_mockbatch" name="imageBatch" direction="in"/>
+        </ownedOperation>
+      </packagedElement>
+
+      <!-- ─── load_predictor (factory function) ────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_loadpred" name="load_predictor" visibility="public">
+        <ownedOperation xmi:id="_op_lp_load" name="load_predictor" visibility="public" isStatic="true">
+          <ownedParameter xmi:id="_p_lp_names" name="classNames" direction="in"/>
+          <ownedParameter xmi:id="_p_lp_ret"   name="return"     direction="return"/>
+        </ownedOperation>
+      </packagedElement>
+
+      <!-- ─── PredictionResult (Pydantic BaseModel) ────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_predresult" name="PredictionResult" visibility="public">
+        <ownedAttribute xmi:id="_a_prr_disease"    name="disease"    visibility="public"/>
+        <ownedAttribute xmi:id="_a_prr_confidence" name="confidence" visibility="public"/>
+        <ownedAttribute xmi:id="_a_prr_symptoms"   name="symptoms"   visibility="public"/>
+        <ownedAttribute xmi:id="_a_prr_treatment"  name="treatment"  visibility="public"/>
+        <ownedAttribute xmi:id="_a_prr_prevention" name="prevention" visibility="public"/>
+      </packagedElement>
+
+      <!-- ─── Config (config.py) ───────────────────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_config" name="Config" visibility="public">
+        <ownedAttribute xmi:id="_a_cfg_modelpath"   name="MODEL_PATH"           visibility="public" isStatic="true"/>
+        <ownedAttribute xmi:id="_a_cfg_imgsize"     name="IMAGE_SIZE"           visibility="public" isStatic="true"/>
+        <ownedAttribute xmi:id="_a_cfg_threshold"   name="CONFIDENCE_THRESHOLD" visibility="public" isStatic="true"/>
+        <ownedAttribute xmi:id="_a_cfg_usemock"     name="USE_MOCK"             visibility="public" isStatic="true"/>
+        <ownedAttribute xmi:id="_a_cfg_port"        name="PORT"                 visibility="public" isStatic="true"/>
+        <ownedAttribute xmi:id="_a_cfg_origins"     name="ALLOWED_ORIGINS"      visibility="public" isStatic="true"/>
+      </packagedElement>
+
+    </packagedElement>
+    <!-- end backend_api -->
+
+
+    <!-- ============================================================
+         PACKAGE 7 : ML Model Resources  (model/)
+         ============================================================ -->
+    <packagedElement xmi:type="uml:Package" xmi:id="_pkg_model" name="model">
+
+      <!-- ─── KerasModel (.keras file) ─────────────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_kerasmodel" name="KerasModel" visibility="public">
+        <ownedAttribute xmi:id="_a_km_path"       name="modelPath"      visibility="public"/>
+        <ownedAttribute xmi:id="_a_km_imgsize"    name="imageSize"      visibility="public"/>
+        <ownedAttribute xmi:id="_a_km_numclasses" name="numClasses"     visibility="public"/>
+        <ownedAttribute xmi:id="_a_km_framework"  name="framework"      visibility="public"/>
+      </packagedElement>
+
+      <!-- ─── TFLiteModel (.tflite file) ───────────────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_tflmodel" name="TFLiteModel" visibility="public">
+        <ownedAttribute xmi:id="_a_tlm_path"    name="modelPath"   visibility="public"/>
+        <ownedAttribute xmi:id="_a_tlm_labels"  name="labelsPath" visibility="public"/>
+        <ownedAttribute xmi:id="_a_tlm_imgsize" name="imageSize"  visibility="public"/>
+      </packagedElement>
+
+      <!-- ─── DiseaseLabels (labels.txt – 10 disease classes) ──── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_labels" name="DiseaseLabels" visibility="public">
+        <ownedAttribute xmi:id="_a_dl_labels" name="labels"     visibility="public"/>
+        <ownedAttribute xmi:id="_a_dl_count"  name="count"      visibility="public"/>
+        <ownedAttribute xmi:id="_a_dl_source" name="sourceFile" visibility="public"/>
+      </packagedElement>
+
+      <!-- ─── generate_stub_model (utility script) ─────────────── -->
+      <packagedElement xmi:type="uml:Class" xmi:id="_cls_stubgen" name="GenerateStubModel" visibility="public">
+        <ownedOperation xmi:id="_op_sg_run" name="generate_stub_model" visibility="public" isStatic="true"/>
+      </packagedElement>
+
+    </packagedElement>
+    <!-- end model -->
+
+
+    <!-- ============================================================
+         DEPENDENCIES AND ASSOCIATIONS
+         ============================================================ -->
+
+    <!-- ── Android Activities: navigation ──────────────────────── -->
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_main_result"   name="navigates to"  client="_cls_main"    supplier="_cls_result"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_main_history"  name="navigates to"  client="_cls_main"    supplier="_cls_history"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_main_library"  name="navigates to"  client="_cls_main"    supplier="_cls_library"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_main_settings" name="navigates to"  client="_cls_main"    supplier="_cls_settings"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_hist_detail"   name="navigates to"  client="_cls_history" supplier="_cls_histdet"/>
+
+    <!-- ── Android Activities: notification ──────────────────────── -->
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_main_notif"    name="uses"          client="_cls_main"    supplier="_cls_notif"/>
+
+    <!-- ── Android Activities: cloud detection path ──────────────── -->
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_main_retrofit" name="uses (cloud mode)"   client="_cls_main"    supplier="_cls_retrofit"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_ret_api"       name="creates"            client="_cls_retrofit" supplier="_iface_api"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_api_resp"      name="returns"            client="_iface_api"   supplier="_cls_predresp"/>
+
+    <!-- ── Android Activities: offline detection path ─────────────── -->
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_main_tflite"   name="uses (offline mode)" client="_cls_main"   supplier="_cls_tflite"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_tfl_model"     name="loads"              client="_cls_tflite"  supplier="_cls_tflmodel"/>
+
+    <!-- ── Android Activities: database access ───────────────────── -->
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_result_db"     name="saves scan to"      client="_cls_result"  supplier="_cls_appdb"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_history_db"    name="reads scans from"   client="_cls_history" supplier="_cls_appdb"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_histdet_db"    name="reads scan from"    client="_cls_histdet" supplier="_cls_appdb"/>
+
+    <!-- ── AppDatabase ↔ ScanDao (composition) ────────────────────── -->
+    <packagedElement xmi:type="uml:Association" xmi:id="_assoc_db_dao" name="provides">
+      <memberEnd xmi:idref="_assocend_db"/>
+      <memberEnd xmi:idref="_assocend_dao"/>
+      <ownedEnd xmi:id="_assocend_db"  type="_cls_appdb"/>
+      <ownedEnd xmi:id="_assocend_dao" type="_iface_scandao" aggregation="composite"/>
+    </packagedElement>
+
+    <!-- ── ScanDao ↔ ScanRecord ───────────────────────────────────── -->
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_dao_rec"        name="manages"            client="_iface_scandao"  supplier="_cls_scanrec"/>
+
+    <!-- ── Backend API internal ───────────────────────────────────── -->
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_fa_predictor"   name="uses"               client="_cls_fastapiapp"  supplier="_cls_predictor"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_fa_result"      name="returns"            client="_cls_fastapiapp"  supplier="_cls_predresult"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_fa_config"      name="reads config from"  client="_cls_fastapiapp"  supplier="_cls_config"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_lp_pred"        name="creates"            client="_cls_loadpred"    supplier="_cls_predictor"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_lp_config"      name="reads config from"  client="_cls_loadpred"    supplier="_cls_config"/>
+
+    <!-- ── ModelPredictor ↔ ML Model Resources ────────────────────── -->
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_pred_keras"     name="loads"              client="_cls_predictor"   supplier="_cls_kerasmodel"/>
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_pred_labels"    name="reads labels from"  client="_cls_predictor"   supplier="_cls_labels"/>
+
+    <!-- ── TFLiteClassifier ↔ TFLite model labels ─────────────────── -->
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_tfl_labels"     name="reads labels from"  client="_cls_tflite"      supplier="_cls_labels"/>
+
+    <!-- ── Android cloud path → Backend API (HTTP) ────────────────── -->
+    <packagedElement xmi:type="uml:Dependency" xmi:id="_dep_retrofit_fa"    name="HTTP POST /predict" client="_cls_retrofit"    supplier="_cls_fastapiapp"/>
+
+  </uml:Model>
+</xmi:XMI>
