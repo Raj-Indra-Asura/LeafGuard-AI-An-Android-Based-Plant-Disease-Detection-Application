@@ -22,7 +22,7 @@ This unified learning system provides seamless navigation across all course mate
 ### Supplementary Materials
 - **solutions/** - Reference implementations for exercises
 - **notebooks/** - Interactive Jupyter notebooks for concepts
-- **code-examples/** - Minimal working code snippets
+- **exercises/** - Minimal working code snippets, organized by topic (android, backend, ml, database, testing)
 - **reference-sheets/** - Quick reference guides
 
 ---
@@ -69,7 +69,6 @@ This unified learning system provides seamless navigation across all course mate
 ### Supplementary Materials
 - 📓 [Interactive Notebook](notebooks/week-01/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-01/) *(Available)*
-- 🎯 [Code Examples](roadmap/week-01-project-understanding/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
 - Understand complete LeafGuard AI project scope
@@ -112,7 +111,6 @@ This unified learning system provides seamless navigation across all course mate
 ### Supplementary Materials
 - 📓 [Interactive Notebook](notebooks/week-02/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-02/) *(Available)*
-- 🎯 [Code Examples](roadmap/week-02-android-basics-ui/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
 - Setup Android Studio development environment
@@ -152,7 +150,6 @@ This unified learning system provides seamless navigation across all course mate
 ### Supplementary Materials
 - 📓 [Interactive Notebook](notebooks/week-03/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-03/) *(Available)*
-- 🎯 [Code Examples](roadmap/week-03-camera-gallery/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
 - Implement camera intent (ACTION_IMAGE_CAPTURE)
@@ -192,7 +189,6 @@ This unified learning system provides seamless navigation across all course mate
 ### Supplementary Materials
 - 📓 [Interactive Notebook](notebooks/week-04/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-04/) *(Available)*
-- 🎯 [Code Examples](roadmap/week-04-fastapi-backend/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
 - Setup Python FastAPI development environment
@@ -234,7 +230,6 @@ This unified learning system provides seamless navigation across all course mate
 ### Supplementary Materials
 - 📓 [Interactive Notebook](notebooks/week-05/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-05/) *(Available)*
-- 🎯 [Code Examples](roadmap/week-05-android-networking/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
 - Integrate Retrofit and OkHttp libraries
@@ -276,7 +271,6 @@ This unified learning system provides seamless navigation across all course mate
 ### Supplementary Materials
 - 📓 [Interactive Notebook](notebooks/week-06/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-06/) *(Available)*
-- 🎯 [Code Examples](roadmap/week-06-cloud-ml-model/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
 - Integrate pre-trained plant disease CNN model
@@ -316,7 +310,6 @@ This unified learning system provides seamless navigation across all course mate
 ### Supplementary Materials
 - 📓 [Interactive Notebook](notebooks/week-07/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-07/) *(Available)*
-- 🎯 [Code Examples](roadmap/week-07-room-sqlite-history/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
 - Setup Room database with entities and DAOs
@@ -356,7 +349,6 @@ This unified learning system provides seamless navigation across all course mate
 ### Supplementary Materials
 - 📓 [Interactive Notebook](notebooks/week-08/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-08/) *(Available)*
-- 🎯 [Code Examples](roadmap/week-08-xml-disease-library/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
 - Create XML disease library file
@@ -396,7 +388,6 @@ This unified learning system provides seamless navigation across all course mate
 ### Supplementary Materials
 - 📓 [Interactive Notebook](notebooks/week-09/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-09/) *(Available)*
-- 🎯 [Code Examples](roadmap/week-09-tensorflow-lite-offline-ai/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
 - Convert TensorFlow model to TFLite format
@@ -436,7 +427,6 @@ This unified learning system provides seamless navigation across all course mate
 ### Supplementary Materials
 - 📓 [Interactive Notebook](notebooks/week-10/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-10/) *(Available)*
-- 🎯 [Code Examples](roadmap/week-10-notifications-share-location/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
 - Implement reminder notifications with NotificationChannel
@@ -476,7 +466,6 @@ This unified learning system provides seamless navigation across all course mate
 ### Supplementary Materials
 - 📓 [Interactive Notebook](notebooks/week-11/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-11/) *(Available)*
-- 🎯 [Code Examples](roadmap/week-11-testing-debugging-performance/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
 - Create comprehensive test case table
@@ -517,7 +506,6 @@ This unified learning system provides seamless navigation across all course mate
 ### Supplementary Materials
 - 📓 [Interactive Notebook](notebooks/week-12/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-12/) *(Available)*
-- 🎯 [Code Examples](roadmap/week-12-final-submission/code-examples/) *(Coming Soon)*
 
 ### Learning Objectives
 - Build release APK
@@ -573,7 +561,7 @@ This unified learning system provides seamless navigation across all course mate
 ### Supplementary Directories
 - [solutions/](solutions/) - Exercise solutions *(Available)*
 - [notebooks/](notebooks/) - Jupyter notebooks *(Available)*
-- [code-examples/](roadmap/) - Minimal working examples
+- [exercises/](exercises/) - Minimal working examples by topic *(Available)*
 - [reference-sheets/](docs/) - Quick reference guides *(Coming Soon)*
 
 ---
