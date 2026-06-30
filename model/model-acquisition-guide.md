@@ -18,8 +18,8 @@ python3 model/generate_stub_model.py
 ```
 
 This creates:
-- `android-app/app/src/main/assets/plant_disease_model.tflite` — placeholder TFLite model
-- `android-app/app/src/main/assets/labels.txt` — 38 PlantVillage class names
+- `android-app/app/src/main/assets/model.tflite` — placeholder TFLite model
+- `android-app/app/src/main/assets/labels.txt` — the 10 LeafGuard AI demo class names
 
 > **Important:** The stub model outputs random predictions. Replace it with a real trained model by following Option B (Kaggle PlantVillage) or Option C (Google Colab training) below.
 

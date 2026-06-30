@@ -9,17 +9,17 @@
 ### Step 1: Choose Your Starting Point
 
 **New to this repo?** Start here:
-1. Read [`README.md`](../README.md) (5 min)
-2. Open [`LEARNING_PATH.md`](../LEARNING_PATH.md) (your main hub)
+1. Read [`README.md`](README.md) (5 min)
+2. Open [`LEARNING_PATH.md`](LEARNING_PATH.md) (your main hub)
 3. Click "Week 01" to begin
 
 **Already started?** Quick access:
-1. Open [`QUICK_NAV.md`](../QUICK_NAV.md)
+1. Open [`QUICK_NAV.md`](QUICK_NAV.md)
 2. Find your current week
 3. Jump directly there
 
 **Need specific help?**
-1. Check [`QUICK_NAV.md`](../QUICK_NAV.md) → "I want to..." section
+1. Check [`QUICK_NAV.md`](QUICK_NAV.md) → "I want to..." section
 2. Follow the provided link
 
 ---
@@ -94,7 +94,7 @@ CROSS_REFERENCE → Find week or topic → See connections → Explore related m
 
 ### Sequential Learner (Traditional)
 **Your path:**
-1. Start with [`LEARNING_PATH.md`](../LEARNING_PATH.md)
+1. Start with [`LEARNING_PATH.md`](LEARNING_PATH.md)
 2. Begin Week 01
 3. Complete materials in order: README → learning-notes → exercises → build-task → validation
 4. Click "Next Week" to proceed
@@ -104,8 +104,8 @@ CROSS_REFERENCE → Find week or topic → See connections → Explore related m
 
 ### Visual Learner (Diagram-First)
 **Your path:**
-1. Read [`PROJECT_ARCHITECTURE.md`](../PROJECT_ARCHITECTURE.md) first
-2. Use [`LEARNING_PATH.md`](../LEARNING_PATH.md) for week overview
+1. Read [`PROJECT_ARCHITECTURE.md`](PROJECT_ARCHITECTURE.md) first
+2. Use [`LEARNING_PATH.md`](LEARNING_PATH.md) for week overview
 3. Check `notebooks/week-XX/` for visual explanations
 4. Then read theory and do exercises
 
@@ -113,7 +113,7 @@ CROSS_REFERENCE → Find week or topic → See connections → Explore related m
 
 ### Hands-On Learner (Practice-First)
 **Your path:**
-1. Use [`QUICK_NAV.md`](../QUICK_NAV.md) → "Do exercises"
+1. Use [`QUICK_NAV.md`](QUICK_NAV.md) → "Do exercises"
 2. Jump to `exercises.md` for current week
 3. Attempt exercises before reading theory
 4. Check `solutions/` only after genuine attempts
@@ -123,7 +123,7 @@ CROSS_REFERENCE → Find week or topic → See connections → Explore related m
 
 ### Theory Learner (Concept-First)
 **Your path:**
-1. Read [`COURSE_OVERVIEW.md`](../COURSE_OVERVIEW.md) for context
+1. Read [`COURSE_OVERVIEW.md`](COURSE_OVERVIEW.md) for context
 2. Study entire `learning-notes.md` for the week
 3. Review `notebooks/week-XX/` for deeper understanding
 4. Watch recommended videos
@@ -205,10 +205,10 @@ Week 01 → Week 02 → Back to Week 01 for review → Week 03
 ## 💡 Pro Tips
 
 ### Bookmark These Pages
-1. [`LEARNING_PATH.md`](../LEARNING_PATH.md) - Your main hub
-2. [`QUICK_NAV.md`](../QUICK_NAV.md) - Fast access
-3. [`GLOSSARY.md`](../GLOSSARY.md) - Quick lookups
-4. [`progress-tracker.md`](../progress-tracker.md) - Track completion
+1. [`LEARNING_PATH.md`](LEARNING_PATH.md) - Your main hub
+2. [`QUICK_NAV.md`](QUICK_NAV.md) - Fast access
+3. [`GLOSSARY.md`](GLOSSARY.md) - Quick lookups
+4. [`progress-tracker.md`](progress-tracker.md) - Track completion
 5. Current week README - Your focus
 
 ### Use Browser Search (Ctrl+F / Cmd+F)
@@ -300,7 +300,7 @@ cd [repo-name]
 ## 📊 Tracking Your Progress
 
 ### Use progress-tracker.md
-**Location:** [`progress-tracker.md`](../progress-tracker.md)
+**Location:** [`progress-tracker.md`](progress-tracker.md)
 
 **Update it:**
 - [ ] After completing each exercise
@@ -431,13 +431,13 @@ cd [repo-name]
 
 ### Your First Actions:
 1. ✅ You've read this guide
-2. 📖 Next: Open [`LEARNING_PATH.md`](../LEARNING_PATH.md)
+2. 📖 Next: Open [`LEARNING_PATH.md`](LEARNING_PATH.md)
 3. 🎯 Then: Start Week 01 from the learning path
-4. 📝 Remember: Update [`progress-tracker.md`](../progress-tracker.md) as you go
+4. 📝 Remember: Update [`progress-tracker.md`](progress-tracker.md) as you go
 
 ### Questions?
-- Check [`QUICK_NAV.md`](../QUICK_NAV.md) for fast answers
-- Review [`CROSS_REFERENCE.md`](../CROSS_REFERENCE.md) for connections
+- Check [`QUICK_NAV.md`](QUICK_NAV.md) for fast answers
+- Review [`CROSS_REFERENCE.md`](CROSS_REFERENCE.md) for connections
 - Re-read relevant sections of this guide
 
 ---
