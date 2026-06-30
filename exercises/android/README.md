@@ -18,6 +18,25 @@ features like offline AI inference. All code examples are in **Java** (the CSE 2
 | 10 | Notifications & Share | 7.1 – 7.4 |
 | 11 | Integration & Testing | 8.1 – 8.4 |
 
+## Starter Code Files
+
+Unlike a runnable Python script, Android code needs the full app project to
+compile. These starter `.java` skeletons give you a structured starting point —
+copy each into the matching package under
+`android-app/app/src/main/java/com/leafguard/` and complete the `// TODO`s.
+
+| File | Week | Maps to (in the app) |
+|------|------|----------------------|
+| [`ex01_MainActivity.java`](ex01_MainActivity.java) | 2 | `MainActivity.java` |
+| [`ex02_ScanActivity.java`](ex02_ScanActivity.java) | 3 | `ScanActivity.java` |
+| [`ex03_ApiClient.java`](ex03_ApiClient.java) | 5 | `network/ApiService.java`, `network/RetrofitClient.java` |
+| [`ex04_ScanRepository.java`](ex04_ScanRepository.java) | 7 | `database/ScanRecord.java`, `database/ScanDao.java`, `database/AppDatabase.java` |
+| [`ex05_LeafClassifier.java`](ex05_LeafClassifier.java) | 9 | `ml/TFLiteClassifier.java` |
+
+> These are intentionally incomplete skeletons (skeleton + TODOs), not finished
+> solutions. Attempt them first; the completed reference implementations live in
+> the app's `java/com/leafguard/` packages.
+
 ---
 
 ## 1. UI and Layouts (Week 2)
