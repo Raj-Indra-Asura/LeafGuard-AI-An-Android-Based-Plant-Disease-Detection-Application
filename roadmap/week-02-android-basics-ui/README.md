@@ -1,22 +1,44 @@
 # Week 02: Android Studio Setup, Project Structure & UI Skeleton
 
+## What You'll Learn & Why
+
+This week you'll set up Android Studio, create the LeafGuard project, and build six screens (Activities) that form the app's skeleton. You'll learn how Android organizes code and resources, how Activities represent screens, and how Intents let screens communicate. By the end, you'll have a running app on an emulator — the foundation every future week builds upon.
+
+## New Words This Week
+
+> For complete definitions, see the [GLOSSARY](../../GLOSSARY.md).
+
+| Term | Quick Definition |
+|------|------------------|
+| **Activity** | One screen of your app; Android creates, shows, and destroys Activities as users navigate. |
+| **Layout (XML)** | An XML file describing the visual structure of a screen — which buttons, text, and images appear and where. |
+| **View / Widget** | A single UI element: `TextView` shows text, `Button` handles taps, `ImageView` displays pictures. |
+| **ConstraintLayout** | A flexible layout that positions views relative to each other or the screen edges using constraints. |
+| **Intent** | A messaging object used to request an action — typically starting a new Activity or passing data between screens. |
+| **Gradle** | Android's build tool; it compiles code, downloads libraries (dependencies), and packages your APK. |
+| **Emulator** | A virtual Android device running on your computer for testing without a physical phone. |
+| **Material Design** | Google's design system providing ready-made UI components (buttons, cards, themes) for a polished look. |
+| **APK** | Android Package — the installable file produced when you build your app. |
+
+---
+
 ## Weekly Objective
 
 By the end of Week 02, you will:
 
-1. **Install and configure Android Studio** with all required SDKs, build tools, and emulator setup
+1. **Install and configure Android Studio** with all required SDKs, build tools, and emulator (a virtual Android device running on your computer) setup
 2. **Create a production-ready Android project** with proper package structure and naming conventions
-3. **Implement 5 core activities** with basic XML layouts demonstrating Android UI principles
-4. **Establish navigation flow** between activities using Intents and understanding the back stack
-5. **Understand Gradle build system** including dependencies, build types, and product flavors
+3. **Implement 6 core Activities** with basic XML layouts demonstrating Android UI principles. An **Activity** = one screen of the app.
+4. **Establish navigation flow** between Activities using Intents (messaging objects that start screens and pass data) and understanding the back stack
+5. **Understand the Gradle build system** — Gradle compiles your code, downloads libraries, and packages your APK (Android Package, the installable file)
 6. **Master Android project structure** including manifests, resources, and source organization
-7. **Run and debug on emulator and real device** with proper ADB configuration
+7. **Run and debug on emulator and real device** with proper ADB (Android Debug Bridge — a command-line tool to communicate with devices) configuration
 
 **Measurable Outcomes:**
 - Android Studio installed with SDK 24-34 support
-- LeafGuard Android project created with correct package structure
-- 5 activities implemented: MainActivity, ScanActivity, ResultActivity, HistoryActivity, SettingsActivity
-- Navigation working between all activities with proper Intent extras
+- LeafGuard Android project created with correct package structure (`com.leafguard`)
+- 6 Activities implemented: **MainActivity**, **ResultActivity**, **HistoryActivity**, **HistoryDetailActivity**, **DiseaseLibraryActivity**, **SettingsActivity**
+- Navigation working between all Activities with proper Intent extras
 - Application running on emulator or physical device
 - First APK generated and installable
 - Git repository updated with Android project code
@@ -53,7 +75,9 @@ CSE 2206 expects demonstration of:
 7. **Resource management:** Drawables, strings, colors, dimensions
 8. **Gradle build system:** Dependencies, plugins, build configuration
 
-LeafGuard's 5 activities provide rich demonstration of all these topics. Week 02 creates the skeleton that Week 03-12 will fill with functionality.
+LeafGuard's 6 Activities provide rich demonstration of all these topics. Week 02 creates the skeleton that Week 03-12 will fill with functionality.
+
+> **Key concept:** In Android, an **Activity** represents one screen. LeafGuard has exactly six Activities — each one is a separate class and XML layout file.
 
 ---
 
@@ -196,16 +220,20 @@ LeafGuard/
 - `AndroidManifest.xml` declares all app components
 - Gradle files manage dependencies and build configuration
 
-**LeafGuard Package Structure:**
+**LeafGuard Package Structure (Kotlin-primary, Java secondary):**
+
 ```
-com.example.leafguard/
+com.leafguard/
 ├── activities/
-│   ├── MainActivity.java          (Splash/Home screen)
-│   ├── ScanActivity.java          (Camera/Gallery selection)
-│   ├── ResultActivity.java        (Disease result display)
-│   ├── HistoryActivity.java       (Scan history list)
-│   └── SettingsActivity.java      (App settings)
+│   ├── MainActivity.kt            (Home + capture screen)
+│   ├── ResultActivity.kt          (Disease result display)
+│   ├── HistoryActivity.kt         (Scan history list)
+│   ├── HistoryDetailActivity.kt   (Details of one scan)
+│   ├── DiseaseLibraryActivity.kt  (Offline disease encyclopedia)
+│   └── SettingsActivity.kt        (App settings)
 ```
+
+> **Note:** The Kotlin source lives in `android-app-kotlin/`. A secondary Java twin exists in `android-app/` for reference.
 
 ### 2. Activity Lifecycle
 
@@ -261,7 +289,54 @@ onPause() → onStop() → onDestroy()
 Previous Activity: onStart() → onResume()
 ```
 
-**LeafGuard Example:**
+**LeafGuard Example (Kotlin — primary):**
+```kotlin
+class MainActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        // Initialize views
+        val historyButton: Button = findViewById(R.id.btnHistory)
+
+        // Setup click listener — navigate to HistoryActivity
+        historyButton.setOnClickListener {
+            val intent = Intent(this, HistoryActivity::class.java)
+            startActivity(intent)
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.d("MainActivity", "onStart called")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.d("MainActivity", "onResume called - activity in foreground")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.d("MainActivity", "onPause called - activity losing focus")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.d("MainActivity", "onStop called - activity not visible")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.d("MainActivity", "onDestroy called - activity being destroyed")
+    }
+}
+```
+
+<details>
+<summary>Java (secondary)</summary>
+
 ```java
 public class MainActivity extends AppCompatActivity {
 
@@ -271,12 +346,11 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Initialize views
-        Button scanButton = findViewById(R.id.btnScan);
         Button historyButton = findViewById(R.id.btnHistory);
 
-        // Setup click listeners
-        scanButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, ScanActivity.class);
+        // Setup click listener — navigate to HistoryActivity
+        historyButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, HistoryActivity.class);
             startActivity(intent);
         });
     }
@@ -312,6 +386,7 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 ```
+</details>
 
 ### 3. XML Layouts and ConstraintLayout
 
@@ -393,17 +468,51 @@ public class MainActivity extends AppCompatActivity {
 
 **Types of Intents:**
 
-**Explicit Intent (direct navigation):**
-```java
-// Navigate from MainActivity to ScanActivity
-Intent intent = new Intent(MainActivity.this, ScanActivity.class);
-startActivity(intent);
+**Explicit Intent (direct navigation — Kotlin):**
+```kotlin
+// Navigate from MainActivity to HistoryActivity
+val intent = Intent(this, HistoryActivity::class.java)
+startActivity(intent)
 ```
 
-**Passing Data with Extras:**
+**Passing Data with Extras (Kotlin):**
+```kotlin
+// Sender: MainActivity sends data to ResultActivity
+val intent = Intent(this, ResultActivity::class.java).apply {
+    putExtra("disease_name", "Tomato Early Blight")
+    putExtra("confidence", 0.92f)
+    putExtra("image_path", "/storage/leaf.jpg")
+}
+startActivity(intent)
+```
+
+```kotlin
+// Receiver: ResultActivity retrieves the extras
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.activity_result)
+
+    // Retrieve data
+    val diseaseName = intent.getStringExtra("disease_name") ?: "Unknown"
+    val confidence = intent.getFloatExtra("confidence", 0.0f)
+    val imagePath = intent.getStringExtra("image_path") ?: ""
+
+    // Use data to update UI
+    val tvDisease: TextView = findViewById(R.id.tvDiseaseName)
+    tvDisease.text = diseaseName
+}
+```
+
+<details>
+<summary>Java (secondary)</summary>
+
 ```java
-// Sender (ResultActivity)
-Intent intent = new Intent(ScanActivity.this, ResultActivity.class);
+// Navigate from MainActivity to HistoryActivity
+Intent intent = new Intent(MainActivity.this, HistoryActivity.class);
+startActivity(intent);
+
+// Sender (MainActivity.java)
+Intent intent = new Intent(MainActivity.this, ResultActivity.class);
 intent.putExtra("disease_name", "Tomato Early Blight");
 intent.putExtra("confidence", 0.92f);
 intent.putExtra("image_path", "/storage/leaf.jpg");
@@ -425,6 +534,7 @@ protected void onCreate(Bundle savedInstanceState) {
     tvDisease.setText(diseaseName);
 }
 ```
+</details>
 
 **Data Types Supported:**
 - `putExtra(String key, String value)` - Strings
@@ -437,9 +547,9 @@ protected void onCreate(Bundle savedInstanceState) {
 **Activity Back Stack:**
 ```
 User opens app: [MainActivity]
-User taps Scan: [MainActivity, ScanActivity]
-User taps Camera: [MainActivity, ScanActivity, CameraActivity]
-User presses Back: [MainActivity, ScanActivity]
+User taps History: [MainActivity, HistoryActivity]
+User taps a scan: [MainActivity, HistoryActivity, HistoryDetailActivity]
+User presses Back: [MainActivity, HistoryActivity]
 User presses Back: [MainActivity]
 User presses Back: App closes
 ```
@@ -475,15 +585,19 @@ User presses Back: App closes
 
         <!-- Other Activities -->
         <activity
-            android:name=".activities.ScanActivity"
-            android:exported="false" />
-
-        <activity
             android:name=".activities.ResultActivity"
             android:exported="false" />
 
         <activity
             android:name=".activities.HistoryActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activities.HistoryDetailActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".activities.DiseaseLibraryActivity"
             android:exported="false" />
 
         <activity
@@ -621,14 +735,14 @@ implementation 'androidx.appcompat:appcompat:1.6.1'
 1. Create new Android Studio project:
    - Choose "Empty Activity" template
    - Name: LeafGuard
-   - Package: com.example.leafguard
-   - Language: Java
+   - Package: `com.leafguard`
+   - Language: **Kotlin** (primary)
    - Minimum SDK: API 24 (Android 7.0)
 2. Explore project structure:
    - Open AndroidManifest.xml
-   - Open app/build.gradle
+   - Open app/build.gradle.kts (or build.gradle)
    - Explore res/ folder
-   - Understand java/ folder organization
+   - Understand kotlin/ (or java/) folder organization
 3. Run default app on emulator
 4. Initialize Git in project root
 5. Create .gitignore for Android
@@ -676,21 +790,21 @@ D/MainActivity: onStart called
 D/MainActivity: onResume called
 ```
 
-### Day 4: Create 5 Activities
+### Day 4: Create 6 Activities
 
 **Tasks:**
-1. Create activities package: `java/com/example/leafguard/activities/`
+1. Create activities package: `kotlin/com/leafguard/activities/` (or `java/com/leafguard/activities/`)
 2. Move MainActivity to activities package
-3. Create 4 new activities:
+3. Create 5 new activities:
    - Right-click activities package → New → Activity → Empty Activity
-   - Create: ScanActivity, ResultActivity, HistoryActivity, SettingsActivity
+   - Create: **ResultActivity**, **HistoryActivity**, **HistoryDetailActivity**, **DiseaseLibraryActivity**, **SettingsActivity**
 4. Verify all activities declared in AndroidManifest.xml
 5. Add basic layouts to each activity (just a TextView with activity name)
 6. Test building the project
 
 **Deliverables:**
-- 5 activities created in activities package
-- 5 layout files created (activity_main.xml, activity_scan.xml, etc.)
+- 6 activities created in activities package
+- 6 layout files created (activity_main.xml, activity_result.xml, activity_history.xml, activity_history_detail.xml, activity_disease_library.xml, activity_settings.xml)
 - AndroidManifest.xml updated with all activities
 - Project builds without errors
 
@@ -703,31 +817,37 @@ D/MainActivity: onResume called
 **Tasks:**
 1. Design MainActivity layout:
    - App logo/title at top
-   - "Scan Leaf" button (center)
-   - "View History" button (below scan)
-   - "Settings" button (below history)
-2. Design ScanActivity layout:
-   - Title "Select Image Source"
-   - "Camera" button
-   - "Gallery" button
-   - ImageView for preview (placeholder)
-3. Design ResultActivity layout:
+   - "Capture from Camera" button (center) — MainActivity handles capture directly
+   - "Choose from Gallery" button (below camera)
+   - Cloud/Offline toggle switch
+   - "View History" button
+   - "Disease Library" button
+   - "Settings" button
+2. Design ResultActivity layout:
    - ImageView for leaf image (top)
    - TextView for disease name
    - TextView for confidence score
-   - TextView for treatment info (placeholder)
+   - TextViews for symptoms, treatment, prevention
+   - "Share" button
    - "Save to History" button
-   - "Scan Another" button
-4. Design HistoryActivity layout:
+3. Design HistoryActivity layout:
    - Title "Scan History"
    - RecyclerView placeholder (just TextView for now)
-5. Design SettingsActivity layout:
+4. Design HistoryDetailActivity layout:
+   - Large ImageView for scanned leaf
+   - Full disease info
+   - Date of scan
+   - Action buttons
+5. Design DiseaseLibraryActivity layout:
+   - Title "Disease Encyclopedia"
+   - RecyclerView of 10 diseases
+6. Design SettingsActivity layout:
    - Title "Settings"
-   - Switch for "Offline Mode"
-   - Button for "Clear History"
+   - TextField for "Backend URL" (default: `http://10.0.2.2:8000`)
+   - Slider for "Confidence Threshold"
 
 **Deliverables:**
-- All 5 layouts designed with ConstraintLayout
+- All 6 layouts designed with ConstraintLayout
 - All strings externalized to strings.xml
 - Layouts responsive to different screen sizes
 
@@ -738,18 +858,19 @@ D/MainActivity: onResume called
 
 **Tasks:**
 1. MainActivity navigation:
-   - "Scan Leaf" → ScanActivity
+   - "Capture from Camera" / "Choose from Gallery" → capture image, then → ResultActivity (passing image path)
    - "View History" → HistoryActivity
+   - "Disease Library" → DiseaseLibraryActivity
    - "Settings" → SettingsActivity
-2. ScanActivity navigation:
-   - "Camera" → ResultActivity (pass "source: camera")
-   - "Gallery" → ResultActivity (pass "source: gallery")
-3. ResultActivity navigation:
-   - "Scan Another" → ScanActivity
-   - "Save to History" → HistoryActivity
+2. ResultActivity navigation:
+   - "Share" → share intent to other apps
+   - "Save to History" → save scan, then → HistoryActivity
+3. HistoryActivity navigation:
+   - Tap a scan item → HistoryDetailActivity (pass `EXTRA_SCAN_ID`)
 4. Test navigation flow:
-   - MainActivity → ScanActivity → ResultActivity
-   - MainActivity → HistoryActivity
+   - MainActivity → ResultActivity (after capture)
+   - MainActivity → HistoryActivity → HistoryDetailActivity
+   - MainActivity → DiseaseLibraryActivity
    - MainActivity → SettingsActivity
 5. Verify back button works correctly
 6. Add Log statements to verify data passing
@@ -780,7 +901,7 @@ D/MainActivity: onResume called
    - Solutions found
    - Key learnings
 5. Create evidence package:
-   - Screenshots of all 5 activities
+   - Screenshots of all 6 activities
    - Video of navigation flow
    - Git log screenshot
    - APK file saved
@@ -821,8 +942,8 @@ You may proceed to Week 03 only when:
 
 **Technical Completion:**
 - [ ] Android Studio fully installed and configured
-- [ ] LeafGuard project created with correct package structure
-- [ ] All 5 activities implemented with layouts
+- [ ] LeafGuard project created with correct package structure (`com.leafguard`)
+- [ ] All 6 activities implemented with layouts
 - [ ] Navigation working between all activities
 - [ ] App runs on emulator or real device
 - [ ] APK generated successfully
@@ -843,7 +964,7 @@ You may proceed to Week 03 only when:
 - [ ] Quiz passed (8/10 minimum)
 
 **Evidence:**
-- [ ] Screenshots of all 5 activities saved
+- [ ] Screenshots of all 6 activities saved
 - [ ] Navigation video recorded
 - [ ] Git commits show progressive work (minimum 5 commits)
 - [ ] APK file saved in evidence folder
