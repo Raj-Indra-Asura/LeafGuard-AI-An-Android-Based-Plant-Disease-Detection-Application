@@ -70,7 +70,7 @@ It is a way for two applications to communicate. In LeafGuard:
 
 ---
 
-## REST API Fundamentals
+## REST (REpresentational State Transfer) API Fundamentals
 
 ### What is REST?
 
@@ -118,7 +118,7 @@ It is an architectural style for designing networked applications. Not a protoco
 
 ```
 Resource: Disease Prediction
-Endpoint: POST /api/predict
+Endpoint: POST /predict
 Purpose: Upload image, get disease prediction
 
 Resource: Disease Information
@@ -138,7 +138,7 @@ Purpose: Check if server is running
 - Idempotent: Calling 10 times has same effect as calling once
 
 **POST:** Create new resource or submit data
-- Example: POST /api/predict (upload image)
+- Example: POST /predict (upload image)
 - Not safe: Changes server state (creates prediction record)
 - Not idempotent: Calling 10 times creates 10 predictions
 
@@ -183,7 +183,7 @@ Purpose: Check if server is running
 
 ---
 
-## HTTP Protocol Deep Dive
+## HTTP (HyperText Transfer Protocol) Protocol Deep Dive
 
 ### What is HTTP?
 
@@ -198,15 +198,15 @@ A protocol for transferring data over the internet. Every web page, API call, fi
 Every HTTP request has:
 
 ```http
-POST /api/predict HTTP/1.1
-Host: 192.168.1.100:8000
+POST /predict HTTP/1.1
+Host: localhost:8000
 Content-Type: multipart/form-data; boundary=----Boundary123
 Accept: application/json
 User-Agent: Retrofit/2.9.0
 Content-Length: 2048576
 
 ------Boundary123
-Content-Disposition: form-data; name="file"; filename="leaf.jpg"
+Content-Disposition: form-data; name="image"; filename="leaf.jpg"
 Content-Type: image/jpeg
 
 [binary image data]
@@ -215,9 +215,9 @@ Content-Type: image/jpeg
 
 **Components:**
 
-1. **Request Line:** `POST /api/predict HTTP/1.1`
+1. **Request Line:** `POST /predict HTTP/1.1`
    - Method: POST
-   - Path: /api/predict
+   - Path: /predict
    - Protocol version: HTTP/1.1
 
 2. **Headers:** Key-value pairs with metadata
@@ -237,7 +237,6 @@ Content-Length: 456
 Date: Mon, 15 Jan 2024 10:30:00 GMT
 
 {
-  "success": true,
   "disease": "Tomato Early Blight",
   "confidence": 0.92
 }
@@ -266,7 +265,7 @@ ANDROID APP                         FASTAPI BACKEND
     |                                      |
     |  2. Retrofit prepares HTTP request  |
     |     - Method: POST                   |
-    |     - URL: /api/predict              |
+    |     - URL: /predict              |
     |     - Body: image file               |
     |                                      |
     |------ 3. Send request over WiFi ---->|
@@ -400,13 +399,13 @@ async def upload_file(file: UploadFile = File(...)):
 ```python
 from pydantic import BaseModel
 
-class PredictionResponse(BaseModel):
+class PredictionResult(BaseModel):
     disease: str
     confidence: float
     symptoms: str
 
-@app.post("/predict", response_model=PredictionResponse)
-def predict(file: UploadFile):
+@app.post("/predict", response_model=PredictionResult)
+def predict(image: UploadFile = File(...)):
     return {
         "disease": "Tomato Blight",
         "confidence": 0.92,
@@ -426,8 +425,8 @@ def predict(file: UploadFile):
 from fastapi import HTTPException
 
 @app.post("/predict")
-def predict(file: UploadFile):
-    if file.content_type not in ["image/jpeg", "image/png"]:
+def predict(image: UploadFile = File(...)):
+    if image.content_type not in ["image/jpeg", "image/png"]:
         raise HTTPException(
             status_code=400,
             detail="Only JPEG and PNG files are supported"
@@ -499,13 +498,13 @@ FastAPI generates interactive API docs automatically.
 ### Multipart Request Structure
 
 ```http
-POST /api/predict HTTP/1.1
-Host: 192.168.1.100:8000
+POST /predict HTTP/1.1
+Host: localhost:8000
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 Content-Length: 2048576
 
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="file"; filename="leaf.jpg"
+Content-Disposition: form-data; name="image"; filename="leaf.jpg"
 Content-Type: image/jpeg
 
 [binary image data - 2 MB of raw bytes]
@@ -514,7 +513,7 @@ Content-Type: image/jpeg
 
 **Parts:**
 1. **Boundary:** Random string separating parts (like `----WebKitForm...`)
-2. **Content-Disposition:** Tells server this is a file field named "file"
+2. **Content-Disposition:** Tells server this is a file field named "image"
 3. **filename:** Original filename from user's device
 4. **Content-Type:** MIME type of file (image/jpeg, image/png)
 5. **Binary data:** Raw image bytes
@@ -525,13 +524,13 @@ Content-Type: image/jpeg
 from fastapi import UploadFile, File
 
 @app.post("/predict")
-async def predict(file: UploadFile = File(...)):
+async def predict(image: UploadFile = File(...)):
     # Read file contents
-    contents = await file.read()
+    contents = await image.read()
 
     # Access metadata
-    filename = file.filename        # "leaf.jpg"
-    content_type = file.content_type  # "image/jpeg"
+    filename = image.filename        # "leaf.jpg"
+    content_type = image.content_type  # "image/jpeg"
     size = len(contents)             # 2048576 bytes
 
     # Save to disk (optional)
@@ -564,12 +563,12 @@ from fastapi import Form
 
 @app.post("/predict")
 async def predict(
-    file: UploadFile = File(...),
+    image: UploadFile = File(...),
     mode: str = Form(...),
     user_id: str = Form(...)
 ):
     return {
-        "file": file.filename,
+        "file": image.filename,
         "mode": mode,
         "user": user_id
     }
@@ -582,7 +581,7 @@ async def predict(
 
 ---
 
-## JSON Response Design
+## JSON (JavaScript Object Notation) Response Design
 
 ### Why JSON?
 
@@ -603,63 +602,35 @@ async def predict(
 **Success Response:**
 ```json
 {
-  "success": true,
   "disease": "Tomato Early Blight",
   "confidence": 0.923,
   "symptoms": "Dark brown spots with concentric rings on lower leaves. Yellowing around spots.",
   "treatment": "Apply fungicide containing chlorothalonil or mancozeb. Remove infected leaves.",
-  "prevention": "Rotate crops annually. Avoid overhead watering. Ensure good air circulation.",
-  "timestamp": "2024-01-15T10:30:00Z",
-  "file_size": 2048576
+  "prevention": "Rotate crops annually. Avoid overhead watering. Ensure good air circulation."
 }
 ```
 
 **Field explanations:**
 
-- `success` (boolean): Allows Android to quickly check if request succeeded
 - `disease` (string): Disease name, displayed prominently in UI
 - `confidence` (float): 0.0 to 1.0, Android converts to percentage (92.3%)
 - `symptoms` (string): Educational content, displayed in result screen
 - `treatment` (string): Actionable advice, helps farmers
 - `prevention` (string): Long-term guidance
-- `timestamp` (string): ISO 8601 format, Android parses for history
-- `file_size` (int): For debugging, shows what was received
 
-**Error Response:**
-```json
-{
-  "success": false,
-  "error": "Invalid file format",
-  "detail": "Uploaded file must be JPEG or PNG. Received: image/gif"
-}
-```
-
-**Error fields:**
-
-- `success` (boolean): false indicates error
-- `error` (string): High-level error message, displayed to user
-- `detail` (string): Technical details, for debugging
+**Error Response:** FastAPI returns an HTTP error with a `detail` message, such as `{"detail": "Uploaded file must be JPEG or PNG"}`.
 
 ### Response Model in FastAPI
 
 ```python
 from pydantic import BaseModel, Field
-from typing import Optional
 
-class PredictionResponse(BaseModel):
-    success: bool = True
+class PredictionResult(BaseModel):
     disease: str = Field(..., min_length=1, max_length=100)
     confidence: float = Field(..., ge=0.0, le=1.0)
     symptoms: str
     treatment: str
     prevention: str
-    timestamp: str
-    file_size: Optional[int] = None
-
-class ErrorResponse(BaseModel):
-    success: bool = False
-    error: str
-    detail: Optional[str] = None
 ```
 
 **Pydantic validation:**
@@ -679,6 +650,11 @@ If you return `{"disease": "", "confidence": 1.5}`, Pydantic raises error becaus
 
 ### Understanding IP Addresses
 
+**10.0.2.2 (Android emulator):**
+- Special Android emulator address meaning "my computer"
+- Use `http://10.0.2.2:8000/` from the emulator to reach FastAPI on your laptop
+- This is the primary Week 04 Android testing URL for the emulator
+
 **127.0.0.1 (localhost):**
 - Special IP meaning "this device"
 - On your laptop, http://127.0.0.1:8000 works
@@ -686,7 +662,7 @@ If you return `{"disease": "", "confidence": 1.5}`, Pydantic raises error becaus
 - **Never use 127.0.0.1 in Android app**
 
 **192.168.x.x (Local network):**
-- Private IP addresses for devices on same Wi-Fi
+- Secondary option for a physical phone on the same Wi-Fi
 - Router assigns these addresses (DHCP)
 - Example: Laptop is 192.168.1.100, Phone is 192.168.1.105
 - Devices on same network can reach each other
@@ -766,12 +742,13 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 **Step 3: Open phone browser**
-- Navigate to: http://192.168.1.100:8000/
-- Replace 192.168.1.100 with YOUR laptop's IP
+- Emulator: navigate to http://10.0.2.2:8000/
+- Physical phone: navigate to http://192.168.1.100:8000/ and replace 192.168.1.100 with YOUR laptop's IP
 - Should see: `{"status": "online", "message": "LeafGuard AI Backend is running"}`
 
 **Step 4: Test /docs**
-- Navigate to: http://192.168.1.100:8000/docs
+- Emulator: navigate to http://10.0.2.2:8000/docs
+- Physical phone: navigate to http://192.168.1.100:8000/docs
 - Should see Swagger UI
 - Try uploading image directly from phone
 
@@ -841,7 +818,7 @@ sudo ufw status
 
 ```bash
 # Navigate to project folder
-cd leafguard-backend
+cd backend-api
 
 # Create venv
 python -m venv venv
@@ -851,7 +828,7 @@ python3 -m venv venv
 
 **What this creates:**
 ```
-leafguard-backend/
+backend-api/
 └── venv/
     ├── bin/        # (Mac/Linux) Contains python, pip executables
     ├── Scripts/    # (Windows) Contains python.exe, pip.exe
@@ -880,7 +857,7 @@ venv\Scripts\Activate.ps1
 **How to tell it's active:**
 - Your terminal shows `(venv)` prefix:
   ```
-  (venv) user@laptop:~/leafguard-backend$
+  (venv) user@laptop:~/backend-api$
   ```
 
 **What activation does:**
@@ -931,7 +908,7 @@ starlette==0.27.0
 ```bash
 # New machine or collaborator
 git clone [repo]
-cd leafguard-backend
+cd backend-api
 python -m venv venv
 source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
@@ -1001,7 +978,7 @@ A tool for testing APIs without writing code. Before Retrofit integration, we us
 
 **Step 2: Configure Request**
 - Method: POST
-- URL: http://localhost:8000/api/predict
+- URL: http://localhost:8000/predict
 - Headers: (auto-configured for multipart)
 - Body: Select "form-data"
   - Key: `file`
@@ -1015,14 +992,11 @@ A tool for testing APIs without writing code. Before Retrofit integration, we us
 **Expected Response:**
 ```json
 {
-  "success": true,
   "disease": "Tomato Early Blight",
   "confidence": 0.89,
   "symptoms": "Dark brown spots...",
   "treatment": "Apply fungicide...",
-  "prevention": "Rotate crops...",
-  "timestamp": "2024-01-15T10:30:00Z",
-  "file_size": 2048576
+  "prevention": "Rotate crops..."
 }
 ```
 
@@ -1047,12 +1021,12 @@ A tool for testing APIs without writing code. Before Retrofit integration, we us
 
 **Requests to create:**
 - Health Check (GET /)
-- Predict Disease (POST /api/predict with image)
-- Predict Error (POST /api/predict with .txt file)
+- Predict Disease (POST /predict with image)
+- Predict Error (POST /predict with .txt file)
 
 ### Environment Variables
 
-**Problem:** IP address is hardcoded (http://192.168.1.100:8000)
+**Problem:** IP address is hardcoded (use `http://10.0.2.2:8000` for the emulator; use `http://192.168.1.100:8000` only for a physical phone example)
 
 **Solution:** Use variables
 
@@ -1062,13 +1036,13 @@ A tool for testing APIs without writing code. Before Retrofit integration, we us
 3. Name: "Local Development"
 4. Add variable:
    - Variable: `base_url`
-   - Initial Value: `http://192.168.1.100:8000`
-   - Current Value: `http://192.168.1.100:8000`
+   - Initial Value: `http://10.0.2.2:8000` (physical phone)
+   - Current Value: `http://10.0.2.2:8000` (physical phone)
 5. Save
 
 **Using Variable:**
-- Change URL from `http://192.168.1.100:8000/api/predict`
-- To: `{{base_url}}/api/predict`
+- Change URL from `http://192.168.1.100:8000/predict`
+- To: `{{base_url}}/predict`
 - Select "Local Development" environment (dropdown top right)
 
 **Benefits:**
@@ -1093,8 +1067,8 @@ A tool for testing APIs without writing code. Before Retrofit integration, we us
 **Bad API (no error handling):**
 ```python
 @app.post("/predict")
-async def predict(file: UploadFile):
-    contents = await file.read()
+async def predict(image: UploadFile):
+    contents = await image.read()
     # Crashes if file is not an image
     image = Image.open(io.BytesIO(contents))
     result = model.predict(image)
@@ -1110,16 +1084,16 @@ async def predict(file: UploadFile):
 **Good API (with error handling):**
 ```python
 @app.post("/predict")
-async def predict(file: UploadFile):
+async def predict(image: UploadFile):
     # Validate file type
-    if file.content_type not in ["image/jpeg", "image/png"]:
+    if image.content_type not in ["image/jpeg", "image/png"]:
         raise HTTPException(
             status_code=400,
             detail="Only JPEG and PNG files are supported"
         )
 
     # Validate file size
-    contents = await file.read()
+    contents = await image.read()
     if len(contents) > 10 * 1024 * 1024:  # 10 MB
         raise HTTPException(
             status_code=400,
@@ -1183,10 +1157,10 @@ async def validate_file_size(file: UploadFile):
 **Try-Except Blocks:**
 ```python
 @app.post("/predict")
-async def predict(file: UploadFile):
+async def predict(image: UploadFile):
     try:
         # Potentially dangerous code
-        contents = await file.read()
+        contents = await image.read()
         image = process_image(contents)
         result = run_model(image)
         return {"disease": result}
@@ -1221,12 +1195,12 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 @app.post("/predict")
-async def predict(file: UploadFile):
-    logger.info(f"Received prediction request: {file.filename}")
+async def predict(image: UploadFile):
+    logger.info(f"Received prediction request: {image.filename}")
 
     try:
         # Process
-        result = process_image(file)
+        result = process_image(image)
         logger.info(f"Prediction successful: {result}")
         return result
 
@@ -1253,8 +1227,6 @@ User has no idea what this means.
 **Good error message:**
 ```json
 {
-  "success": false,
-  "error": "Invalid image file",
   "detail": "The uploaded file could not be processed. Please ensure it's a valid JPEG or PNG image."
 }
 ```

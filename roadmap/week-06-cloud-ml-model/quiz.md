@@ -1,5 +1,16 @@
 # Week 06 Quiz: Real ML Model Integration
 
+## Week 06 project reality check
+
+> Note: The committed `assets/model.tflite` is a placeholder TEXT file, not a real trained model. Until a real model is provided, the backend uses a **mock predictor** (in `model_loader.py`) and the on-device `TFLiteClassifier` uses a **green-channel heuristic fallback**, so the app still runs end-to-end. The real trained model arrives in **Week 09**. Low or odd confidence values are normal this week because predictions are placeholders.
+
+## Related materials
+
+- Exercises: [backend](../../exercises/backend/) and [ML](../../exercises/ml/)
+- Solutions: [Week 06 solutions](../../solutions/week-06/)
+- Notebooks: [Week 06 notebooks](../../notebooks/week-06/)
+- Glossary: [GLOSSARY.md](../../GLOSSARY.md)
+
 Test your understanding of machine learning model integration concepts from Week 06. This quiz covers preprocessing, inference, label mapping, confidence scores, error handling, and best practices for integrating pre-trained models into mobile applications.
 
 **Instructions**: Answer all questions. For multiple choice, select the best answer. For code questions, write clean, correct code. For short answer, write 2-4 sentences.
@@ -33,7 +44,7 @@ D) The predictions will be identical to correct normalization
 ---
 
 ### Question 3
-A model outputs the following array for a 6-class problem: `[0.05, 0.72, 0.08, 0.10, 0.03, 0.02]`. What is the predicted class index and confidence score?
+A model outputs the following array for a 10-label problem: `[0.05, 0.72, 0.08, 0.10, 0.03, 0.02]`. What is the predicted class index and confidence score?
 
 A) Class 0, confidence 0.05
 B) Class 1, confidence 0.72
@@ -45,11 +56,11 @@ D) Class 5, confidence 0.02
 ---
 
 ### Question 4
-Why should machine learning models be loaded once at Flask startup rather than inside the request handler?
+Why should machine learning models be loaded once at FastAPI startup rather than inside the request handler?
 
 A) Models cannot be loaded inside functions
 B) Loading models takes 5-10 seconds; loading once improves request latency
-C) Flask doesn't allow file I/O inside request handlers
+C) FastAPI doesn't allow file I/O inside request handlers
 D) Multiple model instances improve parallelism
 
 **Your answer**: ______
@@ -93,7 +104,7 @@ D) Convert to grayscale first, then to RGB
 ---
 
 ### Question 8
-What is the main advantage of using a 6-class plant disease model instead of a 38-class model for a learning project?
+What is the main advantage of using a 10-label plant disease contract instead of a 38-class model for a learning project?
 
 A) Higher accuracy on all diseases
 B) Faster inference time
@@ -220,8 +231,8 @@ def preprocess_image(image_bytes):
 Complete the error handling for the `/predict` endpoint:
 
 ```python
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.post('/predict')
+async def predict(image: UploadFile = File(...)):
     try:
         # Check if image is in request
         # YOUR CODE HERE (3-4 lines)
@@ -231,8 +242,8 @@ def predict():
 
 
 
-        image_file = request.files['image']
-        image_bytes = image_file.read()
+        image_file = image
+        image_bytes = await image_file.read()
 
         # Preprocess and inference
         img_array = preprocess_image(image_bytes)
@@ -243,13 +254,16 @@ def predict():
         confidence = float(predictions[0][class_idx])
         disease_name = LABELS[class_idx]
 
-        return jsonify({
+        return {
             "status": "success",
             "prediction": {
                 "disease": disease_name,
-                "confidence": confidence
+                "confidence": confidence,
+                "symptoms": get_symptoms(disease_name),
+                "treatment": get_recommendation(disease_name),
+                "prevention": get_prevention(disease_name)
             }
-        })
+        }
 
     except Exception as e:
         # YOUR CODE HERE (2 lines)
@@ -355,7 +369,7 @@ ___________________________________________________________________
 ---
 
 ### Question 22
-You're using a 6-class model (tomato and potato diseases only) but want to expand to support 10 more crops in the future. What would you need to change in your code? What wouldn't need to change?
+You're using a 10-label placeholder/mock contract (tomato and potato diseases only) but want to expand to support 10 more crops in the future. What would you need to change in your code? What wouldn't need to change?
 
 **Your answer** (3-5 sentences):
 
@@ -370,7 +384,7 @@ ___________________________________________________________________
 ## Part 5: Debugging Scenario (10 points each)
 
 ### Question 23
-**Scenario**: Your Flask endpoint runs without errors, but every image you test returns the same prediction: "Tomato Healthy" with 99% confidence, even for diseased leaves and non-plant images.
+**Scenario**: Your FastAPI endpoint runs without errors, but every image you test returns the same prediction: "Tomato Healthy" with 99% confidence, even for diseased leaves and non-plant images.
 
 **What are three possible causes of this problem? For each cause, describe how you would diagnose it.**
 
@@ -395,7 +409,7 @@ ___________________________________________________________________
 ---
 
 ### Question 24
-**Scenario**: Your model works fine in Postman tests, but when testing from your Android app, you always get a 500 error. Flask console shows: `ValueError: cannot reshape array of size 150528 into shape (1,224,224,3)`.
+**Scenario**: Your model works fine in Postman tests, but when testing from your Android app, you always get a 500 error. FastAPI console shows: `ValueError: cannot reshape array of size 150528 into shape (1,224,224,3)`.
 
 **What is the problem? How would you fix it? Show the specific code change needed.**
 
@@ -477,10 +491,10 @@ img_array = np.expand_dims(img_array, axis=0)
 
 **Question 17**:
 ```python
-if 'image' not in request.files:
-    return jsonify({"status": "error", "message": "No image provided"}), 400
+if image is None:
+    raise HTTPException(status_code=400, detail="No image provided")
 
-return jsonify({"status": "error", "message": "Internal server error"}), 500
+raise HTTPException(status_code=500, detail="Internal server error")
 ```
 
 **Question 18**:
@@ -490,7 +504,7 @@ for idx in top_k_indices:
     top_predictions.append({
         "disease": LABELS[int(idx)],
         "confidence": float(predictions[0][idx])
-    })
+    }
 ```
 
 ### Part 4: Short Answer (Key Points)
@@ -504,7 +518,7 @@ for idx in top_k_indices:
 
 **Question 21**: Transparency builds trust. Users need to know when predictions are uncertain. Use progress bars, color-coded indicators, or explicit percentage text.
 
-**Question 22**: Need to: retrain/replace model with more classes, update label mapping, update recommendations. Don't need to change: preprocessing logic, endpoint structure, error handling, Android networking code.
+**Question 22**: Need to: retrain/replace model with more classes, update label mapping, update symptoms, treatment, and prevention guidance. Don't need to change: preprocessing logic, endpoint structure, error handling, Android networking code.
 
 ### Part 5: Debugging
 

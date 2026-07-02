@@ -1,5 +1,7 @@
 # Week 09: Exercises - TensorFlow Lite Offline AI
 
+> **Kotlin-first & accuracy note:** Practise against the real `TFLiteClassifier` (Kotlin primary; Java secondary): `assets/model.tflite` + `assets/labels.txt`, **224×224 RGB floats 0..1**, **argmax** over 10 outputs, with a **green-channel heuristic fallback** because the committed `model.tflite` is a placeholder. Extra ML drills: [`../../exercises/ml/`](../../exercises/ml/).
+
 ## Overview
 
 These exercises are designed to turn the theory from the learning notes into practical Android development skills.

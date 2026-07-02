@@ -1,5 +1,15 @@
 # Week 05 Build Task: Integrate Retrofit Networking into LeafGuard AI
 
+## Related materials
+
+- Exercises (primary Kotlin): [../../exercises/android-kotlin/](../../exercises/android-kotlin/)
+- Exercises (secondary Java): [../../exercises/android/](../../exercises/android/)
+- Solutions: [../../solutions/week-05/](../../solutions/week-05/)
+- Notebooks: [../../notebooks/week-05/](../../notebooks/week-05/)
+- Glossary: [../../GLOSSARY.md](../../GLOSSARY.md)
+
+---
+
 ## Objective
 
 Integrate Retrofit HTTP client into your LeafGuard AI Android app to enable image upload to your FastAPI backend and display prediction results. By completion, users can tap a "Detect Disease" button, upload their captured image, and see the disease prediction returned from the backend.
@@ -22,9 +32,9 @@ Before starting, ensure:
 
 - [ ] Week 03 complete: Camera/gallery image capture working
 - [ ] Week 04 complete: FastAPI backend running and tested with Postman
-- [ ] Both phone and laptop on same Wi-Fi network
-- [ ] You know your laptop's local IP address (e.g., 192.168.1.10)
-- [ ] Backend accessible from phone browser: `http://YOUR_IP:8000/docs`
+- [ ] Android emulator can reach your computer at `http://10.0.2.2:8000`
+- [ ] If using a physical phone, both phone and laptop are on the same Wi-Fi and you know your computer's LAN IP (e.g., 192.168.1.10)
+- [ ] Backend accessible from computer browser: `http://localhost:8000/docs` (or from emulator: `http://10.0.2.2:8000/docs`)
 
 **Test backend first:**
 ```bash
@@ -32,11 +42,14 @@ Before starting, ensure:
 cd backend-api
 uvicorn main:app --host 0.0.0.0 --port 8000
 
-# On phone browser, visit:
-http://192.168.1.10:8000/docs
+# On computer browser, visit:
+http://localhost:8000/docs
+
+# From Android emulator, the app uses:
+http://10.0.2.2:8000/docs
 ```
 
-If you can see the API documentation, you're ready to proceed.
+If you can see the API documentation, you're ready to proceed. For a physical phone, use your computer's LAN IP instead of `10.0.2.2`.
 
 ---
 
@@ -80,11 +93,27 @@ Click **"Sync Now"** in the banner that appears. Wait for sync to complete succe
 
 ### Step 2: Create Data Models (30 minutes)
 
-#### 2.1 Create PredictionResponse.java
+#### 2.1 Create PredictionResponse.kt (Kotlin primary)
 
-Create new Java class in your package:
+Create a Kotlin data class in your package. A data class is a Kotlin class that just holds data from the backend JSON.
 
-**Right-click package → New → Java Class → Name: `PredictionResponse`**
+**Right-click package → New → Kotlin Class/File → Data class → Name: `PredictionResponse`**
+
+```kotlin
+package com.yourname.leafguardai
+
+import com.google.gson.annotations.SerializedName
+
+data class PredictionResponse(
+    @SerializedName("disease") val disease: String,
+    val confidence: Double,
+    val symptoms: String,
+    val treatment: String,
+    val prevention: String
+)
+```
+
+**Java (secondary reference):**
 
 ```java
 package com.yourname.leafguardai;
@@ -159,11 +188,11 @@ Start your FastAPI backend and check the response format with Postman or browser
 }
 ```
 
-Make sure your Java class fields match these keys.
+Make sure your Kotlin data class fields (or Java secondary fields) match these JSON keys. The network JSON key is `disease`.
 
 #### Verification
 
-- [ ] PredictionResponse.java created
+- [ ] PredictionResponse.kt created in Kotlin primary track (or PredictionResponse.java in Java secondary track)
 - [ ] Field names match FastAPI response
 - [ ] All getters implemented
 - [ ] Class compiles without errors
@@ -172,11 +201,29 @@ Make sure your Java class fields match these keys.
 
 ### Step 3: Create API Service Interface (30 minutes)
 
-#### 3.1 Create ApiService.java
+#### 3.1 Create ApiService.kt (Kotlin primary)
 
-**Right-click package → New → Java Class → Name: `ApiService`**
+**Right-click package → New → Kotlin Class/File → Interface → Name: `ApiService`**
 
-Change `class` to `interface`:
+```kotlin
+package com.yourname.leafguardai
+
+import okhttp3.MultipartBody
+import retrofit2.Call
+import retrofit2.http.Multipart
+import retrofit2.http.POST
+import retrofit2.http.Part
+
+interface ApiService {
+    @Multipart
+    @POST("predict")
+    fun uploadImage(@Part image: MultipartBody.Part): Call<PredictionResponse>
+}
+```
+
+**Java (secondary reference):**
+
+Create `ApiService.java` only if you are following the Java twin. Change `class` to `interface`:
 
 ```java
 package com.yourname.leafguardai;
@@ -204,7 +251,7 @@ public interface ApiService {
 
 #### Verification
 
-- [ ] ApiService.java interface created
+- [ ] ApiService.kt interface created in Kotlin primary track (or ApiService.java in Java secondary track)
 - [ ] @Multipart annotation present
 - [ ] @POST("predict") matches your backend endpoint
 - [ ] Method signature correct
@@ -214,9 +261,51 @@ public interface ApiService {
 
 ### Step 4: Create Retrofit Client Singleton (45 minutes)
 
-#### 4.1 Create RetrofitClient.java
+#### 4.1 Create RetrofitClient.kt (Kotlin primary)
 
-**Right-click package → New → Java Class → Name: `RetrofitClient`**
+**Right-click package → New → Kotlin Class/File → Object → Name: `RetrofitClient`**
+
+A Kotlin `object` is a single shared instance, so it is a natural fit for one app-wide Retrofit client.
+
+```kotlin
+package com.yourname.leafguardai
+
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
+
+object RetrofitClient {
+    // Android emulator → your computer. Physical phone: use your computer LAN IP instead.
+    private const val BASE_URL = "http://10.0.2.2:8000/"
+
+    private val retrofit: Retrofit by lazy {
+        val interceptor = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+
+        val client = OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    val apiService: ApiService by lazy {
+        retrofit.create(ApiService::class.java)
+    }
+}
+```
+
+**Java (secondary reference):**
 
 ```java
 package com.yourname.leafguardai;
@@ -230,8 +319,8 @@ import java.util.concurrent.TimeUnit;
 
 public class RetrofitClient {
 
-    // IMPORTANT: Replace with YOUR laptop's local IP address
-    private static final String BASE_URL = "http://192.168.1.10:8000/";
+    // Android emulator → your computer. Physical phone: use your computer LAN IP instead.
+    private static final String BASE_URL = "http://10.0.2.2:8000/";
 
     private static Retrofit retrofit = null;
 
@@ -265,9 +354,9 @@ public class RetrofitClient {
 }
 ```
 
-#### 4.2 Update BASE_URL with Your IP
+#### 4.2 Confirm BASE_URL for Emulator or Physical Phone
 
-**Find your laptop's IP:**
+For the Android emulator, keep `http://10.0.2.2:8000/`. Only find your laptop's LAN IP if you are testing on a physical phone:
 
 **Windows:**
 ```bash
@@ -281,15 +370,19 @@ ifconfig | grep "inet "
 # Look for 192.168.x.x address (not 127.0.0.1)
 ```
 
-**Update BASE_URL in RetrofitClient.java:**
-```java
-private static final String BASE_URL = "http://192.168.1.10:8000/";  // Your IP here
+**Update BASE_URL only when needed:**
+```kotlin
+// Emulator (primary)
+private const val BASE_URL = "http://10.0.2.2:8000/"
+
+// Physical phone on same Wi-Fi (secondary)
+private const val BASE_URL = "http://YOUR_LAN_IP:8000/"
 ```
 
 #### Verification
 
-- [ ] RetrofitClient.java created
-- [ ] BASE_URL updated with your actual IP
+- [ ] RetrofitClient.kt created in Kotlin primary track (or RetrofitClient.java in Java secondary track)
+- [ ] BASE_URL uses `http://10.0.2.2:8000/` for emulator, or your LAN IP only for a physical phone
 - [ ] Singleton pattern implemented (static instance)
 - [ ] Logging interceptor configured
 - [ ] Timeouts set to 30 seconds
@@ -300,7 +393,7 @@ private static final String BASE_URL = "http://192.168.1.10:8000/";  // Your IP 
 
 ### Step 5: Configure Network Security (30 minutes)
 
-Android 9+ blocks HTTP traffic by default. We need to allow cleartext traffic to our local IP.
+Android 9+ blocks HTTP traffic by default. This is normal — if you see `CLEARTEXT communication not permitted`, allow cleartext traffic for the emulator host during local development.
 
 #### 5.1 Create res/xml/network_security_config.xml
 
@@ -311,14 +404,15 @@ Android 9+ blocks HTTP traffic by default. We need to allow cleartext traffic to
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Allow cleartext traffic to local development IP -->
+    <!-- Allow cleartext traffic to local development backend -->
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">192.168.1.10</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <!-- For a physical phone, add your computer LAN IP here too. -->
     </domain-config>
 </network-security-config>
 ```
 
-**Replace `192.168.1.10` with YOUR laptop IP.**
+Keep `10.0.2.2` for the emulator. For a physical phone, add/replace with your computer's LAN IP.
 
 #### 5.2 Reference in AndroidManifest.xml
 
@@ -376,7 +470,54 @@ Open `activity_main.xml` (or your scan activity layout):
 
 Button should be disabled until image is captured.
 
-#### 6.3 Update MainActivity.java
+#### 6.3 Update MainActivity.kt (Kotlin primary)
+
+A coroutine (`lifecycleScope.launch`) can run slow work without freezing the screen; Retrofit `enqueue` is also acceptable because it runs asynchronously.
+
+Add the equivalent Kotlin imports and member variables in `MainActivity`. The core upload call should look like this:
+
+```kotlin
+private fun uploadImage() {
+    if (currentImageFile == null || currentImageFile?.exists() != true) {
+        Toast.makeText(this, "Please capture an image first", Toast.LENGTH_SHORT).show()
+        return
+    }
+
+    progressBar.visibility = View.VISIBLE
+    detectButton.isEnabled = false
+
+    val requestBody = currentImageFile!!.asRequestBody("image/*".toMediaTypeOrNull())
+    val imagePart = MultipartBody.Part.createFormData(
+        "image",
+        currentImageFile!!.name,
+        requestBody
+    )
+
+    val call = RetrofitClient.apiService.uploadImage(imagePart)
+    call.enqueue(object : Callback<PredictionResponse> {
+        override fun onResponse(call: Call<PredictionResponse>, response: Response<PredictionResponse>) {
+            progressBar.visibility = View.GONE
+            detectButton.isEnabled = true
+            val prediction = response.body()
+            if (response.isSuccessful && prediction != null) {
+                navigateToResult(prediction)
+            } else {
+                Toast.makeText(this@MainActivity, "Server error: ${response.code()}", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        override fun onFailure(call: Call<PredictionResponse>, t: Throwable) {
+            progressBar.visibility = View.GONE
+            detectButton.isEnabled = true
+            Toast.makeText(this@MainActivity, "Network error. Check backend and URL.", Toast.LENGTH_LONG).show()
+        }
+    })
+}
+```
+
+Expected result: you should see the disease name and confidence appear on the Result screen after a successful upload.
+
+**Java (secondary reference):**
 
 Add these imports:
 
@@ -719,11 +860,11 @@ public class ResultActivity extends AppCompatActivity {
 Run the app and upload an image. In Logcat, filter by "OkHttp":
 
 ```
-D/OkHttp: --> POST http://192.168.1.10:8000/predict
+D/OkHttp: --> POST http://10.0.2.2:8000/predict
 D/OkHttp: Content-Type: multipart/form-data; boundary=...
 D/OkHttp: Content-Length: 234567
 D/OkHttp: --> END POST
-D/OkHttp: <-- 200 OK http://192.168.1.10:8000/predict (1523ms)
+D/OkHttp: <-- 200 OK http://10.0.2.2:8000/predict (1523ms)
 D/OkHttp: Content-Type: application/json
 D/OkHttp: {"disease":"Tomato Late Blight","confidence":0.87,...}
 D/OkHttp: <-- END HTTP

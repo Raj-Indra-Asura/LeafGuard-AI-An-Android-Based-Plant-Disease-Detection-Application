@@ -1,6 +1,8 @@
 # Week 08: Exercises — XML Disease Library
 
 > **Prerequisites:** Week 07 Room Database complete | Time Budget: ~8 hours
+>
+> **Accuracy note:** The shipped app reads `app/src/main/assets/diseases.xml` (in `assets/`, filename `diseases.xml`) with `XmlPullParser` inside `DiseaseLibraryActivity`. It has **10** `<disease>` entries using five tags — `<name>`, `<plant>`, `<symptoms>`, `<treatment>`, `<prevention>` — and each `<name>` matches `assets/labels.txt` exactly (spaces, not underscores). A larger schema below is an optional extension. Kotlin is the primary track; Java is the secondary reference.
 
 ---
 
@@ -22,9 +24,9 @@ treatment, prevention, severity, and affectedCrops.
 
 ---
 
-## Exercise 2: Create disease_library.xml (2 hours)
+## Exercise 2: Create diseases.xml (2 hours)
 
-Create `app/src/main/assets/disease_library.xml` with ALL 15 diseases from
+Create `app/src/main/assets/diseases.xml` with ALL 15 diseases from
 the solution reference (or at least 10 covering the crops you trained on).
 
 The file must follow this structure:
@@ -262,7 +264,7 @@ public class DiseaseXmlParser {
 
 ```java
 try {
-    InputStream is = getAssets().open("disease_library.xml");
+    InputStream is = getAssets().open("diseases.xml");
     DiseaseXmlParser xmlParser = new DiseaseXmlParser();
     List<Disease> diseases = xmlParser.parse(is);
     Toast.makeText(this, 
@@ -321,7 +323,7 @@ public class DiseaseRepository {
     public synchronized void loadIfNeeded() throws XmlPullParserException, IOException {
         if (isLoaded) return; // Already cached
         
-        InputStream is = context.getAssets().open("disease_library.xml");
+        InputStream is = context.getAssets().open("diseases.xml");
         DiseaseXmlParser parser = new DiseaseXmlParser();
         List<Disease> diseases = parser.parse(is);
         
@@ -663,7 +665,7 @@ public synchronized void loadIfNeeded() {
     if (isLoaded) return;
     
     try {
-        InputStream is = context.getAssets().open("disease_library.xml");
+        InputStream is = context.getAssets().open("diseases.xml");
         DiseaseXmlParser parser = new DiseaseXmlParser();
         List<Disease> diseases = parser.parse(is);
         
@@ -678,12 +680,12 @@ public synchronized void loadIfNeeded() {
         is.close();
         
     } catch (XmlPullParserException e) {
-        Log.e("DiseaseRepo", "Malformed XML in disease_library.xml: " + e.getMessage());
+        Log.e("DiseaseRepo", "Malformed XML in diseases.xml: " + e.getMessage());
         // App continues; diseaseCache remains empty; findByLabel returns null
         isLoaded = true; // Don't retry repeatedly
         
     } catch (IOException e) {
-        Log.e("DiseaseRepo", "disease_library.xml not found in assets: " + e.getMessage());
+        Log.e("DiseaseRepo", "diseases.xml not found in assets: " + e.getMessage());
         // This is a fatal developer error — XML file must be in assets
         isLoaded = true;
     }
@@ -786,7 +788,7 @@ public class DiseaseXmlParserTest {
 
 | # | File/Class | Status |
 |---|-----------|--------|
-| 1 | `assets/disease_library.xml` (10+ diseases) | ☐ |
+| 1 | `assets/diseases.xml` (10+ diseases) | ☐ |
 | 2 | `Disease.java` (model class) | ☐ |
 | 3 | `DiseaseXmlParser.java` (XmlPullParser) | ☐ |
 | 4 | `DiseaseRepository.java` (singleton + cache) | ☐ |

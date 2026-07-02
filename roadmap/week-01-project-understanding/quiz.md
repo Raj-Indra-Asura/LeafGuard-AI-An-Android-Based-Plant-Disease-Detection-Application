@@ -294,22 +294,20 @@ Study this simplified architecture diagram:
 │   MainActivity  │
 │   (View)        │
 └────────┬────────┘
-         │ observes
-┌────────▼────────┐
-│  ScanViewModel  │
-│  (ViewModel)    │
-└────────┬────────┘
          │ calls
 ┌────────▼────────┐
-│ ScanRepository  │
-│ (Repository)    │
-└──┬────────────┬─┘
-   │            │
-   ▼            ▼
-┌──────┐  ┌──────────┐
-│ Room │  │ Retrofit │
-│  DB  │  │ API      │
-└──────┘  └──────────┘
+│   ApiService    │
+│   (Network)     │
+└────────┬────────┘
+         │ HTTP
+┌────────▼────────┐
+│  FastAPI Backend│
+│  /predict       │
+└────────┬────────┘
+         │ ML
+┌────────▼────────┐
+│ TensorFlow Model│
+└─────────────────┘
 ```
 
 Answer these questions:
@@ -317,10 +315,10 @@ Answer these questions:
 **A) Which layer does MainActivity belong to?**
 _________________________________________________________________
 
-**B) What design pattern does this diagram illustrate?**
+**B) What does ApiService do in LeafGuard?**
 _________________________________________________________________
 
-**C) Why does ScanViewModel call ScanRepository instead of directly calling Room or Retrofit?**
+**C) Why does MainActivity use ApiService instead of making HTTP calls directly?**
 _________________________________________________________________
 _________________________________________________________________
 
@@ -331,33 +329,38 @@ _________________________________________________________________
 ### Question 27 (3 points)
 Read this code snippet:
 
-```java
-public class ScanViewModel extends ViewModel {
-    private MutableLiveData<ScanResult> result = new MutableLiveData<>();
+```kotlin
+// MainActivity.kt
+class MainActivity : AppCompatActivity() {
+    private lateinit var apiService: ApiService
 
-    public void uploadImage(String path) {
-        repository.detectDisease(path, new Callback() {
-            @Override
-            public void onSuccess(DiseaseResult disease) {
-                result.setValue(ScanResult.success(disease));
+    private fun uploadImage(imagePath: String) {
+        lifecycleScope.launch {
+            try {
+                val response = apiService.predict(createImagePart(imagePath))
+                navigateToResult(response.disease, response.confidence)
+            } catch (e: Exception) {
+                showError("Network error: ${e.message}")
             }
-        });
+        }
     }
 
-    public LiveData<ScanResult> getResult() {
-        return result;
+    private fun navigateToResult(disease: String, confidence: Float) {
+        val intent = Intent(this, ResultActivity::class.java)
+        intent.putExtra("disease", disease)
+        intent.putExtra("confidence", confidence)
+        startActivity(intent)
     }
 }
 ```
 
-**A) What is the purpose of LiveData in this code?**
+**A) What is the purpose of lifecycleScope.launch in this code?**
 _________________________________________________________________
 
-**B) Why does the result use setValue() instead of postValue() in onSuccess callback?**
-(Hint: Think about threading)
+**B) What happens if the network call fails?**
 _________________________________________________________________
 
-**C) How does the Activity observe this result?**
+**C) How does the result get to ResultActivity?**
 _________________________________________________________________
 
 ---
@@ -404,20 +407,20 @@ _________________________________________________________________
 
 ### Section 1: Multiple Choice
 1. C (Farmers lack timely access to plant disease experts)
-2. C (MVVM)
-3. B (6 activities: Main, Scan, Result, History, Library, Settings)
+2. C (Direct architecture - Activities call services directly)
+3. B (6 activities: Main, Result, History, HistoryDetail, Library, Settings)
 4. C (Abstract data sources and coordinate data access)
 5. C (Retrofit)
 6. B (Room Database)
-7. B (XML files - disease_library.xml)
+7. B (XML files - diseases.xml)
 8. C (FastAPI)
 9. B (TensorFlow Lite)
-10. B (ViewModel survives configuration changes)
+10. B (Service classes provide abstraction and reusability)
 
 ### Section 2: True/False
 11. False (LeafGuard has both online and offline modes)
 12. True
-13. False (Activities should access database through ViewModel and Repository)
+13. False (Activities access database through service classes like ScanDao)
 14. True
 15. True
 
@@ -426,40 +429,38 @@ _________________________________________________________________
 17. @Entity
 18. POST
 19. offline (or on-device)
-20. ViewModel
+20. ApiService (or ScanDao)
 
 ### Section 4: Short Answer
 
 **21. Six main activities:**
 1. MainActivity
-2. ScanActivity
-3. ResultActivity
-4. HistoryActivity
+2. ResultActivity
+3. HistoryActivity
+4. HistoryDetailActivity
 5. DiseaseLibraryActivity
 6. SettingsActivity
 
-**22. Why MVVM? (Sample answer)**
-LeafGuard uses MVVM because ViewModels survive configuration changes like screen rotation, preventing data loss and duplicate network calls. ViewModels also separate business logic from UI code, making the app more testable and maintainable. This separation allows Activities to focus solely on UI updates while ViewModels handle data processing.
+**22. Why direct architecture? (Sample answer)**
+LeafGuard uses a direct architecture because it's simpler to understand and debug for a course project. Activities directly call service classes (ApiService, ScanDao, TFLiteClassifier) which keeps the codebase straightforward. This separation still provides reusability and testability while avoiding the complexity of additional abstraction layers.
 
 **23. Data flow in cloud AI mode (Sample answer):**
 1. User taps "Scan" button in MainActivity
 2. Camera intent launched, user captures image
-3. Image path passed to ScanViewModel
-4. ViewModel calls ScanRepository.detectDisease()
-5. Repository uses Retrofit to POST image to FastAPI backend
+3. Image returned to MainActivity via ActivityResultContracts
+4. MainActivity calls ApiService.predict() with image
+5. ApiService uses Retrofit to POST image to FastAPI backend
 6. Backend runs TensorFlow model inference
-7. Backend returns JSON with disease prediction
-8. Retrofit parses JSON to UploadResponse object
-9. Repository converts to DiseaseResult domain model
-10. Repository returns result to ViewModel
-11. ViewModel updates LiveData
-12. MainActivity observes LiveData change and updates UI
-13. ViewModel saves result to Room database
+7. Backend returns JSON with "disease" field
+8. Retrofit parses JSON to PredictionResponse object
+9. MainActivity receives result
+10. MainActivity saves result to Room database via ScanDao
+11. MainActivity navigates to ResultActivity with Intent extras
 
 **24. Three benefits of Room over SQLite (Sample answer):**
 1. Compile-time verification of SQL queries (catches errors before runtime)
 2. Less boilerplate code (no need to manually write ContentValues and Cursors)
-3. LiveData integration for automatic UI updates when data changes
+3. Coroutines integration for automatic background threading
 
 **25. Three CSE 2206 topics (Sample answer):**
 
@@ -467,34 +468,36 @@ LeafGuard uses MVVM because ViewModels survive configuration changes like screen
 **How:** LeafGuard implements 6 activities with proper lifecycle management (onCreate, onPause, onResume) and state saving/restoration.
 
 **Topic 2:** Retrofit (Networking)
-**How:** LeafGuard uses Retrofit to make HTTP POST requests to FastAPI backend, demonstrating REST API communication, JSON parsing, and asynchronous callbacks.
+**How:** LeafGuard uses Retrofit to make HTTP POST requests to FastAPI backend, demonstrating REST API communication, JSON parsing, and coroutines for async operations.
 
 **Topic 3:** Room Database
-**How:** LeafGuard implements Room with @Entity classes (ScanEntity), @Dao interfaces (ScanDao), and @Database class (AppDatabase) for local data persistence.
+**How:** LeafGuard implements Room with @Entity classes (ScanRecord), @Dao interfaces (ScanDao), and @Database class (AppDatabase) for local data persistence.
 
 ### Section 5: Diagram Interpretation
 
 **26A) Which layer does MainActivity belong to?**
 Presentation Layer (or View layer)
 
-**26B) What design pattern does this diagram illustrate?**
-MVVM (Model-View-ViewModel) with Repository pattern
+**26B) What does ApiService do in LeafGuard?**
+ApiService defines the Retrofit interface for network calls to the FastAPI backend, including the POST /predict endpoint for disease detection.
 
-**26C) Why does ScanViewModel call ScanRepository instead of directly calling Room or Retrofit?**
-Repository provides a single source of truth and abstracts the data sources. This allows the ViewModel to not care whether data comes from local database or network. Repository can implement caching strategies, decide when to fetch fresh data, and handle synchronization between local and remote data sources. It also makes testing easier—you can mock the Repository without mocking Room and Retrofit separately.
+**26C) Why does MainActivity use ApiService instead of making HTTP calls directly?**
+ApiService provides abstraction and reusability. It encapsulates all network logic in one place, making it easier to test, modify, and maintain. Multiple Activities can reuse the same ApiService. If the API changes, only ApiService needs updating, not every Activity.
 
 ### Section 6: Code Reading
 
-**27A) Purpose of LiveData:**
-LiveData allows the Activity to observe data changes reactively. When the result changes, the Activity's UI automatically updates without manual refresh. LiveData is also lifecycle-aware, so it only updates when the Activity is in active state (not destroyed).
+**27A) Purpose of lifecycleScope.launch:**
+lifecycleScope.launch runs the network call on a coroutine that's tied to the Activity's lifecycle. This ensures the operation is automatically cancelled if the Activity is destroyed, preventing memory leaks and crashes.
 
-**27B) setValue() vs postValue():**
-This is a trick question if answered too quickly! In the callback (onSuccess), we're likely on a background thread (Retrofit callbacks often run on background threads). If on a background thread, we should use postValue() instead of setValue(). setValue() must be called on the main thread. The correct code should use postValue() here, or ensure the callback is on the main thread.
+**27B) What happens if the network call fails?**
+The catch block handles the exception and calls showError() to display an error message to the user with the exception details.
 
-**27C) How does Activity observe?**
-```java
-viewModel.getResult().observe(this, scanResult -> {
-    // Update UI with scanResult
+**27C) How does the result get to ResultActivity?**
+```kotlin
+val intent = Intent(this, ResultActivity::class.java)
+intent.putExtra("disease", disease)
+intent.putExtra("confidence", confidence)
+startActivity(intent)
     if (scanResult.isSuccess()) {
         textView.setText(scanResult.getData().getDiseaseName());
     } else {

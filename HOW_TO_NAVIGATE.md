@@ -2,6 +2,8 @@
 
 **Welcome to the LeafGuard AI Unified Learning System!** This guide will help you make the most of the navigation system.
 
+> **🍴 Pick a track first.** A **"track"** is the language you learn in. **Kotlin is the primary, recommended track** — build in [`android-app-kotlin/`](android-app-kotlin/) and practice in [`exercises/android-kotlin/`](exercises/android-kotlin/). Java is a behavior-identical secondary track in [`android-app/`](android-app/) / [`exercises/android/`](exercises/android/). **If unsure, choose Kotlin.** New here? Do the one-time [pre-Week-01 setup](README.md#pre-week-01-setup-checklist-do-this-first) before anything else.
+
 ---
 
 ## 🎯 Quick Start (2 minutes)

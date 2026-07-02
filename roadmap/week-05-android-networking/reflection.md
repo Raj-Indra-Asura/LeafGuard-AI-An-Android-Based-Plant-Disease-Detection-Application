@@ -1,6 +1,18 @@
 # Week 05: Reflection Prompts - Android Networking with Retrofit
 
+## Related materials
+
+- Exercises (primary Kotlin): [../../exercises/android-kotlin/](../../exercises/android-kotlin/)
+- Exercises (secondary Java): [../../exercises/android/](../../exercises/android/)
+- Solutions: [../../solutions/week-05/](../../solutions/week-05/)
+- Notebooks: [../../notebooks/week-05/](../../notebooks/week-05/)
+- Glossary: [../../GLOSSARY.md](../../GLOSSARY.md)
+
+---
+
 ## Purpose of This Reflection
+
+API means Application Programming Interface, HTTP means HyperText Transfer Protocol, JSON means JavaScript Object Notation, URL means Uniform Resource Locator, and LAN means Local Area Network. Use those full names once in your reflection, then the acronyms are fine.
 
 Reflection transforms hands-on coding into deep learning. By explaining concepts in your own words, you solidify understanding and prepare for viva questions. This reflection should take 30-45 minutes and will be invaluable when preparing for your final presentation.
 

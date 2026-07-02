@@ -2,7 +2,7 @@
 
 ## Task Overview
 
-**Objective:** Build a production-ready FastAPI backend for LeafGuard AI that accepts image uploads via multipart form-data and returns dummy disease predictions in JSON format. The backend must be accessible from your Android phone on the same Wi-Fi network.
+**Objective:** Build a production-ready FastAPI backend for LeafGuard AI that accepts image uploads via multipart form-data and returns dummy disease predictions in JSON (JavaScript Object Notation) format. The backend must be accessible from your Android emulator via `http://10.0.2.2:8000/` (or a physical phone on the same Wi-Fi using your laptop LAN IP).
 
 **Time Estimate:** 10-15 hours across 7 days
 
@@ -23,7 +23,7 @@ By the end of this build task, you must have:
 - [ ] Dummy JSON responses with disease predictions
 - [ ] Input validation (file type, size)
 - [ ] Error handling (400, 500 status codes)
-- [ ] CORS middleware configured
+- [ ] CORS (Cross-Origin Resource Sharing) middleware configured
 - [ ] Server running on local network (--host 0.0.0.0)
 - [ ] Postman collection with test requests
 - [ ] Documentation (README.md, API docs)
@@ -40,31 +40,26 @@ By the end of this build task, you must have:
 **Create project structure:**
 
 ```bash
-mkdir leafguard-backend
-cd leafguard-backend
+mkdir -p backend-api
+cd backend-api
 
-# Create folders
-mkdir models routers utils uploads
-
-# Create files
-touch main.py
-touch models/__init__.py models/prediction.py
-touch routers/__init__.py routers/predict.py
-touch utils/__init__.py utils/validation.py
-touch requirements.txt README.md .gitignore
-touch uploads/.gitkeep
+# Real single-file backend layout
+touch main.py config.py model_loader.py requirements.txt README.md .gitignore
 ```
 
 **Initialize virtual environment:**
 
 ```bash
 python -m venv venv
-source venv/bin/activate  # Mac/Linux
+# On macOS/Linux, use python3 -m venv venv if python points to Python 2
+source venv/bin/activate  # macOS/Linux
 # OR
 venv\Scripts\activate     # Windows
 
+# If running from the repo root, use: pip install -r backend-api/requirements.txt
 pip install fastapi uvicorn python-multipart
 pip freeze > requirements.txt
+# pip and uvicorn commands are identical on Windows and macOS/Linux
 ```
 
 **Create .gitignore:**
@@ -94,17 +89,15 @@ git commit -m "Week 04: Initialize FastAPI backend project structure"
 
 ---
 
-### Step 2: Define Response Models (Day 2)
+### Step 2: Define the Response Model (Day 2)
 
-**File: `models/prediction.py`**
+**File: `main.py` (near the top)**
 
 ```python
 from pydantic import BaseModel, Field
-from typing import Optional
 
-class PredictionResponse(BaseModel):
+class PredictionResult(BaseModel):
     """Response model for successful disease prediction"""
-    success: bool = True
     disease: str = Field(..., min_length=1, max_length=100,
                         description="Name of the detected disease")
     confidence: float = Field(..., ge=0.0, le=1.0,
@@ -115,35 +108,15 @@ class PredictionResponse(BaseModel):
                           description="Recommended treatment steps")
     prevention: str = Field(..., min_length=10,
                            description="Prevention strategies")
-    timestamp: str = Field(..., description="ISO 8601 timestamp")
-    file_size: Optional[int] = Field(None, description="Uploaded file size in bytes")
 
     class Config:
         json_schema_extra = {
             "example": {
-                "success": True,
                 "disease": "Tomato Early Blight",
                 "confidence": 0.92,
                 "symptoms": "Dark brown spots with concentric rings on lower leaves",
                 "treatment": "Apply fungicide containing chlorothalonil or mancozeb",
-                "prevention": "Rotate crops annually, avoid overhead watering",
-                "timestamp": "2024-01-15T10:30:00Z",
-                "file_size": 2048576
-            }
-        }
-
-class ErrorResponse(BaseModel):
-    """Response model for error cases"""
-    success: bool = False
-    error: str = Field(..., description="Error message")
-    detail: Optional[str] = Field(None, description="Detailed error information")
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "success": False,
-                "error": "Invalid file format",
-                "detail": "Only JPEG and PNG images are supported"
+                "prevention": "Rotate crops annually, avoid overhead watering"
             }
         }
 ```
@@ -152,14 +125,13 @@ class ErrorResponse(BaseModel):
 
 ```bash
 python
->>> from models.prediction import PredictionResponse
->>> response = PredictionResponse(
+>>> from main import PredictionResult
+>>> response = PredictionResult(
 ...     disease="Test Disease",
 ...     confidence=0.9,
 ...     symptoms="Test symptoms",
 ...     treatment="Test treatment",
-...     prevention="Test prevention",
-...     timestamp="2024-01-15T10:00:00Z"
+...     prevention="Test prevention"
 ... )
 >>> print(response.model_dump_json())
 ```
@@ -168,7 +140,7 @@ python
 
 ### Step 3: Create Validation Utilities (Day 2)
 
-**File: `utils/validation.py`**
+**Validation helper in `main.py`**
 
 ```python
 from fastapi import UploadFile
@@ -236,16 +208,22 @@ async def validate_file_size(file: UploadFile) -> tuple[bytes, Optional[str]]:
 
 ### Step 4: Implement /predict Endpoint (Day 3)
 
-**File: `routers/predict.py`**
+**File: `main.py` (`/predict` endpoint section)**
 
 ```python
-from fastapi import APIRouter, File, UploadFile, HTTPException
-from models.prediction import PredictionResponse
-from utils.validation import validate_image, validate_file_size
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from pydantic import BaseModel
 import random
 from datetime import datetime
 
-router = APIRouter(prefix="/api", tags=["Prediction"])
+app = FastAPI(title="LeafGuard AI Backend")
+
+class PredictionResult(BaseModel):
+    disease: str
+    confidence: float
+    symptoms: str
+    treatment: str
+    prevention: str
 
 # Dummy disease database
 DISEASE_DATABASE = [
@@ -281,32 +259,31 @@ DISEASE_DATABASE = [
     }
 ]
 
-@app.post("/predict", response_model=PredictionResponse)
-async def predict_disease(file: UploadFile = File(...)):
+@app.post("/predict", response_model=PredictionResult)
+async def predict(image: UploadFile = File(...)):
     """
     Upload a leaf image and receive disease prediction.
 
     This is a dummy endpoint that returns random predictions.
-    Week 06 will integrate a real TensorFlow model.
+    Week 09 will integrate the real trained model.
 
     **Request:**
     - Content-Type: multipart/form-data
-    - Body: file (image/jpeg or image/png)
+    - Body: multipart part named `image` (image/jpeg or image/png)
 
     **Response:**
     - Disease name, confidence score, symptoms, treatment, prevention
-    - Timestamp of prediction
-    - Uploaded file size
+    - Disease name, confidence score, symptoms, treatment, prevention
     """
 
     # Validate file type and extension
-    validation_error = validate_image(file)
+    validation_error = validate_image(image)
     if validation_error:
         raise HTTPException(status_code=400, detail=validation_error)
 
     # Validate file size
     try:
-        contents, size_error = await validate_file_size(file)
+        contents, size_error = await validate_file_size(image)
         if size_error:
             raise HTTPException(status_code=400, detail=size_error)
     except Exception as e:
@@ -320,15 +297,12 @@ async def predict_disease(file: UploadFile = File(...)):
     confidence = round(random.uniform(0.75, 0.98), 2)  # Random confidence 75-98%
 
     # Create response
-    response = PredictionResponse(
-        success=True,
+    response = PredictionResult(
         disease=disease_data["disease"],
         confidence=confidence,
         symptoms=disease_data["symptoms"],
         treatment=disease_data["treatment"],
-        prevention=disease_data["prevention"],
-        timestamp=datetime.utcnow().isoformat() + "Z",
-        file_size=len(contents)
+        prevention=disease_data["prevention"]
     )
 
     return response
@@ -341,19 +315,18 @@ async def predict_disease(file: UploadFile = File(...)):
 **File: `main.py`**
 
 ```python
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from routers import predict
 
 app = FastAPI(
     title="LeafGuard AI Backend",
-    description="REST API for plant disease detection using machine learning",
+    description="REST (REpresentational State Transfer) API for plant disease detection using machine learning",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
 
-# CORS middleware - allows Android app to make requests
+# CORS (Cross-Origin Resource Sharing) middleware - allows Android app to make requests
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # In production, specify exact Android app origin
@@ -362,8 +335,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(predict.router)
+# The /predict endpoint is defined directly in this main.py file.
 
 @app.get("/", tags=["Health Check"])
 def root():
@@ -390,7 +362,7 @@ def health_check():
         "status": "healthy",
         "api_version": "1.0.0",
         "endpoints": {
-            "predict": "/api/predict",
+            "predict": "/predict",
             "docs": "/docs",
             "redoc": "/redoc"
         }
@@ -423,7 +395,7 @@ ifconfig
 ip addr show
 ```
 
-Note down the IP address (e.g., 192.168.1.100)
+For the Android emulator, the base URL is `http://10.0.2.2:8000/`. For a physical phone, note down the laptop IP address (e.g., 192.168.1.100).
 
 **Run server for network access:**
 
@@ -433,8 +405,11 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 **Test from phone:**
 1. Connect phone to same Wi-Fi network
-2. Open browser on phone: http://YOUR_IP:8000
-3. Should see health check response
+2. Open browser in the Android emulator: http://10.0.2.2:8000
+3. For a physical phone, open: http://YOUR_IP:8000
+4. Should see health check response
+
+Expected result: a JSON health response appears in the browser.
 
 **Configure firewall (if needed):**
 - Windows: Allow Python through Windows Firewall
@@ -443,7 +418,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 **Create documentation file: `NETWORK_SETUP.md`**
 
-```markdown
+````markdown
 # Local Network Setup for LeafGuard Backend
 
 ## Configuration
@@ -453,15 +428,17 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 - **Wi-Fi Network:** [Network Name]
 - **Local IP Address:** 192.168.x.x
 - **Server Port:** 8000
-- **Full Base URL:** http://192.168.x.x:8000
+- **Emulator Base URL:** http://10.0.2.2:8000
+- **Physical Phone Base URL:** http://192.168.x.x:8000
 
 ### Android Phone (Client)
 - **Device Model:** [Your Phone Model]
 - **Android Version:** [Version Number]
 - **Wi-Fi Network:** [Same Network Name as Laptop]
 - **Test URLs:**
-  - Health Check: http://192.168.x.x:8000/
-  - API Docs: http://192.168.x.x:8000/docs
+  - Emulator Health Check: http://10.0.2.2:8000/
+  - Emulator API Docs: http://10.0.2.2:8000/docs
+  - Physical Phone Health Check: http://192.168.x.x:8000/
 
 ## Running the Server
 
@@ -478,8 +455,8 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 - [x] Server starts without errors
 - [x] Laptop can access http://localhost:8000
-- [x] Laptop can access http://192.168.x.x:8000
-- [x] Phone can access http://192.168.x.x:8000
+- [x] Emulator can access http://10.0.2.2:8000
+- [x] Physical phone can access http://192.168.x.x:8000
 - [x] Firewall configured (if necessary)
 - [x] Both devices on same Wi-Fi network
 
@@ -511,7 +488,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 - Always use --host 0.0.0.0 for network access
 - Test with phone browser before Android integration
 - Save this configuration for Week 05 Retrofit setup
-```
+````
 
 ---
 
@@ -532,19 +509,19 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 **Request 2: Predict Disease (Success)**
 - Name: Predict Disease - Success
 - Method: POST
-- URL: http://localhost:8000/api/predict
+- URL: http://localhost:8000/predict
 - Body: form-data
-  - Key: file
+  - Key: image
   - Type: File
   - Value: [Select leaf.jpg]
-- Expected: 200 OK, full PredictionResponse
+- Expected: 200 OK with `disease`, `confidence`, `symptoms`, `treatment`, and `prevention`
 
 **Request 3: Predict Disease (Invalid Type)**
 - Name: Predict Disease - Invalid File Type
 - Method: POST
-- URL: http://localhost:8000/api/predict
+- URL: http://localhost:8000/predict
 - Body: form-data
-  - Key: file
+  - Key: image
   - Type: File
   - Value: [Select test.txt]
 - Expected: 400 Bad Request, error message
@@ -552,7 +529,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 **Request 4: Network Test (Phone)**
 - Name: Predict from Phone
 - Method: POST
-- URL: http://192.168.x.x:8000/api/predict (replace with your IP)
+- URL: emulator `http://10.0.2.2:8000/predict`; physical phone `http://192.168.x.x:8000/predict` (replace with your IP)
 - Body: form-data with image
 - Test from Postman mobile app or desktop with environment variable
 
@@ -566,7 +543,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 **Create comprehensive README.md:**
 
-```markdown
+````markdown
 # LeafGuard AI Backend
 
 REST API backend for the LeafGuard plant disease detection Android application.
@@ -574,7 +551,7 @@ REST API backend for the LeafGuard plant disease detection Android application.
 ## Features
 
 - **File Upload:** Accepts leaf images via multipart/form-data
-- **Disease Prediction:** Returns dummy predictions (real ML model in Week 06)
+- **Disease Prediction:** Returns dummy predictions (real ML model in Week 09)
 - **Input Validation:** File type and size validation
 - **Error Handling:** Clear error messages with appropriate HTTP status codes
 - **CORS Support:** Allows cross-origin requests from Android app
@@ -591,23 +568,11 @@ REST API backend for the LeafGuard plant disease detection Android application.
 ## Project Structure
 
 ```
-leafguard-backend/
-├── main.py                 # Application entry point
-├── requirements.txt        # Python dependencies
-├── README.md              # This file
-├── NETWORK_SETUP.md       # Local network configuration guide
-├── .gitignore             # Git ignore rules
-├── models/
-│   ├── __init__.py
-│   └── prediction.py      # Pydantic response models
-├── routers/
-│   ├── __init__.py
-│   └── predict.py         # /predict endpoint logic
-├── utils/
-│   ├── __init__.py
-│   └── validation.py      # File validation utilities
-└── uploads/               # Temporary upload directory
-    └── .gitkeep
+backend-api/
+├── main.py              # FastAPI app, health endpoint, /predict endpoint
+├── config.py            # Settings and environment variables
+├── model_loader.py      # Loads the model or mock predictor fallback
+└── requirements.txt     # Python dependencies
 
 ## Installation
 
@@ -622,7 +587,7 @@ leafguard-backend/
 1. **Clone Repository**
 ```bash
 git clone [repository-url]
-cd leafguard-backend
+cd backend-api
 ```
 
 2. **Create Virtual Environment**
@@ -687,14 +652,14 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
   "status": "healthy",
   "api_version": "1.0.0",
   "endpoints": {
-    "predict": "/api/predict",
+    "predict": "/predict",
     "docs": "/docs",
     "redoc": "/redoc"
   }
 }
 ```
 
-### POST /api/predict
+### POST /predict
 
 **Upload leaf image and receive disease prediction**
 
@@ -710,22 +675,17 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 **Response (Success - 200 OK):**
 ```json
 {
-  "success": true,
   "disease": "Tomato Early Blight",
   "confidence": 0.92,
   "symptoms": "Dark brown spots with concentric rings on lower leaves. Yellowing around spots.",
   "treatment": "Apply fungicide containing chlorothalonil or mancozeb every 7-10 days.",
-  "prevention": "Rotate crops every 2-3 years. Avoid overhead watering.",
-  "timestamp": "2024-01-15T10:30:00Z",
-  "file_size": 2048576
+  "prevention": "Rotate crops every 2-3 years. Avoid overhead watering."
 }
 ```
 
 **Response (Error - 400 Bad Request):**
 ```json
 {
-  "success": false,
-  "error": "Invalid file format",
   "detail": "Invalid content type: text/plain. Allowed types: image/jpeg, image/png"
 }
 ```
@@ -736,7 +696,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 
 1. Start server
 2. Open http://localhost:8000/docs
-3. Click on "POST /api/predict"
+3. Click on "POST /predict"
 4. Click "Try it out"
 5. Upload an image file
 6. Click "Execute"
@@ -752,10 +712,10 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 ### Using curl
 
 ```bash
-curl -X POST "http://localhost:8000/api/predict" \
+curl -X POST "http://localhost:8000/predict" \
   -H "accept: application/json" \
   -H "Content-Type: multipart/form-data" \
-  -F "file=@/path/to/leaf-image.jpg"
+  -F "image=@/path/to/leaf-image.jpg"
 ```
 
 ### Testing from Android Phone
@@ -778,8 +738,8 @@ The `--reload` flag auto-restarts server when code changes.
 
 ### Adding New Endpoints
 
-1. Create router in `routers/` directory
-2. Import and include in `main.py`: `app.include_router(new_router.router)`
+1. Add the new `@app.get(...)` or `@app.post(...)` function directly in `main.py`
+2. Keep settings in `config.py` and model-loading code in `model_loader.py` when needed
 3. Server auto-reloads with new endpoints
 
 ### Logging
@@ -853,7 +813,7 @@ Week 04: FastAPI Backend Development
 - FastAPI documentation: https://fastapi.tiangolo.com
 - Android documentation: https://developer.android.com
 - LeafGuard project architecture: [Link to PROJECT_ARCHITECTURE.md]
-```
+````
 
 ---
 
@@ -899,9 +859,9 @@ git commit -m "Week 04: Complete FastAPI backend with /predict endpoint, validat
 
 - [ ] Server starts without errors
 - [ ] GET / returns health check response
-- [ ] POST /api/predict accepts JPEG images
-- [ ] POST /api/predict accepts PNG images
-- [ ] POST /api/predict rejects TXT files with 400 error
+- [ ] POST /predict accepts JPEG images
+- [ ] POST /predict accepts PNG images
+- [ ] POST /predict rejects TXT files with 400 error
 - [ ] Response includes all required fields
 - [ ] Confidence is between 0.75 and 0.98
 - [ ] Timestamp is in ISO 8601 format
@@ -961,14 +921,10 @@ git commit -m "Week 04: Complete FastAPI backend with /predict endpoint, validat
 ### Files to Submit
 
 ```
-leafguard-backend/
+backend-api/
 ├── main.py
-├── models/
-│   └── prediction.py
-├── routers/
-│   └── predict.py
-├── utils/
-│   └── validation.py
+├── config.py
+├── model_loader.py
 ├── requirements.txt
 ├── README.md
 ├── NETWORK_SETUP.md
@@ -984,8 +940,8 @@ leafguard-backend/
         │   └── terminal-server-running.png
         ├── code/
         │   ├── main.py
-        │   ├── prediction.py
-        │   └── predict.py
+        │   ├── config.py
+        │   └── model_loader.py
         └── postman-collection.json
 ```
 
@@ -994,7 +950,7 @@ leafguard-backend/
 1. **Fresh Install Test:**
    ```bash
    # New terminal window
-   cd leafguard-backend
+   cd backend-api
    python -m venv test_venv
    source test_venv/bin/activate
    pip install -r requirements.txt

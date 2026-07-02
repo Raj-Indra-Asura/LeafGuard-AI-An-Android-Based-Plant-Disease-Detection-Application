@@ -346,7 +346,7 @@ The MVVM pattern was confusing initially. I didn't understand why we need three 
 **Guidance:**
 - Start: User taps "Scan" button
 - End: Disease name appears on screen
-- Include: Activity, ViewModel, Repository, Retrofit, Backend, Model, Database
+- Include: MainActivity, ApiService, RetrofitClient, Backend (main.py), ResultActivity, Database (ScanRecord)
 
 **Your Step-by-Step Flow:**
 1. [Step 1]

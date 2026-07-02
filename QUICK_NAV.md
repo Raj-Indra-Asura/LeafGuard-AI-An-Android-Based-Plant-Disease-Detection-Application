@@ -2,6 +2,8 @@
 
 **Need to find something fast? Use this guide to jump directly to any resource.**
 
+> **🍴 Track reminder:** A **"track"** is the language you build in. **Kotlin is primary/recommended** ([`android-app-kotlin/`](android-app-kotlin/), [`exercises/android-kotlin/`](exercises/android-kotlin/)); Java is the secondary twin ([`android-app/`](android-app/), [`exercises/android/`](exercises/android/)). If unsure, choose Kotlin. First time? Do the [pre-Week-01 setup](README.md#pre-week-01-setup-checklist-do-this-first).
+
 ## 🚀 I Want To...
 
 ### Get Started
@@ -18,7 +20,8 @@
 - **Understand how materials connect** → [`CROSS_REFERENCE.md`](CROSS_REFERENCE.md)
 
 ### Practice & Learn
-- **Do Android exercises** → [`exercises/android/`](exercises/android/)
+- **Do Android exercises (Kotlin — primary)** → [`exercises/android-kotlin/`](exercises/android-kotlin/)
+- **Do Android exercises (Java — secondary)** → [`exercises/android/`](exercises/android/)
 - **Do backend exercises** → [`exercises/backend/`](exercises/backend/)
 - **Do ML exercises** → [`exercises/ml/`](exercises/ml/)
 - **Do database exercises** → [`exercises/database/`](exercises/database/)
@@ -47,15 +50,16 @@
 | Directory | Purpose | Start Here |
 |-----------|---------|------------|
 | [`roadmap/`](roadmap/) | 12 weeks of structured learning | [LEARNING_PATH.md](LEARNING_PATH.md) |
-| [`exercises/`](exercises/) | Topic-based practice problems | [exercises/android/](exercises/android/) |
+| [`exercises/`](exercises/) | Topic-based practice problems | [exercises/android-kotlin/](exercises/android-kotlin/) |
 | [`solutions/`](solutions/) | Exercise reference implementations | [solutions/README.md](solutions/README.md) |
 | [`notebooks/`](notebooks/) | Interactive Jupyter notebooks | [notebooks/README.md](notebooks/README.md) |
 
 ### Project Code
 | Directory | Purpose | When to Use |
 |-----------|---------|-------------|
-| `android-app/` | Your Android app code | Week 02+ |
-| `backend-api/` | Your FastAPI backend | Week 04+ |
+| `android-app-kotlin/` | Your Kotlin Android app (primary track) | Week 02+ |
+| `android-app/` | Java twin of the app (secondary track) | Week 02+ |
+| `backend-api/` | Your FastAPI backend (the server; one file: `main.py`) | Week 04+ |
 | `model/` | ML models and labels | Week 06+ |
 | `sample-images/` | Test plant disease images | Week 03+ |
 

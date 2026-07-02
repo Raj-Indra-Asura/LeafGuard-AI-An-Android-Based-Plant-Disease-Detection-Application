@@ -15,18 +15,18 @@ Complete this reflection after finishing all Week 04 tasks and before moving to 
 **Technical Skills:**
 
 1. **FastAPI Framework:**
-   - What specific FastAPI features did you use? (decorators, Pydantic, file uploads, CORS, etc.)
+   - What specific FastAPI features did you use? (decorators, Pydantic, file uploads, CORS (Cross-Origin Resource Sharing), etc.)
    - What was the biggest "aha moment" when learning FastAPI?
    - How does FastAPI compare to other web frameworks you might have heard of?
 
-2. **REST API Design:**
+2. **REST (REpresentational State Transfer) API Design:**
    - Explain in your own words: What makes an API RESTful?
    - Why did we use POST for /predict instead of GET?
-   - What HTTP status codes did you use and why?
+   - What HTTP (HyperText Transfer Protocol) status codes did you use and why?
 
 3. **File Handling:**
    - How does multipart/form-data work for file uploads?
-   - Why is it better than sending images as base64 in JSON?
+   - Why is it better than sending images as base64 in JSON (JavaScript Object Notation)?
    - What challenges did you face with file validation?
 
 4. **Network Configuration:**
@@ -104,7 +104,7 @@ List 3-5 questions you're curious about:
 - Built backend API that Android app will communicate with
 - Created /predict endpoint for disease detection
 - Established local network setup for testing
-- Prepared dummy responses (real ML model in Week 06)
+- Prepared dummy responses (real ML model in Week 09)
 
 **After Week 04:**
 - Week 05: Android app will use Retrofit to call this API
@@ -158,11 +158,11 @@ User → Android App → [Week 04 Backend] → Disease Prediction → Android Di
 
 | Syllabus Topic | How Week 04 Demonstrated It | Evidence Location |
 |----------------|----------------------------|-------------------|
-| Network Programming | Created REST API with HTTP GET/POST endpoints | `routers/predict.py`, Postman tests |
-| JSON Parsing (Backend perspective) | Structured responses using Pydantic models | `models/prediction.py` |
+| Network Programming | Created REST API with HTTP GET/POST endpoints | `main.py`, Postman tests |
+| JSON Parsing (Backend perspective) | Structured responses using Pydantic models | `main.py` |
 | Client-Server Architecture | Android (client) communicates with FastAPI (server) | Network setup, NETWORK_SETUP.md |
-| Error Handling | HTTPException with appropriate status codes | `routers/predict.py` validation |
-| File Operations | Reading uploaded images, validating file type and size | `utils/validation.py` |
+| Error Handling | HTTPException with appropriate status codes | `main.py` validation |
+| File Operations | Reading uploaded images, validating file type and size | `main.py validation helper` |
 | Asynchronous Operations | async def for file uploads | `@app.post("/predict")` |
 | API Testing | Postman collection, Swagger UI | Evidence screenshots |
 
@@ -196,8 +196,8 @@ User → Android App → [Week 04 Backend] → Disease Prediction → Android Di
 ### What I Did Well
 
 **Code Organization:**
-- Used proper folder structure (models, routers, utils)
-- Separated concerns (validation, routing, models)
+- Used proper folder structure (main.py, config.py, model_loader.py)
+- Separated concerns (validation, endpoint logic, settings/model loading)
 - Followed Python naming conventions
 
 **Documentation:**
@@ -237,7 +237,7 @@ User → Android App → [Week 04 Backend] → Disease Prediction → Android Di
 
 ### Code Smells I Noticed
 
-**Example:** Hardcoded disease list in routers/predict.py
+**Example:** Hardcoded disease list in main.py
 - **Issue:** Disease data should be in separate file or database
 - **Fix for later:** Move to JSON file or database table
 
@@ -290,7 +290,7 @@ User → Android App → [Week 04 Backend] → Disease Prediction → Android Di
 - My local IP address: _______________
 - Server command: `uvicorn main:app --host 0.0.0.0 --port 8000`
 - Base URL for Retrofit: http://YOUR_IP:8000
-- Endpoint: POST /api/predict
+- Endpoint: POST /predict
 - Request body: multipart/form-data with "file" field
 - Response format: JSON with disease, confidence, symptoms, treatment, prevention
 

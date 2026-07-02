@@ -1,5 +1,7 @@
 # Week 09 Build Task: TensorFlow Lite Offline AI Integration
 
+> **Kotlin-first & accuracy note:** The primary track is **Kotlin** (`android-app-kotlin/.../ml/TFLiteClassifier.kt`); the Java version is the labelled secondary reference. The real `TFLiteClassifier` loads `assets/model.tflite` + `assets/labels.txt`, resizes to **224×224**, converts to **RGB floats 0..1**, and takes **argmax** over 10 outputs. The committed `model.tflite` is a **text placeholder**, so the classifier detects it and uses a **green-channel heuristic fallback** — see the README's *Replacing the placeholder `model.tflite`* section and [`model/model-acquisition-guide.md`](../../model/model-acquisition-guide.md).
+
 This build task turns the learning notes into one guided implementation path for LeafGuard AI.
 The goal is to add **offline plant disease prediction in Java** while keeping the app safe, explainable, and easy to demonstrate.
 

@@ -1,5 +1,7 @@
 # Week 07 Build Task: Implement Room Database Scan History
 
+> **Kotlin-first & accuracy note:** The real Room classes (Kotlin primary: `android-app-kotlin/.../database/`) are `ScanRecord` (table `scan_history`), `ScanDao` (methods `insertScan`, `getAllScans`, `getScanById`, `getRecentScans`, `deleteScan`, `deleteScanById` — all `suspend fun`), and `AppDatabase` (file `leafguard.db`, version 1). In Kotlin, call DAO methods from `lifecycleScope.launch { ... }` (a **coroutine** does the slow database work without freezing the screen) and enable **kapt** (`kapt` generates Room's code — without it the build fails). The Java track uses `annotationProcessor` + `ExecutorService` and is the labelled secondary reference.
+
 ## Objective
 
 Integrate Room database into LeafGuard AI to persist scan history. Users can view past scans, see details, and delete records.
@@ -26,13 +28,13 @@ Sync Gradle. Verify no errors.
 
 ---
 
-## Step 2: Create ScanHistory Entity (30 minutes)
+## Step 2: Create ScanRecord Entity (30 minutes)
 
-Create `ScanHistory.java`:
+Create `ScanRecord.java`:
 
 ```java
 @Entity(tableName = "scan_history")
-public class ScanHistory {
+public class ScanRecord {
     @PrimaryKey(autoGenerate = true)
     private int id;
     
@@ -46,7 +48,7 @@ public class ScanHistory {
     private String imagePath;
     
     // Constructor (without id)
-    public ScanHistory(String disease, double confidence, String symptoms,
+    public ScanRecord(String disease, double confidence, String symptoms,
                        String treatment, long timestamp, String imagePath) {
         this.disease = disease;
         this.confidence = confidence;
@@ -63,25 +65,25 @@ public class ScanHistory {
 
 ---
 
-## Step 3: Create ScanHistoryDao (30 minutes)
+## Step 3: Create ScanDao (30 minutes)
 
-Create `ScanHistoryDao.java`:
+Create `ScanDao.java`:
 
 ```java
 @Dao
-public interface ScanHistoryDao {
+public interface ScanDao {
     
     @Insert
-    void insert(ScanHistory scan);
+    void insert(ScanRecord scan);
     
     @Query("SELECT * FROM scan_history ORDER BY timestamp DESC")
-    List<ScanHistory> getAll();
+    List<ScanRecord> getAll();
     
     @Query("SELECT * FROM scan_history WHERE id = :scanId")
-    ScanHistory getById(int scanId);
+    ScanRecord getById(int scanId);
     
     @Delete
-    void delete(ScanHistory scan);
+    void delete(ScanRecord scan);
     
     @Query("DELETE FROM scan_history")
     void deleteAll();
@@ -95,19 +97,19 @@ public interface ScanHistoryDao {
 Create `AppDatabase.java`:
 
 ```java
-@Database(entities = {ScanHistory.class}, version = 1, exportSchema = false)
+@Database(entities = {ScanRecord.class}, version = 1, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
     
     private static AppDatabase instance;
     
-    public abstract ScanHistoryDao scanHistoryDao();
+    public abstract ScanDao scanDao();
     
     public static synchronized AppDatabase getInstance(Context context) {
         if (instance == null) {
             instance = Room.databaseBuilder(
                 context.getApplicationContext(),
                 AppDatabase.class,
-                "leafguard_database"
+                "leafguard.db"
             )
             .fallbackToDestructiveMigration()
             .build();
@@ -186,19 +188,19 @@ Create `item_scan_history.xml`:
 
 ## Step 6: Create RecyclerView Adapter (1.5 hours)
 
-Create `ScanHistoryAdapter.java`:
+Create `HistoryAdapter.java`:
 
 ```java
-public class ScanHistoryAdapter extends RecyclerView.Adapter<ScanHistoryAdapter.ViewHolder> {
+public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
     
-    private List<ScanHistory> scans;
+    private List<ScanRecord> scans;
     private OnItemClickListener listener;
     
     public interface OnItemClickListener {
-        void onItemClick(ScanHistory scan);
+        void onItemClick(ScanRecord scan);
     }
     
-    public ScanHistoryAdapter(OnItemClickListener listener) {
+    public HistoryAdapter(OnItemClickListener listener) {
         this.scans = new ArrayList<>();
         this.listener = listener;
     }
@@ -220,7 +222,7 @@ public class ScanHistoryAdapter extends RecyclerView.Adapter<ScanHistoryAdapter.
         return scans.size();
     }
     
-    public void setScans(List<ScanHistory> scans) {
+    public void setScans(List<ScanRecord> scans) {
         this.scans = scans;
         notifyDataSetChanged();
     }
@@ -234,16 +236,16 @@ public class ScanHistoryAdapter extends RecyclerView.Adapter<ScanHistoryAdapter.
 
 ---
 
-## Step 7: Implement HistoryListActivity (2 hours)
+## Step 7: Implement HistoryActivity (2 hours)
 
-Create `HistoryListActivity.java`:
+Create `HistoryActivity.java`:
 
 ```java
-public class HistoryListActivity extends AppCompatActivity {
+public class HistoryActivity extends AppCompatActivity {
     
     private RecyclerView recyclerView;
     private TextView emptyTextView;
-    private ScanHistoryAdapter adapter;
+    private HistoryAdapter adapter;
     private AppDatabase database;
     private ExecutorService executor;
     
@@ -258,7 +260,7 @@ public class HistoryListActivity extends AppCompatActivity {
         
         // Setup RecyclerView
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new ScanHistoryAdapter(this::openDetailActivity);
+        adapter = new HistoryAdapter(this::openDetailActivity);
         recyclerView.setAdapter(adapter);
         
         // Initialize database and executor
@@ -271,7 +273,7 @@ public class HistoryListActivity extends AppCompatActivity {
     
     private void loadScans() {
         executor.execute(() -> {
-            List<ScanHistory> scans = database.scanHistoryDao().getAll();
+            List<ScanRecord> scans = database.scanDao().getAll();
             
             runOnUiThread(() -> {
                 if (scans.isEmpty()) {
@@ -286,7 +288,7 @@ public class HistoryListActivity extends AppCompatActivity {
         });
     }
     
-    private void openDetailActivity(ScanHistory scan) {
+    private void openDetailActivity(ScanRecord scan) {
         Intent intent = new Intent(this, HistoryDetailActivity.class);
         intent.putExtra("scan_id", scan.getId());
         startActivity(intent);
@@ -304,7 +306,7 @@ In `ResultActivity.java`, after successful prediction:
 private void saveScanToHistory() {
     ExecutorService executor = Executors.newSingleThreadExecutor();
     executor.execute(() -> {
-        ScanHistory scan = new ScanHistory(
+        ScanRecord scan = new ScanRecord(
             disease,
             confidence,
             symptoms,
@@ -313,7 +315,7 @@ private void saveScanToHistory() {
             imagePath  // Save captured image path
         );
         
-        AppDatabase.getInstance(this).scanHistoryDao().insert(scan);
+        AppDatabase.getInstance(this).scanDao().insert(scan);
         
         runOnUiThread(() -> {
             Toast.makeText(this, "Scan saved to history", Toast.LENGTH_SHORT).show();
@@ -351,7 +353,7 @@ public class HistoryDetailActivity extends AppCompatActivity {
     
     private void loadScanDetails() {
         executor.execute(() -> {
-            ScanHistory scan = database.scanHistoryDao().getById(scanId);
+            ScanRecord scan = database.scanDao().getById(scanId);
             
             runOnUiThread(() -> {
                 // Display all fields
@@ -382,8 +384,8 @@ private void showDeleteConfirmation() {
 
 private void deleteScan() {
     executor.execute(() -> {
-        ScanHistory scan = database.scanHistoryDao().getById(scanId);
-        database.scanHistoryDao().delete(scan);
+        ScanRecord scan = database.scanDao().getById(scanId);
+        database.scanDao().delete(scan);
         
         runOnUiThread(() -> {
             Toast.makeText(this, "Scan deleted", Toast.LENGTH_SHORT).show();
@@ -401,7 +403,7 @@ private void deleteScan() {
 - [ ] Entity, DAO, Database classes created
 - [ ] History list layout created
 - [ ] RecyclerView adapter implemented
-- [ ] HistoryListActivity displays scans
+- [ ] HistoryActivity displays scans
 - [ ] Scans saved after prediction
 - [ ] Detail activity shows full scan info
 - [ ] Delete functionality works

@@ -1,5 +1,21 @@
 # Week 10: Notifications, Share, and Location
 
+## What you'll learn & why
+
+This week you connect LeafGuard AI to three built-in Android features that make an app feel finished. You will show a **notification** (the little message that slides down from the top of the phone) to remind the user to scan their plants. You will add a **share** button so a result can be sent to WhatsApp, Gmail, or any other app. You will optionally tag a scan with the phone's **location** (its GPS latitude and longitude) so the user knows where a diseased leaf was found. These are all things real apps do every day, and each one is a required topic in your CSE 2206 course.
+
+## New words this week
+
+See the shared [glossary](../../GLOSSARY.md) for more. The key terms this week:
+
+- **Notification** — a short message your app posts to the phone's status bar, even when the app is closed.
+- **Notification channel** — a named category of notifications (Android 8+) that the user can turn on or off. LeafGuard's channel id is `leafguard_scan_reminders`.
+- **PendingIntent** — a "saved action" you hand to the system so it can open your app later when the user taps the notification.
+- **Share intent** — an `Intent` with action `ACTION_SEND` that asks Android to show the list of apps you can share to.
+- **Location / GPS** — the phone's position on Earth, given as two numbers: latitude and longitude.
+
+---
+
 ## Weekly Objective
 
 Implement Android system integrations: notifications, sharing, and location tagging.
@@ -56,7 +72,7 @@ NotificationManager.notify(id, notification)
 Android shows notification in the status bar
        |
        v
-User taps → PendingIntent fires → ScanActivity opens
+User taps → PendingIntent fires → MainActivity opens
 ```
 
 **Key classes:**

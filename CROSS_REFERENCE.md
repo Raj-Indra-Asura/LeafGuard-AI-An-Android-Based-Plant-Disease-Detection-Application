@@ -2,6 +2,8 @@
 
 This document provides a comprehensive mapping of how different learning materials connect across the LeafGuard AI curriculum.
 
+> **🍴 Track note:** Code references below list the **Kotlin (primary) path first, then the Java twin**. Build in [`android-app-kotlin/`](android-app-kotlin/) unless you have chosen the Java track. A "track" is simply the language you follow the lessons in — if unsure, choose Kotlin.
+
 ## 📚 How Materials Interconnect
 
 ### Learning Flow for Each Week
@@ -36,10 +38,10 @@ Learning  Solutions  Notebooks   Evidence
 
 | Material Type | File/Location | Connects To | Purpose |
 |--------------|---------------|-------------|---------|
-| Overview | `roadmap/week-02-android-basics-ui/README.md` | Week 01 completion, android-app/ | Central hub |
+| Overview | `roadmap/week-02-android-basics-ui/README.md` | Week 01 completion, android-app-kotlin/ (Java: android-app/) | Central hub |
 | Theory | `roadmap/week-02-android-basics-ui/learning-notes.md` | Android developer docs, GLOSSARY.md | Deep concepts |
-| Practice | `roadmap/week-02-android-basics-ui/exercises.md` | solutions/week-02/, exercises/android/ | Hands-on |
-| Implementation | `roadmap/week-02-android-basics-ui/build-task.md` | android-app/ folder structure | Feature build |
+| Practice | `roadmap/week-02-android-basics-ui/exercises.md` | solutions/week-02/, exercises/android-kotlin/ (Java: exercises/android/) | Hands-on |
+| Implementation | `roadmap/week-02-android-basics-ui/build-task.md` | android-app-kotlin/ folder structure (Java: android-app/) | Feature build |
 | Validation | `roadmap/week-02-android-basics-ui/validation-checklist.md` | docs/evidence/week-02/ | Verification |
 | Solutions | `solutions/week-02/` | exercises.md | Reference |
 | Notebooks | `notebooks/week-02/` | Activity lifecycle, XML layouts | Interactive |
@@ -51,7 +53,7 @@ Learning  Solutions  Notebooks   Evidence
 | Overview | `roadmap/week-03-camera-gallery/README.md` | Week 02 UI, sample-images/ | Central hub |
 | Theory | `roadmap/week-03-camera-gallery/learning-notes.md` | Android Intents, Permissions | Deep concepts |
 | Practice | `roadmap/week-03-camera-gallery/exercises.md` | solutions/week-03/ | Hands-on |
-| Implementation | `roadmap/week-03-camera-gallery/build-task.md` | android-app/MainActivity.java | Feature build |
+| Implementation | `roadmap/week-03-camera-gallery/build-task.md` | android-app-kotlin/app/src/main/java/com/leafguard/MainActivity.kt (Java: android-app/.../MainActivity.java) | Feature build |
 | Solutions | `solutions/week-03/` | exercises.md | Reference |
 | Notebooks | `notebooks/week-03/` | Runtime permissions, Image handling | Interactive |
 
@@ -73,7 +75,7 @@ Learning  Solutions  Notebooks   Evidence
 | Overview | `roadmap/week-05-android-networking/README.md` | Week 03 images, Week 04 backend | Central hub |
 | Theory | `roadmap/week-05-android-networking/learning-notes.md` | Retrofit docs, HTTP fundamentals | Deep concepts |
 | Practice | `roadmap/week-05-android-networking/exercises.md` | solutions/week-05/ | Hands-on |
-| Implementation | `roadmap/week-05-android-networking/build-task.md` | android-app/ApiService.java | Feature build |
+| Implementation | `roadmap/week-05-android-networking/build-task.md` | android-app-kotlin/app/src/main/java/com/leafguard/network/ApiService.kt (Java: android-app/.../network/ApiService.java) | Feature build |
 | Solutions | `solutions/week-05/` | exercises.md | Reference |
 | Notebooks | `notebooks/week-05/` | Retrofit, JSON parsing | Interactive |
 
@@ -84,7 +86,7 @@ Learning  Solutions  Notebooks   Evidence
 | Overview | `roadmap/week-06-cloud-ml-model/README.md` | Week 05 networking, model/ folder | Central hub |
 | Theory | `roadmap/week-06-cloud-ml-model/learning-notes.md` | ML concepts, model/ docs | Deep concepts |
 | Practice | `roadmap/week-06-cloud-ml-model/exercises.md` | solutions/week-06/, exercises/ml/ | Hands-on |
-| Implementation | `roadmap/week-06-cloud-ml-model/build-task.md` | backend-api/predict.py, model/ | Feature build |
+| Implementation | `roadmap/week-06-cloud-ml-model/build-task.md` | backend-api/main.py, model/ | Feature build |
 | Solutions | `solutions/week-06/` | exercises.md | Reference |
 | Notebooks | `notebooks/week-06/` | CNN architecture, Preprocessing | Interactive |
 
@@ -95,7 +97,7 @@ Learning  Solutions  Notebooks   Evidence
 | Overview | `roadmap/week-07-room-sqlite-history/README.md` | Week 06 predictions | Central hub |
 | Theory | `roadmap/week-07-room-sqlite-history/learning-notes.md` | Room docs, SQL basics | Deep concepts |
 | Practice | `roadmap/week-07-room-sqlite-history/exercises.md` | solutions/week-07/, exercises/database/ | Hands-on |
-| Implementation | `roadmap/week-07-room-sqlite-history/build-task.md` | android-app/database/ | Feature build |
+| Implementation | `roadmap/week-07-room-sqlite-history/build-task.md` | android-app-kotlin/app/src/main/java/com/leafguard/database/ (Java: android-app/.../database/) | Feature build |
 | Solutions | `solutions/week-07/` | exercises.md | Reference |
 | Notebooks | `notebooks/week-07/` | Room architecture, CRUD ops | Interactive |
 
@@ -106,7 +108,7 @@ Learning  Solutions  Notebooks   Evidence
 | Overview | `roadmap/week-08-xml-disease-library/README.md` | Week 07 database, assets/ | Central hub |
 | Theory | `roadmap/week-08-xml-disease-library/learning-notes.md` | XML parsing, XmlPullParser | Deep concepts |
 | Practice | `roadmap/week-08-xml-disease-library/exercises.md` | solutions/week-08/ | Hands-on |
-| Implementation | `roadmap/week-08-xml-disease-library/build-task.md` | android-app/assets/diseases.xml | Feature build |
+| Implementation | `roadmap/week-08-xml-disease-library/build-task.md` | android-app-kotlin/app/src/main/assets/diseases.xml (Java: android-app/app/src/main/assets/diseases.xml) | Feature build |
 | Solutions | `solutions/week-08/` | exercises.md | Reference |
 | Notebooks | `notebooks/week-08/` | XML structure, Parsing methods | Interactive |
 
@@ -117,7 +119,7 @@ Learning  Solutions  Notebooks   Evidence
 | Overview | `roadmap/week-09-tensorflow-lite-offline-ai/README.md` | Week 06 model, model/ | Central hub |
 | Theory | `roadmap/week-09-tensorflow-lite-offline-ai/learning-notes.md` | TFLite docs, On-device ML | Deep concepts |
 | Practice | `roadmap/week-09-tensorflow-lite-offline-ai/exercises.md` | solutions/week-09/, exercises/ml/ | Hands-on |
-| Implementation | `roadmap/week-09-tensorflow-lite-offline-ai/build-task.md` | android-app/assets/model.tflite | Feature build |
+| Implementation | `roadmap/week-09-tensorflow-lite-offline-ai/build-task.md` | android-app-kotlin/app/src/main/assets/model.tflite (Java: android-app/app/src/main/assets/model.tflite) | Feature build |
 | Solutions | `solutions/week-09/` | exercises.md | Reference |
 | Notebooks | `notebooks/week-09/` | TFLite conversion, Inference | Interactive |
 
@@ -139,7 +141,7 @@ Learning  Solutions  Notebooks   Evidence
 | Overview | `roadmap/week-11-testing-debugging-performance/README.md` | All previous weeks | Central hub |
 | Theory | `roadmap/week-11-testing-debugging-performance/learning-notes.md` | Testing principles, Debugging | Deep concepts |
 | Practice | `roadmap/week-11-testing-debugging-performance/exercises.md` | solutions/week-11/, exercises/testing/ | Hands-on |
-| Implementation | `roadmap/week-11-testing-debugging-performance/build-task.md` | android-app/tests/, validation/ | Feature build |
+| Implementation | `roadmap/week-11-testing-debugging-performance/build-task.md` | android-app-kotlin/app/src/test/ + app/src/androidTest/ (Java: android-app/app/src/test/ + app/src/androidTest/), validation/ | Feature build |
 | Solutions | `solutions/week-11/` | exercises.md | Reference |
 | Notebooks | `notebooks/week-11/` | Test design, Performance | Interactive |
 
@@ -174,7 +176,8 @@ Learning  Solutions  Notebooks   Evidence
 
 | Topic | Location | Related Weeks | Purpose |
 |-------|----------|---------------|---------|
-| Android | `exercises/android/` | Weeks 2-3, 7-8, 10 | Platform skills |
+| Android (Kotlin — primary) | `exercises/android-kotlin/` | Weeks 2-3, 7-8, 10 | Platform skills |
+| Android (Java — secondary) | `exercises/android/` | Weeks 2-3, 7-8, 10 | Platform skills |
 | Backend | `exercises/backend/` | Weeks 4, 6 | Server development |
 | ML/AI | `exercises/ml/` | Weeks 6, 9 | Model integration |
 | Database | `exercises/database/` | Week 7 | Data persistence |

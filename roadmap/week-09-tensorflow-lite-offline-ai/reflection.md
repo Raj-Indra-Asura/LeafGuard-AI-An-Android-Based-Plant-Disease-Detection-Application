@@ -1,5 +1,7 @@
 # Week 09: Reflection - TensorFlow Lite Offline AI
 
+> **Accuracy note:** the shipped classifier is `TFLiteClassifier` (224×224 RGB floats 0..1, argmax over 10 outputs, green-channel heuristic fallback because `assets/model.tflite` is a placeholder). Kotlin primary, Java secondary.
+
 Use this reflection after completing the exercises and build task.
 Write honest answers. The goal is not just to say what worked, but to explain what you learned and what you would improve.
 

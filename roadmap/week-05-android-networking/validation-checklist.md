@@ -1,5 +1,15 @@
 # Week 05: Validation Checklist - Android Networking with Retrofit
 
+## Related materials
+
+- Exercises (primary Kotlin): [../../exercises/android-kotlin/](../../exercises/android-kotlin/)
+- Exercises (secondary Java): [../../exercises/android/](../../exercises/android/)
+- Solutions: [../../solutions/week-05/](../../solutions/week-05/)
+- Notebooks: [../../notebooks/week-05/](../../notebooks/week-05/)
+- Glossary: [../../GLOSSARY.md](../../GLOSSARY.md)
+
+---
+
 ## Overview
 
 This checklist provides **pass/fail validation criteria** for Week 05. Each item must pass before you move to Week 06. There are no partial points - features either work or they don't.
@@ -17,11 +27,11 @@ This checklist provides **pass/fail validation criteria** for Week 05. Each item
 
 ### 1.1 Dependencies Added
 
-- [ ] **Retrofit 2.9.0 dependency** added to `build.gradle (Module: app)`
-- [ ] **Gson converter 2.9.0 dependency** added to `build.gradle (Module: app)`
-- [ ] **OkHttp logging interceptor 4.9.0 dependency** added to `build.gradle (Module: app)`
-- [ ] **Gradle sync completed successfully** without errors
-- [ ] **Build → Make Project succeeds** without compilation errors
+- [ ] Can I confirm this works? Retrofit 2.9.0 dependency added to `build.gradle (Module: app)` — yes/no. Technical check: **Retrofit 2.9.0 dependency** added to `build.gradle (Module: app)`
+- [ ] Can I confirm this works? Gson converter 2.9.0 dependency added to `build.gradle (Module: app)` — yes/no. Technical check: **Gson converter 2.9.0 dependency** added to `build.gradle (Module: app)`
+- [ ] Can I confirm this works? OkHttp logging interceptor 4.9.0 dependency added to `build.gradle (Module: app)` — yes/no. Technical check: **OkHttp logging interceptor 4.9.0 dependency** added to `build.gradle (Module: app)`
+- [ ] Can I confirm this works? Gradle sync completed successfully without errors — yes/no. Technical check: **Gradle sync completed successfully** without errors
+- [ ] Can I confirm this works? Build → Make Project succeeds without compilation errors — yes/no. Technical check: **Build → Make Project succeeds** without compilation errors
 
 **Pass Criteria:** All 5 items checked. Project builds successfully.
 
@@ -31,19 +41,19 @@ This checklist provides **pass/fail validation criteria** for Week 05. Each item
 
 ### 2.1 PredictionResponse Model
 
-- [ ] **PredictionResponse.java class created** with all required fields
-- [ ] **Field names match backend JSON keys exactly** (disease, confidence, symptoms, treatment, prevention)
-- [ ] **All getter methods implemented** and working
-- [ ] **No compilation errors** in PredictionResponse class
+- [ ] Can I confirm this works? PredictionResponse.kt data class exists in Kotlin primary track (or PredictionResponse.java class exists in Java secondary track) with all required fields — yes/no. Technical check: **PredictionResponse.kt / PredictionResponse.java created** with all required fields
+- [ ] Can I confirm this works? Field names match backend JSON keys exactly (disease, confidence, symptoms, treatment, prevention) — yes/no. Technical check: **Field names match backend JSON keys exactly** (disease, confidence, symptoms, treatment, prevention)
+- [ ] Can I confirm this works? All getter methods implemented and working — yes/no. Technical check: **All getter methods implemented** and working
+- [ ] Can I confirm this works? No compilation errors in PredictionResponse class — yes/no. Technical check: **No compilation errors** in PredictionResponse class
 
 ### 2.2 API Service Interface
 
-- [ ] **ApiService.java interface created** (not class - must be interface)
-- [ ] **@Multipart annotation present** on uploadImage method
-- [ ] **@POST("predict") annotation present** and matches backend endpoint
-- [ ] **Method signature correct:** `Call<PredictionResponse> uploadImage(@Part MultipartBody.Part image)`
-- [ ] **@Part annotation present** on image parameter
-- [ ] **No compilation errors** in ApiService interface
+- [ ] Can I confirm this works? ApiService.kt interface exists in Kotlin primary track (or ApiService.java in Java secondary track; not class - must be interface) — yes/no. Technical check: **ApiService.kt / ApiService.java interface created** (not class - must be interface)
+- [ ] Can I confirm this works? @Multipart annotation present on uploadImage method — yes/no. Technical check: **@Multipart annotation present** on uploadImage method
+- [ ] Can I confirm this works? @POST("predict") annotation present and matches backend endpoint — yes/no. Technical check: **@POST("predict") annotation present** and matches backend endpoint
+- [ ] Can I confirm this works? Method signature correct: `Call<PredictionResponse> uploadImage(@Part MultipartBody.Part image)` — yes/no. Technical check: **Method signature correct:** `Call<PredictionResponse> uploadImage(@Part MultipartBody.Part image)`
+- [ ] Can I confirm this works? @Part annotation present on image parameter — yes/no. Technical check: **@Part annotation present** on image parameter
+- [ ] Can I confirm this works? No compilation errors in ApiService interface — yes/no. Technical check: **No compilation errors** in ApiService interface
 
 **Pass Criteria:** All 10 items checked. Both classes compile without errors.
 
@@ -53,14 +63,14 @@ This checklist provides **pass/fail validation criteria** for Week 05. Each item
 
 ### 3.1 RetrofitClient Singleton
 
-- [ ] **RetrofitClient.java class created**
-- [ ] **Singleton pattern implemented** (static Retrofit instance, null check)
-- [ ] **BASE_URL configured** with your actual laptop local IP
-- [ ] **BASE_URL ends with forward slash** (e.g., "http://192.168.1.10:8000/")
-- [ ] **GsonConverterFactory added** to Retrofit builder
-- [ ] **Logging interceptor configured** (Level.BODY for debugging)
-- [ ] **Timeouts configured** (30 seconds for connect, read, write)
-- [ ] **getApiService() helper method** implemented and returns ApiService instance
+- [ ] Can I confirm this works? RetrofitClient.kt object exists in Kotlin primary track (or RetrofitClient.java class exists in Java secondary track) — yes/no. Technical check: **RetrofitClient.kt object exists in Kotlin primary track (or RetrofitClient.java class exists in Java secondary track)**
+- [ ] Can I confirm this works? Singleton pattern implemented (static Retrofit instance, null check) — yes/no. Technical check: **Singleton pattern implemented** (static Retrofit instance, null check)
+- [ ] Can I confirm this works? BASE_URL configured for emulator as `http://10.0.2.2:8000/` (or computer LAN IP for physical phone) — yes/no. Technical check: **BASE_URL configured** for emulator as `http://10.0.2.2:8000/` (or computer LAN IP for physical phone)
+- [ ] Can I confirm this works? BASE_URL ends with forward slash (e.g., "http://10.0.2.2:8000/") — yes/no. Technical check: **BASE_URL ends with forward slash** (e.g., "http://10.0.2.2:8000/")
+- [ ] Can I confirm this works? GsonConverterFactory added to Retrofit builder — yes/no. Technical check: **GsonConverterFactory added** to Retrofit builder
+- [ ] Can I confirm this works? Logging interceptor configured (Level.BODY for debugging) — yes/no. Technical check: **Logging interceptor configured** (Level.BODY for debugging)
+- [ ] Can I confirm this works? Timeouts configured (30 seconds for connect, read, write) — yes/no. Technical check: **Timeouts configured** (30 seconds for connect, read, write)
+- [ ] Can I confirm this works? getApiService() helper method implemented and returns ApiService instance — yes/no. Technical check: **getApiService() helper method** implemented and returns ApiService instance
 
 **Test:** Call `RetrofitClient.getApiService()` - should return non-null ApiService instance.
 
@@ -72,15 +82,15 @@ This checklist provides **pass/fail validation criteria** for Week 05. Each item
 
 ### 4.1 Network Security Configuration
 
-- [ ] **network_security_config.xml created** in `res/xml/` directory
-- [ ] **cleartext traffic permitted** for your local IP domain
-- [ ] **IP address in config matches your laptop IP** exactly
-- [ ] **network_security_config referenced in AndroidManifest.xml** with `android:networkSecurityConfig` attribute
+- [ ] Can I confirm this works? network_security_config.xml created in `res/xml/` directory — yes/no. Technical check: **network_security_config.xml created** in `res/xml/` directory
+- [ ] Can I confirm this works? cleartext traffic permitted for `10.0.2.2` in emulator (or your LAN IP for physical phone) — yes/no. Technical check: **cleartext traffic permitted** for `10.0.2.2` in emulator (or your LAN IP for physical phone)
+- [ ] Can I confirm this works? Network security domain matches the URL target exactly (`10.0.2.2` for emulator, LAN IP for physical phone) — yes/no. Technical check: **Network security domain matches the URL target** exactly (`10.0.2.2` for emulator, LAN IP for physical phone)
+- [ ] Can I confirm this works? network_security_config referenced in AndroidManifest.xml with `android:networkSecurityConfig` attribute — yes/no. Technical check: **network_security_config referenced in AndroidManifest.xml** with `android:networkSecurityConfig` attribute
 
 ### 4.2 Permissions
 
-- [ ] **INTERNET permission present** in AndroidManifest.xml
-- [ ] **Permission declared before `<application>` tag** (correct location)
+- [ ] Can I confirm this works? INTERNET permission present in AndroidManifest.xml — yes/no. Technical check: **INTERNET permission present** in AndroidManifest.xml
+- [ ] Can I confirm this works? Permission declared before `<application>` tag (correct location) — yes/no. Technical check: **Permission declared before `<application>` tag** (correct location)
 
 **Pass Criteria:** All 6 items checked. App has network access permissions.
 
@@ -90,25 +100,25 @@ This checklist provides **pass/fail validation criteria** for Week 05. Each item
 
 ### 5.1 UI Components
 
-- [ ] **ProgressBar added** to MainActivity layout
-- [ ] **ProgressBar initially invisible** (android:visibility="gone")
-- [ ] **"Detect Disease" button added** to layout
-- [ ] **Button initially disabled** until image captured
+- [ ] Can I confirm this works? ProgressBar added to MainActivity layout — yes/no. Technical check: **ProgressBar added** to MainActivity layout
+- [ ] Can I confirm this works? ProgressBar initially invisible (android:visibility="gone") — yes/no. Technical check: **ProgressBar initially invisible** (android:visibility="gone")
+- [ ] Can I confirm this works? "Detect Disease" button added to layout — yes/no. Technical check: **"Detect Disease" button added** to layout
+- [ ] Can I confirm this works? Button initially disabled until image captured — yes/no. Technical check: **Button initially disabled** until image captured
 
 ### 5.2 Image Preparation
 
-- [ ] **Captured Bitmap saved to File** after camera/gallery selection
-- [ ] **File created in cache directory** or app-specific directory
-- [ ] **Image file compression works** (JPEG, 80% quality)
-- [ ] **Detect button enabled** after image saved successfully
-- [ ] **No crashes** when saving image to file
+- [ ] Can I confirm this works? Captured Bitmap saved to File after camera/gallery selection — yes/no. Technical check: **Captured Bitmap saved to File** after camera/gallery selection
+- [ ] Can I confirm this works? File created in cache directory or app-specific directory — yes/no. Technical check: **File created in cache directory** or app-specific directory
+- [ ] Can I confirm this works? Image file compression works (JPEG, 80% quality) — yes/no. Technical check: **Image file compression works** (JPEG, 80% quality)
+- [ ] Can I confirm this works? Detect button enabled after image saved successfully — yes/no. Technical check: **Detect button enabled** after image saved successfully
+- [ ] Can I confirm this works? No crashes when saving image to file — yes/no. Technical check: **No crashes** when saving image to file
 
 ### 5.3 Multipart Request Creation
 
-- [ ] **RequestBody created** from image File with MediaType "image/*"
-- [ ] **MultipartBody.Part created** with correct parameter name ("image")
-- [ ] **Filename included** in MultipartBody.Part
-- [ ] **No crashes** when creating multipart request
+- [ ] Can I confirm this works? RequestBody created from image File with MediaType "image/*" — yes/no. Technical check: **RequestBody created** from image File with MediaType "image/*"
+- [ ] Can I confirm this works? MultipartBody.Part created with correct parameter name ("image") — yes/no. Technical check: **MultipartBody.Part created** with correct parameter name ("image")
+- [ ] Can I confirm this works? Filename included in MultipartBody.Part — yes/no. Technical check: **Filename included** in MultipartBody.Part
+- [ ] Can I confirm this works? No crashes when creating multipart request — yes/no. Technical check: **No crashes** when creating multipart request
 
 **Pass Criteria:** All 13 items checked. Image successfully converts to uploadable format.
 
@@ -118,17 +128,17 @@ This checklist provides **pass/fail validation criteria** for Week 05. Each item
 
 ### 6.1 Request Initiation
 
-- [ ] **API service instance retrieved** from RetrofitClient
-- [ ] **uploadImage() method called** with MultipartBody.Part parameter
-- [ ] **enqueue() used** for asynchronous execution (not execute())
-- [ ] **Callback implemented** with both onResponse() and onFailure()
+- [ ] Can I confirm this works? API service instance retrieved from RetrofitClient — yes/no. Technical check: **API service instance retrieved** from RetrofitClient
+- [ ] Can I confirm this works? uploadImage() method called with MultipartBody.Part parameter — yes/no. Technical check: **uploadImage() method called** with MultipartBody.Part parameter
+- [ ] Can I confirm this works? enqueue() used for asynchronous execution (not execute()) — yes/no. Technical check: **enqueue() used** for asynchronous execution (not execute())
+- [ ] Can I confirm this works? Callback implemented with both onResponse() and onFailure() — yes/no. Technical check: **Callback implemented** with both onResponse() and onFailure()
 
 ### 6.2 Loading State Management
 
-- [ ] **ProgressBar becomes visible** when upload starts
-- [ ] **Detect button becomes disabled** when upload starts
-- [ ] **ProgressBar hidden** in both onResponse() and onFailure()
-- [ ] **Button re-enabled** in both onResponse() and onFailure()
+- [ ] Can I confirm this works? ProgressBar becomes visible when upload starts — yes/no. Technical check: **ProgressBar becomes visible** when upload starts
+- [ ] Can I confirm this works? Detect button becomes disabled when upload starts — yes/no. Technical check: **Detect button becomes disabled** when upload starts
+- [ ] Can I confirm this works? ProgressBar hidden in both onResponse() and onFailure() — yes/no. Technical check: **ProgressBar hidden** in both onResponse() and onFailure()
+- [ ] Can I confirm this works? Button re-enabled in both onResponse() and onFailure() — yes/no. Technical check: **Button re-enabled** in both onResponse() and onFailure()
 
 **Test:** Upload image and observe UI changes.
 
@@ -140,21 +150,21 @@ This checklist provides **pass/fail validation criteria** for Week 05. Each item
 
 ### 7.1 Success Path
 
-- [ ] **response.isSuccessful() checked** before accessing body
-- [ ] **response.body() null check** performed
-- [ ] **PredictionResponse object extracted** from response.body()
-- [ ] **All fields accessed without crashes** (disease, confidence, etc.)
-- [ ] **Intent created** with prediction data
-- [ ] **Data passed as Intent extras** to ResultActivity
-- [ ] **ResultActivity started** successfully
+- [ ] Can I confirm this works? response.isSuccessful() checked before accessing body — yes/no. Technical check: **response.isSuccessful() checked** before accessing body
+- [ ] Can I confirm this works? response.body() null check performed — yes/no. Technical check: **response.body() null check** performed
+- [ ] Can I confirm this works? PredictionResponse object extracted from response.body() — yes/no. Technical check: **PredictionResponse object extracted** from response.body()
+- [ ] Can I confirm this works? All fields accessed without crashes (disease, confidence, etc.) — yes/no. Technical check: **All fields accessed without crashes** (disease, confidence, etc.)
+- [ ] Can I confirm this works? Intent created with prediction data — yes/no. Technical check: **Intent created** with prediction data
+- [ ] Can I confirm this works? Data passed as Intent extras to ResultActivity — yes/no. Technical check: **Data passed as Intent extras** to ResultActivity
+- [ ] Can I confirm this works? ResultActivity started successfully — yes/no. Technical check: **ResultActivity started** successfully
 
 ### 7.2 Error Handling
 
-- [ ] **HTTP errors handled** (4xx, 5xx status codes) in onResponse()
-- [ ] **Network errors handled** (IOException) in onFailure()
-- [ ] **Toast messages shown** for errors
-- [ ] **Error messages are user-friendly** (not just exception stack traces)
-- [ ] **App never crashes** when errors occur
+- [ ] Can I confirm this works? HTTP errors handled (4xx, 5xx status codes) in onResponse() — yes/no. Technical check: **HTTP errors handled** (4xx, 5xx status codes) in onResponse()
+- [ ] Can I confirm this works? Network errors handled (IOException) in onFailure() — yes/no. Technical check: **Network errors handled** (IOException) in onFailure()
+- [ ] Can I confirm this works? Toast messages shown for errors — yes/no. Technical check: **Toast messages shown** for errors
+- [ ] Can I confirm this works? Error messages are user-friendly (not just exception stack traces) — yes/no. Technical check: **Error messages are user-friendly** (not just exception stack traces)
+- [ ] Can I confirm this works? App never crashes when errors occur — yes/no. Technical check: **App never crashes** when errors occur
 
 **Test Success Path:** Upload image with backend running - should navigate to ResultActivity.
 
@@ -168,22 +178,22 @@ This checklist provides **pass/fail validation criteria** for Week 05. Each item
 
 ### 8.1 ResultActivity Layout
 
-- [ ] **Disease name TextView** present in layout
-- [ ] **Confidence TextView** present in layout
-- [ ] **Symptoms TextView** present in layout
-- [ ] **Treatment TextView** present in layout
-- [ ] **Prevention TextView** present in layout
+- [ ] Can I confirm this works? Disease name TextView present in layout — yes/no. Technical check: **Disease name TextView** present in layout
+- [ ] Can I confirm this works? Confidence TextView present in layout — yes/no. Technical check: **Confidence TextView** present in layout
+- [ ] Can I confirm this works? Symptoms TextView present in layout — yes/no. Technical check: **Symptoms TextView** present in layout
+- [ ] Can I confirm this works? Treatment TextView present in layout — yes/no. Technical check: **Treatment TextView** present in layout
+- [ ] Can I confirm this works? Prevention TextView present in layout — yes/no. Technical check: **Prevention TextView** present in layout
 
 ### 8.2 Data Display
 
-- [ ] **Disease name displayed** correctly in ResultActivity
-- [ ] **Confidence displayed as percentage** (e.g., "87.3%", not "0.873")
-- [ ] **Confidence formatted** with 1 decimal place
-- [ ] **Symptoms text displayed** correctly
-- [ ] **Treatment text displayed** correctly
-- [ ] **Prevention text displayed** correctly
-- [ ] **Null values handled** gracefully (no crashes if fields are null)
-- [ ] **Default text shown** for null fields (e.g., "No information available")
+- [ ] Can I confirm this works? Disease name displayed correctly in ResultActivity — yes/no. Technical check: **Disease name displayed** correctly in ResultActivity
+- [ ] Can I confirm this works? Confidence displayed as percentage (e.g., "87.3%", not "0.873") — yes/no. Technical check: **Confidence displayed as percentage** (e.g., "87.3%", not "0.873")
+- [ ] Can I confirm this works? Confidence formatted with 1 decimal place — yes/no. Technical check: **Confidence formatted** with 1 decimal place
+- [ ] Can I confirm this works? Symptoms text displayed correctly — yes/no. Technical check: **Symptoms text displayed** correctly
+- [ ] Can I confirm this works? Treatment text displayed correctly — yes/no. Technical check: **Treatment text displayed** correctly
+- [ ] Can I confirm this works? Prevention text displayed correctly — yes/no. Technical check: **Prevention text displayed** correctly
+- [ ] Can I confirm this works? Null values handled gracefully (no crashes if fields are null) — yes/no. Technical check: **Null values handled** gracefully (no crashes if fields are null)
+- [ ] Can I confirm this works? Default text shown for null fields (e.g., "No information available") — yes/no. Technical check: **Default text shown** for null fields (e.g., "No information available")
 
 **Test:** Complete upload and verify all fields display in ResultActivity.
 
@@ -227,14 +237,14 @@ Perform this test sequence and check each step:
 
 **Setup:** Turn off Wi-Fi and mobile data on phone.
 
-- [ ] **Turn off internet** on phone
-- [ ] **Attempt image upload** by tapping button
-- [ ] **Error Toast appears** with network error message
-- [ ] **Toast message is user-friendly** (mentions network/connection)
-- [ ] **App does not crash**
-- [ ] **ProgressBar hidden** after error
-- [ ] **Button re-enabled** after error
-- [ ] **Can retry after turning internet back on**
+- [ ] Can I confirm this works? Turn off internet on phone — yes/no. Technical check: **Turn off internet** on phone
+- [ ] Can I confirm this works? Attempt image upload by tapping button — yes/no. Technical check: **Attempt image upload** by tapping button
+- [ ] Can I confirm this works? Error Toast appears with network error message — yes/no. Technical check: **Error Toast appears** with network error message
+- [ ] Can I confirm this works? Toast message is user-friendly (mentions network/connection) — yes/no. Technical check: **Toast message is user-friendly** (mentions network/connection)
+- [ ] Can I confirm this works? App does not crash — yes/no. Technical check: **App does not crash**
+- [ ] Can I confirm this works? ProgressBar hidden after error — yes/no. Technical check: **ProgressBar hidden** after error
+- [ ] Can I confirm this works? Button re-enabled after error — yes/no. Technical check: **Button re-enabled** after error
+- [ ] Can I confirm this works? Can retry after turning internet back on — yes/no. Technical check: **Can retry after turning internet back on**
 
 📸 **Screenshot Required:** Error Toast displayed.
 
@@ -242,32 +252,32 @@ Perform this test sequence and check each step:
 
 **Setup:** Stop FastAPI server on laptop.
 
-- [ ] **Stop backend server** (Ctrl+C in terminal)
-- [ ] **Attempt image upload** from app
-- [ ] **Error Toast appears** (may say timeout or connection refused)
-- [ ] **App does not crash**
-- [ ] **ProgressBar hidden** after error
-- [ ] **Button re-enabled** after error
-- [ ] **Can retry after restarting backend**
+- [ ] Can I confirm this works? Stop backend server (Ctrl+C in terminal) — yes/no. Technical check: **Stop backend server** (Ctrl+C in terminal)
+- [ ] Can I confirm this works? Attempt image upload from app — yes/no. Technical check: **Attempt image upload** from app
+- [ ] Can I confirm this works? Error Toast appears (may say timeout or connection refused) — yes/no. Technical check: **Error Toast appears** (may say timeout or connection refused)
+- [ ] Can I confirm this works? App does not crash — yes/no. Technical check: **App does not crash**
+- [ ] Can I confirm this works? ProgressBar hidden after error — yes/no. Technical check: **ProgressBar hidden** after error
+- [ ] Can I confirm this works? Button re-enabled after error — yes/no. Technical check: **Button re-enabled** after error
+- [ ] Can I confirm this works? Can retry after restarting backend — yes/no. Technical check: **Can retry after restarting backend**
 
 ### 10.3 Wrong IP Address
 
-**Setup:** Change BASE_URL to invalid IP (e.g., 192.168.1.99).
+**Setup:** Change BASE_URL to an invalid address (e.g., `http://10.0.2.3:8000/` or `http://192.168.1.99:8000/`).
 
-- [ ] **Change BASE_URL** in RetrofitClient
-- [ ] **Rebuild and install app**
-- [ ] **Attempt upload**
-- [ ] **Error Toast appears** (connection timeout or failed to connect)
-- [ ] **App does not crash**
+- [ ] Can I confirm this works? Change BASE_URL in RetrofitClient — yes/no. Technical check: **Change BASE_URL** in RetrofitClient
+- [ ] Can I confirm this works? Rebuild and install app — yes/no. Technical check: **Rebuild and install app**
+- [ ] Can I confirm this works? Attempt upload — yes/no. Technical check: **Attempt upload**
+- [ ] Can I confirm this works? Error Toast appears (connection timeout or failed to connect) — yes/no. Technical check: **Error Toast appears** (connection timeout or failed to connect)
+- [ ] Can I confirm this works? App does not crash — yes/no. Technical check: **App does not crash**
 
 ### 10.4 No Image Captured
 
 **Setup:** Launch app without capturing image.
 
-- [ ] **Launch app fresh** (without capturing image)
-- [ ] **"Detect Disease" button disabled** (or validation prevents upload)
-- [ ] **If button enabled, tapping shows error** message
-- [ ] **App does not crash**
+- [ ] Can I confirm this works? Launch app fresh (without capturing image) — yes/no. Technical check: **Launch app fresh** (without capturing image)
+- [ ] Can I confirm this works? "Detect Disease" button disabled (or validation prevents upload) — yes/no. Technical check: **"Detect Disease" button disabled** (or validation prevents upload)
+- [ ] Can I confirm this works? If button enabled, tapping shows error message — yes/no. Technical check: **If button enabled, tapping shows error** message
+- [ ] Can I confirm this works? App does not crash — yes/no. Technical check: **App does not crash**
 
 **Pass Criteria:** All 19 error scenario items checked. App handles all error cases gracefully.
 
@@ -277,17 +287,17 @@ Perform this test sequence and check each step:
 
 ### 11.1 Code Organization
 
-- [ ] **No hardcoded strings** in Java code (use strings.xml)
-- [ ] **BASE_URL defined once** in RetrofitClient only
-- [ ] **Proper null checks** before accessing response.body()
-- [ ] **Try-catch blocks** where appropriate (file operations, etc.)
-- [ ] **Meaningful variable names** (no `temp`, `x`, `data1`)
+- [ ] Can I confirm this works? No hardcoded strings in Java code (use strings.xml) — yes/no. Technical check: **No hardcoded strings** in Java code (use strings.xml)
+- [ ] Can I confirm this works? BASE_URL defined once in RetrofitClient only — yes/no. Technical check: **BASE_URL defined once** in RetrofitClient only
+- [ ] Can I confirm this works? Proper null checks before accessing response.body() — yes/no. Technical check: **Proper null checks** before accessing response.body()
+- [ ] Can I confirm this works? Try-catch blocks where appropriate (file operations, etc.) — yes/no. Technical check: **Try-catch blocks** where appropriate (file operations, etc.)
+- [ ] Can I confirm this works? Meaningful variable names (no `temp`, `x`, `data1`) — yes/no. Technical check: **Meaningful variable names** (no `temp`, `x`, `data1`)
 
 ### 11.2 Imports and Structure
 
-- [ ] **No unused imports** in any class
-- [ ] **No compilation warnings** in Android Studio
-- [ ] **Package structure organized** (classes in appropriate packages)
+- [ ] Can I confirm this works? No unused imports in any class — yes/no. Technical check: **No unused imports** in any class
+- [ ] Can I confirm this works? No compilation warnings in Android Studio — yes/no. Technical check: **No compilation warnings** in Android Studio
+- [ ] Can I confirm this works? Package structure organized (classes in appropriate packages) — yes/no. Technical check: **Package structure organized** (classes in appropriate packages)
 
 **Pass Criteria:** All 8 items checked. Code follows best practices.
 
@@ -297,12 +307,12 @@ Perform this test sequence and check each step:
 
 ### 12.1 Logcat Output
 
-- [ ] **HTTP requests visible** in Logcat (filtered by "OkHttp")
-- [ ] **Request method shown** (POST /predict)
-- [ ] **Request body logged** (multipart data)
-- [ ] **Response status code shown** (200 OK)
-- [ ] **Response JSON visible** in Logcat
-- [ ] **Can read and understand** network logs
+- [ ] Can I confirm this works? HTTP requests visible in Logcat (filtered by "OkHttp") — yes/no. Technical check: **HTTP requests visible** in Logcat (filtered by "OkHttp")
+- [ ] Can I confirm this works? Request method shown (POST /predict) — yes/no. Technical check: **Request method shown** (POST /predict)
+- [ ] Can I confirm this works? Request body logged (multipart data) — yes/no. Technical check: **Request body logged** (multipart data)
+- [ ] Can I confirm this works? Response status code shown (200 OK) — yes/no. Technical check: **Response status code shown** (200 OK)
+- [ ] Can I confirm this works? Response JSON visible in Logcat — yes/no. Technical check: **Response JSON visible** in Logcat
+- [ ] Can I confirm this works? Can read and understand network logs — yes/no. Technical check: **Can read and understand** network logs
 
 **Test:** Upload image and observe Logcat during request.
 
@@ -316,20 +326,20 @@ Perform this test sequence and check each step:
 
 ### 13.1 Evidence Collection
 
-- [ ] **Screenshot: MainActivity with image** captured
-- [ ] **Screenshot: ProgressBar visible** during upload
-- [ ] **Screenshot: ResultActivity** with prediction displayed
-- [ ] **Screenshot: Error Toast** (network error scenario)
-- [ ] **Screenshot: Logcat** showing HTTP request/response
-- [ ] **All screenshots saved** in `docs/evidence/week-05/`
+- [ ] Can I confirm this works? Screenshot: MainActivity with image captured — yes/no. Technical check: **Screenshot: MainActivity with image** captured
+- [ ] Can I confirm this works? Screenshot: ProgressBar visible during upload — yes/no. Technical check: **Screenshot: ProgressBar visible** during upload
+- [ ] Can I confirm this works? Screenshot: ResultActivity with prediction displayed — yes/no. Technical check: **Screenshot: ResultActivity** with prediction displayed
+- [ ] Can I confirm this works? Screenshot: Error Toast (network error scenario) — yes/no. Technical check: **Screenshot: Error Toast** (network error scenario)
+- [ ] Can I confirm this works? Screenshot: Logcat showing HTTP request/response — yes/no. Technical check: **Screenshot: Logcat** showing HTTP request/response
+- [ ] Can I confirm this works? All screenshots saved in `docs/evidence/week-05/` — yes/no. Technical check: **All screenshots saved** in `docs/evidence/week-05/`
 
 ### 13.2 Documentation
 
-- [ ] **Week 05 reflection completed**
-- [ ] **Week 05 quiz attempted**
-- [ ] **progress-tracker.md updated** with Week 05 completion
-- [ ] **Git commits made** with meaningful messages
-- [ ] **Can explain how Retrofit works** in your own words
+- [ ] Can I confirm this works? Week 05 reflection completed — yes/no. Technical check: **Week 05 reflection completed**
+- [ ] Can I confirm this works? Week 05 quiz attempted — yes/no. Technical check: **Week 05 quiz attempted**
+- [ ] Can I confirm this works? progress-tracker.md updated with Week 05 completion — yes/no. Technical check: **progress-tracker.md updated** with Week 05 completion
+- [ ] Can I confirm this works? Git commits made with meaningful messages — yes/no. Technical check: **Git commits made** with meaningful messages
+- [ ] Can I confirm this works? Can explain how Retrofit works in your own words — yes/no. Technical check: **Can explain how Retrofit works** in your own words
 
 📸 **Evidence Folder:** Must contain at least 5 screenshots.
 
@@ -379,14 +389,14 @@ If you have not achieved 90% completion:
 
 When demonstrating to your teacher, be ready to show:
 
-- [ ] **FastAPI backend running** in terminal
-- [ ] **App running on phone** or emulator
-- [ ] **Complete upload flow** (camera → upload → result)
-- [ ] **Error handling demo** (stop backend, show error, restart, retry)
-- [ ] **Logcat showing network requests**
-- [ ] **Can explain Retrofit architecture** verbally
-- [ ] **Can explain difference between onResponse() and onFailure()**
-- [ ] **Can explain why async networking is required**
+- [ ] Can I confirm this works? FastAPI backend running in terminal — yes/no. Technical check: **FastAPI backend running** in terminal
+- [ ] Can I confirm this works? App running on phone or emulator — yes/no. Technical check: **App running on phone** or emulator
+- [ ] Can I confirm this works? Complete upload flow (camera → upload → result) — yes/no. Technical check: **Complete upload flow** (camera → upload → result)
+- [ ] Can I confirm this works? Error handling demo (stop backend, show error, restart, retry) — yes/no. Technical check: **Error handling demo** (stop backend, show error, restart, retry)
+- [ ] Can I confirm this works? Logcat showing network requests — yes/no. Technical check: **Logcat showing network requests**
+- [ ] Can I confirm this works? Can explain Retrofit architecture verbally — yes/no. Technical check: **Can explain Retrofit architecture** verbally
+- [ ] Can I confirm this works? Can explain difference between onResponse() and onFailure() — yes/no. Technical check: **Can explain difference between onResponse() and onFailure()**
+- [ ] Can I confirm this works? Can explain why async networking is required — yes/no. Technical check: **Can explain why async networking is required**
 
 ---
 
@@ -394,10 +404,10 @@ When demonstrating to your teacher, be ready to show:
 
 Once you pass all validation criteria:
 
-- [ ] **Mark Week 05 as complete** in progress-tracker.md
-- [ ] **Commit final version** to Git
-- [ ] **Celebrate!** You've built a network-enabled Android app! 🎉
-- [ ] **Ready for Week 06:** Real ML model integration in FastAPI backend
+- [ ] Can I confirm this works? Mark Week 05 as complete in progress-tracker.md — yes/no. Technical check: **Mark Week 05 as complete** in progress-tracker.md
+- [ ] Can I confirm this works? Commit final version to Git — yes/no. Technical check: **Commit final version** to Git
+- [ ] Can I confirm this works? Celebrate! You've built a network-enabled Android app! 🎉 — yes/no. Technical check: **Celebrate!** You've built a network-enabled Android app! 🎉
+- [ ] Can I confirm this works? Ready for Week 06: Real ML model integration in FastAPI backend — yes/no. Technical check: **Ready for Week 06:** Real ML model integration in FastAPI backend
 
 **Date Completed:** ___________
 

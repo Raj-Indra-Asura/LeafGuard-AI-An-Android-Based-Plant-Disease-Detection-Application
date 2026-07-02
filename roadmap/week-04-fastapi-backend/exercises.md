@@ -230,7 +230,7 @@ UPLOAD_DIR = "uploads"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 
 # TODO 1: Create POST /upload endpoint
-# Accept: file (UploadFile)
+# Accept: `image` (UploadFile) for the LeafGuard `/predict` contract
 # Validate:
 #   - Content type must be image/jpeg or image/png
 #   - File size must be <= 5 MB
@@ -238,7 +238,7 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 # Return: filename, size, content_type, saved_path
 
 # TODO 2: Create POST /analyze-image endpoint (dummy processing)
-# Accept: file (UploadFile)
+# Accept: `image` (UploadFile) for the LeafGuard `/predict` contract
 # Validate: Same as above
 # Simulate processing (you can just return random analysis)
 # Return: analysis results (width, height, format, file_size)
@@ -428,13 +428,11 @@ def create_person():
 # Should fail validation
 ```
 
-**Test 4: Optional Field**
+**Test 4: Error Detail**
 ```python
-# ErrorResponse with detail=None should succeed
+# FastAPI error responses should include a clear detail message
 {
-  "success": false,
-  "error": "File not found",
-  "detail": null
+  "detail": "File not found"
 }
 ```
 
@@ -617,7 +615,7 @@ ifconfig
 # or
 ip addr show
 ```
-Look for IP starting with 192.168.x.x or 10.0.x.x
+For the emulator, use `http://10.0.2.2:8000/`. For a physical phone, look for a laptop IP starting with 192.168.x.x or 10.0.x.x.
 
 **Step 2: Run Server for Network Access**
 
@@ -634,14 +632,16 @@ uvicorn main:app --host 0.0.0.0 --port 8000 --reload
 Open browser: http://localhost:8000
 Should work.
 
-Also try: http://YOUR_IP:8000 (e.g., http://192.168.1.100:8000)
-Should also work.
+Also try from the emulator: http://10.0.2.2:8000
+For a physical phone, also try: http://YOUR_IP:8000 (e.g., http://192.168.1.100:8000)
+
+Expected result: the health JSON appears.
 
 **Step 4: Test from Phone**
 
-1. Connect phone to SAME Wi-Fi network as laptop
-2. Open Chrome on phone
-3. Navigate to: http://YOUR_IP:8000
+1. For emulator testing, open Chrome in the emulator
+2. Navigate to: http://10.0.2.2:8000
+3. For a physical phone, connect to the SAME Wi-Fi network as laptop and navigate to http://YOUR_IP:8000
 4. Should see your API response
 
 **Step 5: Troubleshooting**
@@ -725,19 +725,18 @@ This is your complete Week 04 deliverable.
 **Requirements:**
 
 1. **Pydantic Models:**
-   - PredictionResponse (success, disease, confidence, symptoms, treatment, prevention, timestamp, file_size)
-   - ErrorResponse (success, error, detail)
+   - PredictionResult (disease, confidence, symptoms, treatment, prevention)
 
 2. **Validation Function:**
    - Check file content type (image/jpeg, image/png only)
    - Check file size (max 10 MB)
    - Return error message if invalid, None if valid
 
-3. **POST /api/predict Endpoint:**
+3. **POST /predict Endpoint:**
    - Accept file upload
    - Validate file
    - Generate dummy prediction (random disease from list)
-   - Return PredictionResponse
+   - Return PredictionResult
 
 4. **GET / Health Check:**
    - Return status, message, version
@@ -774,12 +773,8 @@ app.add_middleware(
 )
 
 # Models
-class PredictionResponse(BaseModel):
-    # TODO: Define fields
-    pass
-
-class ErrorResponse(BaseModel):
-    # TODO: Define fields
+class PredictionResult(BaseModel):
+    # TODO: Define disease, confidence, symptoms, treatment, prevention
     pass
 
 # Dummy disease data
@@ -805,14 +800,14 @@ def health_check():
     # TODO: Implement
     pass
 
-@app.post("/api/predict", response_model=PredictionResponse)
-async def predict_disease(file: UploadFile = File(...)):
+@app.post("/predict", response_model=PredictionResult)
+async def predict(image: UploadFile = File(...)):
     # TODO: Implement
     # 1. Validate file
     # 2. Read file contents
     # 3. Select random disease from DISEASES list
     # 4. Generate random confidence (0.75-0.98)
-    # 5. Return PredictionResponse
+    # 5. Return PredictionResult with the five contract fields
     pass
 ```
 
@@ -826,13 +821,13 @@ async def predict_disease(file: UploadFile = File(...)):
    - Response has status, message, version
 
 2. **Valid Prediction:**
-   - POST http://localhost:8000/api/predict
+   - POST http://localhost:8000/predict
    - Body: form-data, file: [leaf image]
    - Status: 200
-   - Response has all PredictionResponse fields
+   - Response has disease, confidence, symptoms, treatment, and prevention
 
 3. **Invalid File Type:**
-   - POST http://localhost:8000/api/predict
+   - POST http://localhost:8000/predict
    - Body: .txt file
    - Status: 400
    - Error message mentions invalid type
@@ -917,7 +912,7 @@ After=network.target
 
 [Service]
 User=your-username
-WorkingDirectory=/path/to/leafguard-backend
+WorkingDirectory=/path/to/backend-api
 ExecStart=/path/to/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
 Restart=always
 
@@ -953,7 +948,7 @@ uvicorn main:app --host 0.0.0.0 --port 8000
 
 1. Create batch file `run_api.bat`:
 ```batch
-cd C:\path\to\leafguard-backend
+cd C:\path\to\backend-api
 call venv\Scripts\activate
 uvicorn main:app --host 0.0.0.0 --port 8000
 ```

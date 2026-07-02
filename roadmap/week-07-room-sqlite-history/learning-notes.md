@@ -1,5 +1,7 @@
 # Week 07: Learning Notes - Room Database and Scan History
 
+> **Kotlin-first & accuracy note:** The shipped classes are `ScanRecord` (table `scan_history`, columns `id`, `disease_name`, `confidence`, `symptoms`, `treatment`, `prevention`, `image_uri`, `latitude`, `longitude`, `timestamp`), `ScanDao` (Kotlin `suspend fun`s), and `AppDatabase` (file `leafguard.db`). Kotlin is the primary track (coroutines via `lifecycleScope.launch { }`, plus **kapt** so Room can generate its code); Java examples using `ExecutorService`/`annotationProcessor` are the labelled secondary reference.
+
 ## Table of Contents
 
 1. [SQLite and Room Database Fundamentals](#1-sqlite-and-room-database-fundamentals)
@@ -47,7 +49,7 @@ App Process Memory
   /data/data/your.package/databases/
           │
           ▼
-  leafguard_database.db (SQLite file)
+  leafguard.db (SQLite file)
 ```
 
 ### What is Room?
@@ -82,8 +84,8 @@ db.close();
 **Room:**
 ```java
 // 5 lines, type-safe
-ScanHistory scan = new ScanHistory("Late Blight", 0.87, System.currentTimeMillis());
-database.scanHistoryDao().insert(scan);
+ScanRecord scan = new ScanRecord("Late Blight", 0.87, System.currentTimeMillis());
+database.scanDao().insert(scan);
 ```
 
 ---
@@ -102,7 +104,7 @@ Room database architecture consists of exactly three components:
 ┌─────────────────────────────────────┐
 │  1. ENTITY                          │
 │  @Entity(tableName = "scan_history")│
-│  public class ScanHistory {         │
+│  public class ScanRecord {         │
 │      @PrimaryKey int id;            │
 │      String disease;                │
 │      double confidence;             │
@@ -113,7 +115,7 @@ Room database architecture consists of exactly three components:
 ┌─────────────────────────────────────┐
 │  2. DAO                             │
 │  @Dao                               │
-│  public interface ScanHistoryDao {  │
+│  public interface ScanDao {  │
 │      @Insert void insert(...);      │
 │      @Query("...") List getAll();   │
 │      @Delete void delete(...);      │
@@ -123,11 +125,11 @@ Room database architecture consists of exactly three components:
                ▼
 ┌─────────────────────────────────────┐
 │  3. DATABASE                        │
-│  @Database(entities = {ScanHistory})│
+│  @Database(entities = {ScanRecord})│
 │  public abstract class AppDatabase  │
 │      extends RoomDatabase {         │
-│      public abstract ScanHistoryDao │
-│          scanHistoryDao();          │
+│      public abstract ScanDao │
+│          scanDao();          │
 │  }                                  │
 └─────────────────────────────────────┘
 ```
@@ -140,7 +142,7 @@ Room database architecture consists of exactly three components:
 
 ```java
 @Entity(tableName = "scan_history")
-public class ScanHistory {
+public class ScanRecord {
     @PrimaryKey(autoGenerate = true)
     private int id;
 
@@ -158,7 +160,7 @@ public class ScanHistory {
     private String imagePath;
 
     // Constructor
-    public ScanHistory(String disease, double confidence, String symptoms,
+    public ScanRecord(String disease, double confidence, String symptoms,
                        String treatment, long timestamp, String imagePath) {
         this.disease = disease;
         this.confidence = confidence;
@@ -251,7 +253,7 @@ public class Converters {
     }
 }
 
-@Database(entities = {ScanHistory.class}, version = 1)
+@Database(entities = {ScanRecord.class}, version = 1)
 @TypeConverters({Converters.class})
 public abstract class AppDatabase extends RoomDatabase {
     // ...
@@ -266,31 +268,31 @@ public abstract class AppDatabase extends RoomDatabase {
 
 ```java
 @Dao
-public interface ScanHistoryDao {
+public interface ScanDao {
     // Create
     @Insert
-    void insert(ScanHistory scan);
+    void insert(ScanRecord scan);
 
     @Insert
-    void insertAll(ScanHistory... scans);
+    void insertAll(ScanRecord... scans);
 
     // Read
     @Query("SELECT * FROM scan_history ORDER BY scan_timestamp DESC")
-    List<ScanHistory> getAll();
+    List<ScanRecord> getAll();
 
     @Query("SELECT * FROM scan_history WHERE id = :scanId")
-    ScanHistory getById(int scanId);
+    ScanRecord getById(int scanId);
 
     @Query("SELECT * FROM scan_history WHERE disease_name LIKE :disease")
-    List<ScanHistory> findByDisease(String disease);
+    List<ScanRecord> findByDisease(String disease);
 
     // Update
     @Update
-    void update(ScanHistory scan);
+    void update(ScanRecord scan);
 
     // Delete
     @Delete
-    void delete(ScanHistory scan);
+    void delete(ScanRecord scan);
 
     @Query("DELETE FROM scan_history WHERE id = :scanId")
     void deleteById(int scanId);
@@ -309,16 +311,16 @@ public interface ScanHistoryDao {
 #### @Insert
 ```java
 @Insert
-void insert(ScanHistory scan);
+void insert(ScanRecord scan);
 
 @Insert
-long insertAndReturnId(ScanHistory scan);  // Returns inserted ID
+long insertAndReturnId(ScanRecord scan);  // Returns inserted ID
 
 @Insert
-List<Long> insertAll(ScanHistory... scans);  // Varargs
+List<Long> insertAll(ScanRecord... scans);  // Varargs
 
 @Insert(onConflict = OnConflictStrategy.REPLACE)
-void insertOrReplace(ScanHistory scan);  // Replace if exists
+void insertOrReplace(ScanRecord scan);  // Replace if exists
 ```
 
 **OnConflictStrategy options:**
@@ -329,10 +331,10 @@ void insertOrReplace(ScanHistory scan);  // Replace if exists
 #### @Update
 ```java
 @Update
-void update(ScanHistory scan);
+void update(ScanRecord scan);
 
 @Update
-int updateAndReturnCount(ScanHistory scan);  // Returns affected rows
+int updateAndReturnCount(ScanRecord scan);  // Returns affected rows
 ```
 
 **Note:** Update matches by primary key automatically.
@@ -340,10 +342,10 @@ int updateAndReturnCount(ScanHistory scan);  // Returns affected rows
 #### @Delete
 ```java
 @Delete
-void delete(ScanHistory scan);
+void delete(ScanRecord scan);
 
 @Delete
-int deleteAndReturnCount(ScanHistory scan);  // Returns deleted count
+int deleteAndReturnCount(ScanRecord scan);  // Returns deleted count
 ```
 
 #### @Query
@@ -351,7 +353,7 @@ Most flexible - write custom SQL:
 
 ```java
 @Query("SELECT * FROM scan_history WHERE confidence > :minConfidence")
-List<ScanHistory> getHighConfidenceScans(double minConfidence);
+List<ScanRecord> getHighConfidenceScans(double minConfidence);
 
 @Query("SELECT disease_name, COUNT(*) as count FROM scan_history " +
        "GROUP BY disease_name ORDER BY count DESC")
@@ -364,13 +366,13 @@ List<DiseaseCount> getDiseaseStatistics();
 
 ```java
 @Dao
-public interface ScanHistoryDao {
+public interface ScanDao {
     @Query("SELECT * FROM scan_history ORDER BY scan_timestamp DESC")
-    LiveData<List<ScanHistory>> getAllLive();
+    LiveData<List<ScanRecord>> getAllLive();
 }
 
 // In Activity
-database.scanHistoryDao().getAllLive().observe(this, scans -> {
+database.scanDao().getAllLive().observe(this, scans -> {
     // Automatically called when database changes
     adapter.setScans(scans);
 });
@@ -388,13 +390,13 @@ database.scanHistoryDao().getAllLive().observe(this, scans -> {
 ### Database Class Structure
 
 ```java
-@Database(entities = {ScanHistory.class}, version = 1, exportSchema = false)
+@Database(entities = {ScanRecord.class}, version = 1, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     private static AppDatabase instance;
 
     // Abstract method for each DAO
-    public abstract ScanHistoryDao scanHistoryDao();
+    public abstract ScanDao scanDao();
 
     // Singleton pattern
     public static synchronized AppDatabase getInstance(Context context) {
@@ -402,7 +404,7 @@ public abstract class AppDatabase extends RoomDatabase {
             instance = Room.databaseBuilder(
                 context.getApplicationContext(),
                 AppDatabase.class,
-                "leafguard_database"
+                "leafguard.db"
             )
             .fallbackToDestructiveMigration()  // CAUTION: Deletes data on schema change
             .build();
@@ -417,7 +419,7 @@ public abstract class AppDatabase extends RoomDatabase {
 #### @Database
 ```java
 @Database(
-    entities = {ScanHistory.class, User.class},  // All entities
+    entities = {ScanRecord.class, User.class},  // All entities
     version = 1,  // Schema version
     exportSchema = false  // Don't export schema to file
 )
@@ -479,16 +481,16 @@ Activity
 ### Adapter Implementation
 
 ```java
-public class ScanHistoryAdapter extends RecyclerView.Adapter<ScanHistoryAdapter.ViewHolder> {
+public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
 
-    private List<ScanHistory> scans;
+    private List<ScanRecord> scans;
     private OnItemClickListener listener;
 
     public interface OnItemClickListener {
-        void onItemClick(ScanHistory scan);
+        void onItemClick(ScanRecord scan);
     }
 
-    public ScanHistoryAdapter(List<ScanHistory> scans, OnItemClickListener listener) {
+    public HistoryAdapter(List<ScanRecord> scans, OnItemClickListener listener) {
         this.scans = scans;
         this.listener = listener;
     }
@@ -504,7 +506,7 @@ public class ScanHistoryAdapter extends RecyclerView.Adapter<ScanHistoryAdapter.
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         // Bind data to existing ViewHolder (called many times)
-        ScanHistory scan = scans.get(position);
+        ScanRecord scan = scans.get(position);
         holder.bind(scan, listener);
     }
 
@@ -513,7 +515,7 @@ public class ScanHistoryAdapter extends RecyclerView.Adapter<ScanHistoryAdapter.
         return scans != null ? scans.size() : 0;
     }
 
-    public void setScans(List<ScanHistory> scans) {
+    public void setScans(List<ScanRecord> scans) {
         this.scans = scans;
         notifyDataSetChanged();  // Refresh UI
     }
@@ -532,7 +534,7 @@ public class ScanHistoryAdapter extends RecyclerView.Adapter<ScanHistoryAdapter.
             timestampTextView = itemView.findViewById(R.id.timestampTextView);
         }
 
-        public void bind(ScanHistory scan, OnItemClickListener listener) {
+        public void bind(ScanRecord scan, OnItemClickListener listener) {
             diseaseTextView.setText(scan.getDisease());
             confidenceTextView.setText(String.format("%.1f%%", scan.getConfidence() * 100));
 
@@ -595,9 +597,9 @@ public class DatabaseRepository {
     }
 
     // Insert on background thread
-    public void insertScan(ScanHistory scan, OnCompleteListener listener) {
+    public void insertScan(ScanRecord scan, OnCompleteListener listener) {
         executor.execute(() -> {
-            database.scanHistoryDao().insert(scan);
+            database.scanDao().insert(scan);
 
             // Return to main thread for UI update
             new Handler(Looper.getMainLooper()).post(() -> {
@@ -609,7 +611,7 @@ public class DatabaseRepository {
     // Query on background thread
     public void getAllScans(OnScansLoadedListener listener) {
         executor.execute(() -> {
-            List<ScanHistory> scans = database.scanHistoryDao().getAll();
+            List<ScanRecord> scans = database.scanDao().getAll();
 
             // Return to main thread
             new Handler(Looper.getMainLooper()).post(() -> {
@@ -623,7 +625,7 @@ public class DatabaseRepository {
     }
 
     public interface OnScansLoadedListener {
-        void onScansLoaded(List<ScanHistory> scans);
+        void onScansLoaded(List<ScanRecord> scans);
     }
 }
 ```
@@ -652,7 +654,7 @@ repository.getAllScans(scans -> {
 
 ```java
 // Single insert
-ScanHistory scan = new ScanHistory(
+ScanRecord scan = new ScanRecord(
     "Tomato Late Blight",
     0.87,
     "Brown spots on leaves",
@@ -660,24 +662,24 @@ ScanHistory scan = new ScanHistory(
     System.currentTimeMillis(),
     "/path/to/image.jpg"
 );
-database.scanHistoryDao().insert(scan);
+database.scanDao().insert(scan);
 
 // Bulk insert
-ScanHistory[] scans = {...};
-database.scanHistoryDao().insertAll(scans);
+ScanRecord[] scans = {...};
+database.scanDao().insertAll(scans);
 ```
 
 ### Read (Query)
 
 ```java
 // Get all
-List<ScanHistory> allScans = database.scanHistoryDao().getAll();
+List<ScanRecord> allScans = database.scanDao().getAll();
 
 // Get by ID
-ScanHistory scan = database.scanHistoryDao().getById(5);
+ScanRecord scan = database.scanDao().getById(5);
 
 // Conditional query
-List<ScanHistory> filtered = database.scanHistoryDao()
+List<ScanRecord> filtered = database.scanDao()
     .findByDisease("Late Blight");
 ```
 
@@ -688,20 +690,20 @@ List<ScanHistory> filtered = database.scanHistoryDao()
 scan.setConfidence(0.95);
 
 // Update in database (matches by primary key)
-database.scanHistoryDao().update(scan);
+database.scanDao().update(scan);
 ```
 
 ### Delete
 
 ```java
 // Delete specific scan
-database.scanHistoryDao().delete(scan);
+database.scanDao().delete(scan);
 
 // Delete by ID
-database.scanHistoryDao().deleteById(5);
+database.scanDao().deleteById(5);
 
 // Delete all
-database.scanHistoryDao().deleteAll();
+database.scanDao().deleteAll();
 ```
 
 ---
@@ -1127,17 +1129,17 @@ Activity/Fragment (observes LiveData, updates UI)
 ### Adding ViewModel for LiveData
 
 ```java
-// ScanHistoryViewModel.java
+// ScanRecordViewModel.java
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 import java.util.List;
 
-public class ScanHistoryViewModel extends ViewModel {
+public class ScanRecordViewModel extends ViewModel {
 
     private final ScanDao scanDao;
     private final LiveData<List<ScanRecord>> allScans;
 
-    public ScanHistoryViewModel(Application application) {
+    public ScanRecordViewModel(Application application) {
         AppDatabase db = AppDatabase.getInstance(application);
         scanDao = db.scanDao();
         allScans = scanDao.getAllScansLive();
@@ -1151,14 +1153,14 @@ public class ScanHistoryViewModel extends ViewModel {
 
 ```java
 // Updated HistoryActivity.java
-private ScanHistoryViewModel viewModel;
+private ScanRecordViewModel viewModel;
 
 @Override
 protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     // ...
 
-    viewModel = new ViewModelProvider(this).get(ScanHistoryViewModel.class);
+    viewModel = new ViewModelProvider(this).get(ScanRecordViewModel.class);
     viewModel.getAllScans().observe(this, scans -> {
         adapter.submitList(scans);
     });
@@ -1235,7 +1237,7 @@ public static AppDatabase getInstance(Context context) {
                 INSTANCE = Room.databaseBuilder(
                         context.getApplicationContext(),
                         AppDatabase.class,
-                        "leafguard_database"
+                        "leafguard.db"
                 )
                 .addMigrations(MIGRATION_1_2)  // ← Register migration
                 .build();

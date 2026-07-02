@@ -1,5 +1,7 @@
 # Week 09: Quiz - TensorFlow Lite Offline AI
 
+> **Accuracy note:** answers reflect the real `TFLiteClassifier` — `assets/model.tflite` + `assets/labels.txt`, 224×224 RGB floats 0..1, argmax over 10 outputs, green-channel heuristic fallback because the committed `model.tflite` is a placeholder. Kotlin primary, Java secondary.
+
 ## Instructions
 
 - Total questions: 30

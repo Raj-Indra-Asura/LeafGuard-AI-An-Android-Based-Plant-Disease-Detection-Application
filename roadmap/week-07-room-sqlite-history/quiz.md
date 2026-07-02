@@ -1,5 +1,7 @@
 # Week 07: Quiz - Room Database and Scan History
 
+> **Accuracy note:** answers use the real classes `ScanRecord` (table `scan_history`), `ScanDao` (`suspend fun`s), and `AppDatabase` (file `leafguard.db`). Kotlin is the primary track (coroutines + kapt); Java is the secondary reference.
+
 ## Instructions
 
 - **Total Questions:** 35 (10 conceptual + 10 practical + 15 advanced)
@@ -119,9 +121,9 @@ Your answer: _____
 
 ```java
 ___________
-public interface ScanHistoryDao {
+public interface ScanDao {
     @Insert
-    void insert(ScanHistory scan);
+    void insert(ScanRecord scan);
 }
 ```
 
@@ -133,7 +135,7 @@ Your answer: _______________
 **What's wrong with this code?**
 
 ```java
-List<ScanHistory> scans = database.scanHistoryDao().getAll();
+List<ScanRecord> scans = database.scanDao().getAll();
 adapter.setScans(scans);
 ```
 
@@ -175,7 +177,7 @@ Your answer: _______________
 
 ```java
 @Entity
-public class ScanHistory {
+public class ScanRecord {
     private int id;
     private String disease;
     
@@ -237,7 +239,7 @@ Your answer: _______________
 
 ```java
 @Query("SELECT * FROM scan_history WHERE id = ?")
-ScanHistory getById(int id);
+ScanRecord getById(int id);
 ```
 
 Your answer: _______________
@@ -395,7 +397,7 @@ Your answer: _____
 ---
 
 ### Question 34
-**True or False:** `Flow<List<ScanHistory>>` is collected using coroutine APIs such as `collect()`.
+**True or False:** `Flow<List<ScanRecord>>` is collected using coroutine APIs such as `collect()`.
 
 Your answer: _____
 
