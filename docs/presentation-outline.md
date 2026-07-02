@@ -369,7 +369,7 @@ HISTORY MANAGEMENT
 
 CODE EXAMPLE: ViewModel with Coroutines
 ```kotlin
-class ScanViewModel : ViewModel() {
+class MainActivity : ViewModel() {
     private val _scanResult = MutableLiveData<ScanResult>()
     val scanResult: LiveData<ScanResult> = _scanResult
 
@@ -434,13 +434,13 @@ Entity: User
 
 API ENDPOINTS
 
-POST /api/auth/register
+POST /api
      → Register new user
 
-POST /api/auth/login
+POST /api
      → Authenticate user, return token
 
-POST /api/detect
+POST /predict
      → Upload image, return disease prediction
      → Request: MultipartFormData (image file)
      → Response: {

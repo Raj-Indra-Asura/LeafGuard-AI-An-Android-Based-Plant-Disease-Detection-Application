@@ -103,7 +103,7 @@ This checklist ensures you have completed all Week 02 requirements before procee
 
 ### Activity Classes
 - [ ] **MainActivity.java exists** in activities package
-- [ ] **ScanActivity.java exists** in activities package
+- [ ] **MainActivity.java exists** in activities package
 - [ ] **ResultActivity.java exists** in activities package
 - [ ] **HistoryActivity.java exists** in activities package
 - [ ] **SettingsActivity.java exists** in activities package
@@ -128,7 +128,7 @@ This checklist ensures you have completed all Week 02 requirements before procee
 
 ### Layout Files
 - [ ] **activity_main.xml exists** and renders correctly
-- [ ] **activity_scan.xml exists** and renders correctly
+- [ ] **activity_main.xml exists** and renders correctly
 - [ ] **activity_result.xml exists** and renders correctly
 - [ ] **activity_history.xml exists** and renders correctly
 - [ ] **activity_settings.xml exists** and renders correctly
@@ -146,7 +146,7 @@ This checklist ensures you have completed all Week 02 requirements before procee
 - [ ] **Buttons have proper width** (0dp with constraints or match_parent)
 - [ ] **Proper margins and padding applied**
 
-### ScanActivity Layout
+### MainActivity Layout
 - [ ] **Title TextView displayed** (select_image_source)
 - [ ] **ImageView for preview** present
 - [ ] **Camera button present**
@@ -177,14 +177,14 @@ This checklist ensures you have completed all Week 02 requirements before procee
 ## Navigation Implementation
 
 ### MainActivity Navigation
-- [ ] **Scan button navigates** to ScanActivity
+- [ ] **Scan button navigates** to MainActivity
 - [ ] **History button navigates** to HistoryActivity
 - [ ] **Settings button navigates** to SettingsActivity
 - [ ] **Click listeners implemented** for all buttons
 - [ ] **Intents created correctly**
 - [ ] **startActivity() called**
 
-### ScanActivity Navigation
+### MainActivity Navigation
 - [ ] **Camera button shows Toast** (Week 03 feature)
 - [ ] **Gallery button shows Toast** (Week 03 feature)
 - [ ] **Camera button navigates** to ResultActivity with dummy data
@@ -200,8 +200,8 @@ This checklist ensures you have completed all Week 02 requirements before procee
 - [ ] **MainActivity launched with FLAG_ACTIVITY_CLEAR_TOP**
 
 ### Back Button Behavior
-- [ ] **Back button works** from ScanActivity → MainActivity
-- [ ] **Back button works** from ResultActivity → ScanActivity
+- [ ] **Back button works** from MainActivity → MainActivity
+- [ ] **Back button works** from ResultActivity → MainActivity
 - [ ] **Back button works** from HistoryActivity → MainActivity
 - [ ] **Back button works** from SettingsActivity → MainActivity
 - [ ] **Back button from MainActivity closes app**
@@ -225,9 +225,9 @@ This checklist ensures you have completed all Week 02 requirements before procee
 
 ## Data Passing
 
-- [ ] **ScanActivity passes "source"** to ResultActivity
-- [ ] **ScanActivity passes "disease_name"** to ResultActivity
-- [ ] **ScanActivity passes "confidence"** to ResultActivity
+- [ ] **MainActivity passes "source"** to ResultActivity
+- [ ] **MainActivity passes "disease_name"** to ResultActivity
+- [ ] **MainActivity passes "confidence"** to ResultActivity
 - [ ] **ResultActivity retrieves all Intent extras** correctly
 - [ ] **ResultActivity displays disease name** from Intent
 - [ ] **ResultActivity displays confidence** formatted as percentage
@@ -256,7 +256,7 @@ This checklist ensures you have completed all Week 02 requirements before procee
 - [ ] **App launches on emulator** without crashes
 - [ ] **MainActivity displays correctly**
 - [ ] **All buttons clickable**
-- [ ] **Navigation to ScanActivity works**
+- [ ] **Navigation to MainActivity works**
 - [ ] **Navigation to HistoryActivity works**
 - [ ] **Navigation to SettingsActivity works**
 - [ ] **Navigation to ResultActivity works**
@@ -284,7 +284,7 @@ This checklist ensures you have completed all Week 02 requirements before procee
 
 ### Screenshots Saved
 - [ ] **MainActivity screenshot** saved
-- [ ] **ScanActivity screenshot** saved
+- [ ] **MainActivity screenshot** saved
 - [ ] **ResultActivity screenshot** with data displayed
 - [ ] **HistoryActivity screenshot** saved
 - [ ] **SettingsActivity screenshot** saved
@@ -294,7 +294,7 @@ This checklist ensures you have completed all Week 02 requirements before procee
 
 ### Video Documentation
 - [ ] **Navigation flow video recorded** (30-60 seconds)
-- [ ] **Video shows MainActivity → ScanActivity → ResultActivity**
+- [ ] **Video shows MainActivity → MainActivity → ResultActivity**
 - [ ] **Video shows back button behavior**
 - [ ] **Video quality is clear** and viewable
 

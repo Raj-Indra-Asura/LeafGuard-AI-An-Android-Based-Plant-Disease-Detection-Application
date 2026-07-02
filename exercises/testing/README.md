@@ -673,7 +673,7 @@ class ApiIntegrationTest {
     private fun createTestFile(): MultipartBody.Part {
         val file = File.createTempFile("test", ".jpg")
         val requestFile = file.asRequestBody("image/jpeg".toMediaTypeOrNull())
-        return MultipartBody.Part.createFormData("file", file.name, requestFile)
+        return MultipartBody.Part.createFormData("image", file.name, requestFile)
     }
 }
 ```

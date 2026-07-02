@@ -122,7 +122,7 @@ com.example.leafguard/
 │   ├── ScanResult.java
 │   └── User.java
 ├── viewmodels/          (MVVM ViewModels - Week 05)
-│   ├── ScanViewModel.java
+│   ├── MainActivity logic.java
 │   └── HistoryViewModel.java
 ├── repositories/        (Data layer - Week 05)
 │   └── ScanRepository.java
@@ -155,7 +155,7 @@ Resources folder containing all non-code assets.
 ```
 layout/
 ├── activity_main.xml           (MainActivity layout)
-├── activity_scan.xml           (ScanActivity layout)
+├── activity_main.xml           (MainActivity layout)
 ├── activity_result.xml         (ResultActivity layout)
 ├── activity_history.xml        (HistoryActivity layout)
 ├── activity_settings.xml       (SettingsActivity layout)
@@ -681,7 +681,7 @@ Create linked views that distribute space.
 Intent intent = new Intent(Context, Class);
 ```
 - `Context` - Source activity (usually `this` or `ActivityName.this`)
-- `Class` - Destination activity class (e.g., `ScanActivity.class`)
+- `Class` - Destination activity class (e.g., `MainActivity.class`)
 
 **Starting Activity:**
 ```java
@@ -825,9 +825,9 @@ cameraLauncher.launch(intent);
 **Default Back Stack:**
 ```
 Launch: [MainActivity]
-Start ScanActivity: [MainActivity, ScanActivity]
-Start ResultActivity: [MainActivity, ScanActivity, ResultActivity]
-Press Back: [MainActivity, ScanActivity]
+Start MainActivity: [MainActivity, MainActivity]
+Start ResultActivity: [MainActivity, MainActivity, ResultActivity]
+Press Back: [MainActivity, MainActivity]
 Press Back: [MainActivity]
 Press Back: App closes
 ```

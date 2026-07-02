@@ -583,7 +583,7 @@ private void uploadImageForPrediction(Bitmap bitmap) {
         imageBytes
     );
     MultipartBody.Part body = MultipartBody.Part.createFormData(
-        "file",      // field name — must match FastAPI parameter name
+        "image",     // field name — must match FastAPI parameter name (@Part image / File(...))
         "leaf.jpg",  // filename
         requestFile
     );

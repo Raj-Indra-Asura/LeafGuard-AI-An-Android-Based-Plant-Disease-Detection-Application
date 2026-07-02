@@ -995,10 +995,56 @@ This layout includes capture buttons (Camera/Gallery) plus navigation to other a
 
 ## Activity Implementation Code
 
-### ScanActivity.java
+### MainActivity capture buttons (Kotlin primary)
+
+In LeafGuard the camera and gallery buttons live in **MainActivity** — there is no separate
+capture screen. This week you wire the buttons and navigate to `ResultActivity` with placeholder
+data; the real camera/gallery capture arrives in Week 03.
+
+```kotlin
+package com.leafguard
+
+import android.content.Intent
+import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity() {
+
+    private val tag = "MainActivity"
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Log.d(tag, "onCreate: initializing MainActivity")
+        setContentView(R.layout.activity_main)
+
+        // TODO: real capture arrives in Week 03 (camera intent + FileProvider, gallery picker)
+        findViewById<android.widget.Button>(R.id.buttonOpenCamera).setOnClickListener {
+            Toast.makeText(this, "Camera will be implemented in Week 03", Toast.LENGTH_SHORT).show()
+            navigateToResult("camera")
+        }
+        findViewById<android.widget.Button>(R.id.buttonOpenGallery).setOnClickListener {
+            Toast.makeText(this, "Gallery will be implemented in Week 03", Toast.LENGTH_SHORT).show()
+            navigateToResult("gallery")
+        }
+    }
+
+    private fun navigateToResult(source: String) {
+        // "source" and the extra keys are local intent extras (not the network JSON field)
+        val intent = Intent(this, ResultActivity::class.java)
+        intent.putExtra("source", source)
+        intent.putExtra(ResultActivity.EXTRA_DISEASE_NAME, "Sample Disease")
+        intent.putExtra(ResultActivity.EXTRA_CONFIDENCE, 0.85f)
+        startActivity(intent)
+    }
+}
+```
+
+### MainActivity capture buttons — Java (secondary)
 
 ```java
-package com.example.leafguard.activities;
+package com.leafguard;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
@@ -1007,45 +1053,37 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.example.leafguard.R;
+public class MainActivity extends AppCompatActivity {
 
-public class ScanActivity extends AppCompatActivity {
-
-    private static final String TAG = "ScanActivity";
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate: Initializing ScanActivity");
-        setContentView(R.layout.activity_scan);
+        Log.d(TAG, "onCreate: Initializing MainActivity");
+        setContentView(R.layout.activity_main);
 
-        Button btnCamera = findViewById(R.id.btnCamera);
-        Button btnGallery = findViewById(R.id.btnGallery);
+        Button btnCamera = findViewById(R.id.buttonOpenCamera);
+        Button btnGallery = findViewById(R.id.buttonOpenGallery);
 
         btnCamera.setOnClickListener(v -> {
-            Log.d(TAG, "Camera button clicked");
             // Week 03: Camera implementation
             Toast.makeText(this, "Camera will be implemented in Week 03", Toast.LENGTH_SHORT).show();
-
-            // Navigate to ResultActivity with dummy data
             navigateToResult("camera");
         });
 
         btnGallery.setOnClickListener(v -> {
-            Log.d(TAG, "Gallery button clicked");
             // Week 03: Gallery implementation
             Toast.makeText(this, "Gallery will be implemented in Week 03", Toast.LENGTH_SHORT).show();
-
-            // Navigate to ResultActivity with dummy data
             navigateToResult("gallery");
         });
     }
 
     private void navigateToResult(String source) {
-        Intent intent = new Intent(ScanActivity.this, ResultActivity.class);
+        Intent intent = new Intent(MainActivity.this, ResultActivity.class);
         intent.putExtra("source", source);
-        intent.putExtra("disease_name", "Sample Disease");
-        intent.putExtra("confidence", 0.85f);
+        intent.putExtra(ResultActivity.EXTRA_DISEASE_NAME, "Sample Disease");
+        intent.putExtra(ResultActivity.EXTRA_CONFIDENCE, 0.85f);
         startActivity(intent);
     }
 }
@@ -1207,10 +1245,10 @@ Before proceeding to Week 03, verify all items:
 
 **Functionality:**
 - [ ] App launches without crashes
-- [ ] MainActivity → ScanActivity navigation works
+- [ ] MainActivity camera/gallery buttons respond (capture flow lives in MainActivity)
 - [ ] MainActivity → HistoryActivity navigation works
 - [ ] MainActivity → SettingsActivity navigation works
-- [ ] ScanActivity → ResultActivity navigation works with data passing
+- [ ] MainActivity → ResultActivity navigation works with data passing
 - [ ] ResultActivity → MainActivity navigation works
 - [ ] Back button works correctly on all activities
 - [ ] Screen rotation preserves activities
@@ -1263,7 +1301,7 @@ Submit to `evidence/week-02/build-task/`:
 1. **Complete Android project** (commit to Git)
 2. **Screenshots folder** with:
    - MainActivity
-   - ScanActivity
+   - MainActivity (capture)
    - ResultActivity
    - HistoryActivity
    - SettingsActivity

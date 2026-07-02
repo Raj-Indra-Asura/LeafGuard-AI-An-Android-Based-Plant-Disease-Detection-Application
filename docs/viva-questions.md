@@ -13,7 +13,7 @@ This document contains potential viva voce questions grouped by topic area with 
 **Answer:**
 Android is an open-source mobile operating system developed by Google, based on the Linux kernel. The main components are:
 
-1. **Activities:** Represent a single screen with UI (e.g., MainActivity, ScanActivity)
+1. **Activities:** Represent a single screen with UI (e.g., MainActivity, ResultActivity)
 2. **Services:** Background operations without UI (e.g., uploading images)
 3. **Broadcast Receivers:** Listen for system-wide broadcasts (e.g., network changes)
 4. **Content Providers:** Manage shared data between applications
@@ -183,7 +183,7 @@ buildFeatures {
 }
 
 // In Activity
-class ScanActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityScanBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -394,7 +394,7 @@ Runtime permissions (introduced in Android 6.0) require user approval at runtime
 **Implementation in LeafGuard AI:**
 
 ```kotlin
-class ScanActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() {
 
     private val CAMERA_PERMISSION_CODE = 100
 
@@ -635,7 +635,7 @@ data class ScanResult(
 
 **2. View:** UI layer (Activity, Fragment)
 ```kotlin
-class ScanActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityScanBinding
     private val viewModel: ScanViewModel by viewModels()
 
@@ -666,7 +666,7 @@ class ScanActivity : AppCompatActivity() {
 
 **3. ViewModel:** Business logic, exposes data via LiveData
 ```kotlin
-class ScanViewModel : ViewModel() {
+class ScanViewModel : ViewModel() {  // general example — LeafGuard AI itself has no ViewModels
     private val repository = ScanRepository()
 
     private val _scanResult = MutableLiveData<ScanResult>()
@@ -983,7 +983,7 @@ class ScanRepository {
 }
 
 // ViewModel
-class ScanViewModel : ViewModel() {
+class ScanViewModel : ViewModel() {  // general example — LeafGuard AI itself has no ViewModels
     private val _scanState = MutableLiveData<NetworkResult<ScanResult>>()
     val scanState: LiveData<NetworkResult<ScanResult>> = _scanState
 
@@ -3301,7 +3301,7 @@ public class ScanRecordTest {
 
 **Mocking the network layer in LeafGuard AI:**
 ```java
-// ScanViewModelTest.java
+// ScanViewModelTest.java — general example; LeafGuard AI's real unit test is PredictionResponseTest (see android-app/app/src/test/)
 @RunWith(MockitoJUnitRunner.class)
 public class ScanViewModelTest {
 
