@@ -96,7 +96,8 @@ LeafGuard-AI/
 │   ├── README.md                     # Getting started with notebooks
 │   ├── week-01/ through week-12/    # Interactive learning materials
 │
-├── android-app/                       # Your Android project goes here
+├── android-app/                       # Your Android project goes here (Java track)
+├── android-app-kotlin/                # 🆕 Parallel Kotlin track (functional twin of android-app/)
 ├── backend-api/                       # Your FastAPI backend goes here
 ├── model/                             # ML models and labels
 ├── sample-images/                     # Test leaf images
@@ -282,6 +283,28 @@ This project satisfies **every single topic** in the CSE 2206 syllabus:
 | Deployment | APK build | 12 |
 
 See `SYLLABUS_MAPPING.md` for complete detailed mapping.
+
+## Dual-Track (Java & Kotlin)
+
+This repository now contains **two functionally identical Android apps**:
+
+| Track | Folder | Language | Role |
+|-------|--------|----------|------|
+| Java (primary) | `android-app/` | Java + XML | CSE 2206 course-aligned track ("Java for Android development") |
+| Kotlin (parallel) | `android-app-kotlin/` | Kotlin + XML | Enrichment twin — same features, screens, database schema, API contract, and model |
+
+The Kotlin track is a faithful *translation*, not a redesign: every `.java` file has a
+`.kt` twin at the mirrored path, XML layouts/resources and assets are structurally
+identical, and the FastAPI backend and ML pipeline are shared by both. Kotlin exercise
+skeletons live in `exercises/android-kotlin/`, and the Android-focused notebooks
+(weeks 02, 03, 05, 07, 09, 10, 11, 12) include added "Parallel Kotlin Track" sections.
+
+- Dual-track guide: `docs/parallel-track/README.md`
+- File-by-file consistency contract: `docs/JAVA_VS_KOTLIN.md`
+- Kotlin app setup: `android-app-kotlin/README.md`
+
+The Java track and all Java-based learning materials are unchanged and remain the
+primary course deliverable.
 
 ## Learning Rules
 

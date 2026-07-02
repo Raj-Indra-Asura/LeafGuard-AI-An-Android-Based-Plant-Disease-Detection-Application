@@ -1,0 +1,10 @@
+Tomato Early Blight
+Tomato Late Blight
+Tomato Healthy
+Potato Early Blight
+Potato Late Blight
+Potato Healthy
+Corn Gray Leaf Spot
+Corn Northern Leaf Blight
+Corn Healthy
+Apple Scab

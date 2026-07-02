@@ -494,4 +494,16 @@ Use this checklist to verify you have covered every syllabus topic:
 
 **This mapping ensures your LeafGuard AI project satisfies 100% of CSE 2206 syllabus requirements.**
 
+---
+
+## Note on the Parallel Kotlin Track
+
+The syllabus topic "Java for Android development" is satisfied by the primary Java
+track in `android-app/` — **Java remains the course-aligned track**, and every mapping
+in the table above refers to the Java implementation. The repository additionally
+contains a parallel enrichment track in Kotlin (`android-app-kotlin/`) that covers the
+same syllabus topics with identical features and behavior, for modern-Android learning
+by comparison. It supplements — and does not replace — any Java evidence above. See
+`docs/parallel-track/README.md` and `docs/JAVA_VS_KOTLIN.md`.
+
 **Next: Read `PROJECT_ARCHITECTURE.md` to understand system design.**
