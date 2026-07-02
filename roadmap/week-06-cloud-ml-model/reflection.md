@@ -1,5 +1,16 @@
 # Week 06 Reflection
 
+## Week 06 project reality check
+
+> Note: The committed `assets/model.tflite` is a placeholder TEXT file, not a real trained model. Until a real model is provided, the backend uses a **mock predictor** (in `model_loader.py`) and the on-device `TFLiteClassifier` uses a **green-channel heuristic fallback**, so the app still runs end-to-end. The real trained model arrives in **Week 09**. Low or odd confidence values are normal this week because predictions are placeholders.
+
+## Related materials
+
+- Exercises: [backend](../../exercises/backend/) and [ML](../../exercises/ml/)
+- Solutions: [Week 06 solutions](../../solutions/week-06/)
+- Notebooks: [Week 06 notebooks](../../notebooks/week-06/)
+- Glossary: [GLOSSARY.md](../../GLOSSARY.md)
+
 After completing Week 06's machine learning model integration, take time to reflect on your experience. Write thoughtful responses to the prompts below. Aim for 2-3 paragraphs per section, totaling 500-800 words overall. This reflection helps solidify your learning and identify areas for deeper study.
 
 ---
@@ -63,7 +74,7 @@ Throughout Week 06, you treated the ML model as a black box, focusing only on in
 **Reflection prompts**:
 - When might you need to understand model internals (architecture, training process) rather than just the API?
 - What problems this week could be solved with black-box integration? What problems would require deeper ML knowledge?
-- If you used a 6-class fallback model instead of 38-class, how did you handle this limitation? How did you communicate it to users?
+- How did you handle and communicate the Week 06 mock/placeholder limitation before the real model arrives in Week 09?
 - When is black-box integration sufficient for production systems? When is it insufficient?
 - How would you decide whether to invest time learning ML deeply versus focusing on integration skills?
 
@@ -89,7 +100,7 @@ All models have limitations: class constraints, lighting sensitivity, background
 **Reflection prompts**:
 - What limitations did you discover in your model through testing? (e.g., confused certain diseases, sensitive to lighting, poor with cluttered backgrounds)
 - How did you handle limitations in your app's design? What UI elements or text communicate these constraints?
-- If you used a 6-class model instead of full dataset, how did you frame this limitation to users?
+- If you used a 10-label placeholder/mock contract instead of full dataset, how did you frame this limitation to users?
 - How do real-world products (Google Photos, Shazam, translation apps) handle limitations while maintaining user trust?
 - What's the difference between "MVP with clear limitations" and "incomplete product"? Where does your implementation fall?
 

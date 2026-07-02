@@ -152,7 +152,7 @@ private Uri createImageFile() {
         File imageFile = new File(storageDir, imageFileName);
 
         return FileProvider.getUriForFile(this,
-            "com.example.leafguard.fileprovider",
+            BuildConfig.APPLICATION_ID + ".fileprovider",
             imageFile);
     } catch (Exception e) {
         Log.e(TAG, "createImageFile: Error creating file", e);
@@ -1020,7 +1020,8 @@ private MultipartBody.Part createImagePart(@NonNull Bitmap bitmap) throws IOExce
             MediaType.parse("image/jpeg")
     );
 
-    return MultipartBody.Part.createFormData("file", "leaf_upload.jpg", requestBody);
+    // NOTE: The part name MUST be "image" to match the FastAPI endpoint parameter name
+    return MultipartBody.Part.createFormData("image", "leaf_upload.jpg", requestBody);
 }
 ```
 

@@ -1,7 +1,9 @@
 # Week 09: Validation Checklist - TensorFlow Lite Offline AI
 
 Use this checklist after finishing the Week 09 build task.
-Mark each item only after you have real evidence: a screenshot, log entry, code snippet, or successful test.
+For each item, answer **Yes** or **No** — tick it **Yes** only when you have real evidence: a screenshot, log entry, code snippet, or successful test. A **No** shows you what to fix next.
+
+**Accuracy note:** the real `TFLiteClassifier` uses **224×224 RGB, floats 0..1, argmax** over 10 outputs, and falls back to a **green-channel heuristic** when `assets/model.tflite` is the committed text placeholder. "Missing/invalid model handled gracefully" means this fallback runs without crashing.
 
 **Suggested pass target:** 120 / 140 or higher
 
@@ -9,7 +11,7 @@ Mark each item only after you have real evidence: a screenshot, log entry, code 
 
 ## A. Model Sourcing Verification (15 marks)
 
-| Check | Item | Pass/Fail | Evidence |
+| Check | Item | Yes / No | Evidence |
 |------|------|-----------|----------|
 | [ ] | Source of the model is documented (TensorFlow Hub / Colab / Model Maker / other). | _____ | ______________________________ |
 | [ ] | `model.tflite` was verified outside Android before integration. | _____ | ______________________________ |
@@ -26,7 +28,7 @@ _______________________________________________________________
 
 ## B. Android Setup and Assets (15 marks)
 
-| Check | Item | Pass/Fail | Evidence |
+| Check | Item | Yes / No | Evidence |
 |------|------|-----------|----------|
 | [ ] | TensorFlow Lite dependency added to Gradle. | _____ | ______________________________ |
 | [ ] | GPU dependency added if acceleration testing is planned. | _____ | ______________________________ |
@@ -43,7 +45,7 @@ _______________________________________________________________
 
 ## C. Interpreter Initialization and Safety (15 marks)
 
-| Check | Item | Pass/Fail | Evidence |
+| Check | Item | Yes / No | Evidence |
 |------|------|-----------|----------|
 | [ ] | Interpreter initializes without crash on a supported device. | _____ | ______________________________ |
 | [ ] | Missing model file is handled gracefully. | _____ | ______________________________ |
@@ -60,7 +62,7 @@ _______________________________________________________________
 
 ## D. Preprocessing Correctness (20 marks)
 
-| Check | Item | Pass/Fail | Evidence |
+| Check | Item | Yes / No | Evidence |
 |------|------|-----------|----------|
 | [ ] | Image is resized to the exact model input size. | _____ | ______________________________ |
 | [ ] | Color channel order matches training. | _____ | ______________________________ |
@@ -77,7 +79,7 @@ _______________________________________________________________
 
 ## E. Inference and Output Handling (20 marks)
 
-| Check | Item | Pass/Fail | Evidence |
+| Check | Item | Yes / No | Evidence |
 |------|------|-----------|----------|
 | [ ] | `Interpreter.run()` executes successfully. | _____ | ______________________________ |
 | [ ] | Output tensor size matches label count. | _____ | ______________________________ |
@@ -94,7 +96,7 @@ _______________________________________________________________
 
 ## F. Low-Confidence Handling (10 marks)
 
-| Check | Item | Pass/Fail | Evidence |
+| Check | Item | Yes / No | Evidence |
 |------|------|-----------|----------|
 | [ ] | Confidence threshold value is defined in code or constants. | _____ | ______________________________ |
 | [ ] | Low-confidence results show `Uncertain` or similar message. | _____ | ______________________________ |
@@ -111,7 +113,7 @@ _______________________________________________________________
 
 ## G. Threading and Responsiveness (10 marks)
 
-| Check | Item | Pass/Fail | Evidence |
+| Check | Item | Yes / No | Evidence |
 |------|------|-----------|----------|
 | [ ] | Inference runs off the main thread. | _____ | ______________________________ |
 | [ ] | UI remains responsive during prediction. | _____ | ______________________________ |
@@ -128,7 +130,7 @@ _______________________________________________________________
 
 ## H. GPU Delegate / NNAPI Benchmarking (10 marks)
 
-| Check | Item | Pass/Fail | Evidence |
+| Check | Item | Yes / No | Evidence |
 |------|------|-----------|----------|
 | [ ] | GPU delegate path was attempted or explicitly documented as unavailable. | _____ | ______________________________ |
 | [ ] | CPU fallback works if GPU is unavailable. | _____ | ______________________________ |
@@ -145,7 +147,7 @@ _______________________________________________________________
 
 ## I. Offline Validation and Comparison (15 marks)
 
-| Check | Item | Pass/Fail | Evidence |
+| Check | Item | Yes / No | Evidence |
 |------|------|-----------|----------|
 | [ ] | Offline mode works in airplane mode. | _____ | ______________________________ |
 | [ ] | At least 5 test images were evaluated. | _____ | ______________________________ |
@@ -162,7 +164,7 @@ _______________________________________________________________
 
 ## J. Documentation and Evidence (10 marks)
 
-| Check | Item | Pass/Fail | Evidence |
+| Check | Item | Yes / No | Evidence |
 |------|------|-----------|----------|
 | [ ] | Progress log updated with Week 09 work. | _____ | ______________________________ |
 | [ ] | Screenshots saved showing offline prediction working. | _____ | ______________________________ |

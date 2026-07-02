@@ -1,50 +1,36 @@
-# Week 03 Evidence - Backend Development & ML Model
+# Week 03 Evidence — Camera & Gallery capture (inside MainActivity)
 
-## Week Focus
-- Setting up FastAPI backend
-- Training/fine-tuning ML model
-- Converting model to TensorFlow Lite
-- Testing model accuracy
+> **Why collect evidence?** Screenshots and notes prove your work for the CSE 2206
+> submission and help you debug later. Save everything in this folder.
+>
+> This week's tasks: [`roadmap/week-03-camera-gallery/README.md`](../../../roadmap/week-03-camera-gallery/README.md)
+> (Kotlin is the primary track — take your screenshots in `android-app-kotlin/` unless
+> a step says otherwise.)
 
-## Evidence to Collect
+## Screenshots to take this week (exactly these, and why)
 
-### Backend Code
-- [ ] **backend-code-snapshot.zip** - Complete backend code as of this week
-- [ ] **requirements.txt** - Python dependencies
-- [ ] **api-postman-collection.json** - Postman collection for API testing
-- [ ] **api-test-results.md** - Results of API endpoint testing
+- [ ] **`camera-permission-dialog.png`** — The runtime camera permission dialog — proves permission handling works.
+- [ ] **`photo-in-preview.png`** — A leaf photo showing in the MainActivity preview after camera capture or gallery pick.
+- [ ] **`gallery-picker.png`** — The system gallery picker open from the app.
 
-### ML Model
-- [ ] **model-training-notebook.ipynb** - Jupyter notebook with training code
-- [ ] **training-logs.txt** - Training logs showing epochs, loss, accuracy
-- [ ] **model-architecture.png** - Visualization of model layers
-- [ ] **confusion-matrix.png** - Model performance confusion matrix
-- [ ] **accuracy-graphs.png** - Training/validation accuracy graphs
-- [ ] **model-comparison.xlsx** - Comparison of different model architectures tried
+## Also collect
 
-### Screenshots
-- [ ] **vscode-backend-code.png** - Backend code in editor
-- [ ] **postman-api-test.png** - API testing in Postman
-- [ ] **google-colab-training.png** - Model training in Colab
-- [ ] **tensorboard-metrics.png** - TensorBoard visualization
+- [ ] Short notes on any error you hit and how you fixed it (`notes.md`)
+- [ ] Your git commit list for the week (`git log --oneline` output pasted into `commits.txt`)
+- [ ] The week's completed `validation-checklist.md` (tick the yes/no boxes)
 
-### Documentation
-- [ ] **model-training-process.md** - Detailed explanation of training process
-- [ ] **model-accuracy-report.md** - Final model accuracy and metrics
-- [ ] **backend-api-documentation.md** - API endpoints documentation
-- [ ] **deployment-notes.md** - Notes on deploying backend to Heroku/AWS
+## Folder layout & naming
 
-### Dataset
-- [ ] **dataset-info.md** - Information about dataset used (PlantVillage)
-- [ ] **sample-images/** - Sample images from each disease class
-- [ ] **data-augmentation-examples.png** - Examples of augmented images
+```
+week-03/
+├── README.md      (this file)
+├── screenshots/   (the images above)
+├── notes.md
+└── commits.txt
+```
 
-## Key Deliverables
-1. ✅ FastAPI backend running locally
-2. ✅ ML model trained with >85% accuracy
-3. ✅ Model converted to TFLite format
-4. ✅ API endpoints tested
-5. ✅ Backend deployed to cloud
+Name files `YYYYMMDD_week03_description.png` (example: `20260702_week03_camera-permission-dialog.png`).
 
-## Next Week
-Week 04: Android project setup and UI implementation
+## Next week
+
+Week 04 builds the FastAPI backend (`backend-api/main.py`) that will receive these photos.

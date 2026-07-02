@@ -1,5 +1,28 @@
 # Week 07: Room Database and Scan History
 
+## What you'll learn & why
+
+This week you teach the app to *remember* things. Right now every scan disappears when the screen closes; by the end of the week each result is saved on the phone so the user can scroll back through past scans even with no internet. You will use **Room**, Google's friendly wrapper around Android's built-in **SQLite** (Structured Query Language Lite) database, so you write a little Kotlin instead of raw SQL. The real classes you will build match the ones already in the app: `ScanRecord` (one saved scan), `ScanDao` (the questions you ask the database), and `AppDatabase` (the database itself, saved to the file `leafguard.db`). This matters because "save my data and show it later" is one of the most common jobs in every mobile app.
+
+## New words this week
+
+- **Database** — an organized store of saved data that stays on the phone even after the app closes. (See [Glossary](../../GLOSSARY.md).)
+- **Table** — one named grid inside the database; our table is called `scan_history`, where each row is one scan and each column is one detail (like `disease_name` or `confidence`).
+- **Entity** — a small Kotlin class that describes one row of a table; our entity is `ScanRecord`, and Room turns it into the `scan_history` table automatically.
+- **DAO (Data Access Object)** — an interface listing the exact database actions you allow (save, read all, delete); our DAO is `ScanDao`. Full definitions live in the [Glossary](../../GLOSSARY.md).
+
+> **Kotlin first (how we do slow work safely):** A database read/write is *slow*, so we never do it on the main screen thread or the app freezes. In Kotlin our `ScanDao` methods are `suspend fun`, and we call them from `lifecycleScope.launch { ... }`. A **coroutine** (what `launch { }` starts) simply does slow work in the background without freezing the screen. Kotlin also needs **kapt** (Kotlin Annotation Processing Tool): kapt lets Kotlin generate the database code Room needs at build time — without it the app fails to compile/crashes. The Java track uses `annotationProcessor` for the same job (labeled *Java (secondary)* wherever both are shown).
+
+## Where to practice this week
+
+- Database drills (SQL + CRUD): [`../../exercises/database/`](../../exercises/database/)
+- Kotlin Android practice (primary): [`../../exercises/android-kotlin/`](../../exercises/android-kotlin/)
+- Java Android practice (secondary): [`../../exercises/android/`](../../exercises/android/)
+- Worked answers: [`../../solutions/week-07/`](../../solutions/week-07/)
+- Notebook walkthrough: [`../../notebooks/week-07/`](../../notebooks/week-07/)
+
+---
+
 ## Weekly Objective
 
 By the end of Week 07, you will:
@@ -8,18 +31,18 @@ By the end of Week 07, you will:
 2. **Create Entity classes** representing scan history records with proper annotations
 3. **Implement DAO (Data Access Object) interfaces** defining database queries using SQL and Room annotations
 4. **Build RoomDatabase class** with proper initialization and singleton pattern
-5. **Create HistoryListActivity** displaying all saved scan records in a RecyclerView
-6. **Implement ScanHistoryAdapter** for efficient list rendering with ViewHolder pattern
+5. **Create HistoryActivity** displaying all saved scan records in a RecyclerView
+6. **Implement HistoryAdapter** for efficient list rendering with ViewHolder pattern
 7. **Build HistoryDetailActivity** showing complete information for a selected scan
 8. **Add delete functionality** with confirmation dialog and database cascading
 9. **Integrate history saving** after each successful disease prediction
 10. **Test complete CRUD operations** (Create, Read, Update, Delete) on scan history
 
 **Measurable Outcomes:**
-- ScanHistory entity with fields: id, disease, confidence, symptoms, timestamp, imagePath
-- ScanHistoryDao with insert, getAll, getById, delete queries
-- AppDatabase singleton managing Room database instance
-- HistoryListActivity showing scrollable list of past scans
+- `ScanRecord` entity (table `scan_history`) with columns: `id`, `disease_name`, `confidence`, `symptoms`, `treatment`, `prevention`, `image_uri`, `latitude`, `longitude`, `timestamp`
+- `ScanDao` with `insertScan`, `getAllScans`, `getScanById`, `getRecentScans`, `deleteScan`, `deleteScanById` (Kotlin `suspend fun`) queries
+- `AppDatabase` singleton (database file `leafguard.db`, version 1) managing the Room database instance
+- HistoryActivity showing scrollable list of past scans
 - Clicking a scan opens HistoryDetailActivity with full details
 - Delete button removes scan from database and updates UI
 - After prediction, scan automatically saved to history
@@ -202,13 +225,13 @@ ResultActivity                         Room Database
      │  After successful prediction         │
      │  ┌─────────────────────────┐        │
      └─→│ Save scan to history    │───────>│ AppDatabase
-        └─────────────────────────┘        │   └─ ScanHistoryDao
+        └─────────────────────────┘        │   └─ ScanDao
                                            │       └─ INSERT
 MainActivity                               │
      │                                     │
      │  User taps "View History" button   │
      │  ┌─────────────────────────┐       │
-     └─→│ HistoryListActivity     │<──────┤ SELECT * FROM scans
+     └─→│ HistoryActivity     │<──────┤ SELECT * FROM scans
         │                         │       │
         │ [RecyclerView]          │       │
         │   - Scan 1              │       │
@@ -245,7 +268,7 @@ MainActivity                               │
     └───────────┬──────────────┘
                 │
     ┌───────────▼──────────────┐
-    │  ScanHistoryDao.interface│
+    │  ScanDao.interface│
     │   (Data Access Object)   │
     │  - insert()              │
     │  - getAll()              │
@@ -254,7 +277,7 @@ MainActivity                               │
     └───────────┬──────────────┘
                 │
     ┌───────────▼──────────────┐
-    │   ScanHistory.class      │
+    │   ScanRecord.class      │
     │      (Entity)            │
     │  Fields:                 │
     │  - id (Primary Key)      │
@@ -273,23 +296,63 @@ MainActivity                               │
 
 ### Key Room Concepts
 
+> The real app's Room classes live in `android-app-kotlin/app/src/main/java/com/leafguard/database/`. Kotlin is the primary track, so each concept shows Kotlin first, then the matching **Java (secondary)** version.
+
 #### 1. Entity (Database Table)
 
-```java
+An **entity** is a small class that describes one row. Room reads the annotations and creates the `scan_history` table for you. The real `ScanRecord` keeps ten columns; the skeleton below shows them with `// TODO` spots so you can see the shape.
+
+```kotlin
+// Kotlin (primary) — ScanRecord.kt
 @Entity(tableName = "scan_history")
-public class ScanHistory {
+data class ScanRecord(
+    @PrimaryKey(autoGenerate = true) var id: Long = 0,
+    @ColumnInfo(name = "disease_name") var diseaseName: String? = null,
+    @ColumnInfo(name = "confidence") var confidence: Float = 0f,
+    @ColumnInfo(name = "symptoms") var symptoms: String? = null,
+    @ColumnInfo(name = "treatment") var treatment: String? = null,
+    @ColumnInfo(name = "prevention") var prevention: String? = null,
+    @ColumnInfo(name = "image_uri") var imageUri: String? = null,
+    @ColumnInfo(name = "latitude") var latitude: Double = 0.0,
+    @ColumnInfo(name = "longitude") var longitude: Double = 0.0,
+    @ColumnInfo(name = "timestamp") var timestamp: Long = 0
+    // TODO: keep column names EXACTLY as above so both app tracks share one database
+)
+```
+
+```java
+// Java (secondary)
+@Entity(tableName = "scan_history")
+public class ScanRecord {
     @PrimaryKey(autoGenerate = true)
-    private int id;
+    private long id;
 
     @ColumnInfo(name = "disease_name")
-    private String disease;
+    private String diseaseName;
 
-    private double confidence;
+    @ColumnInfo(name = "confidence")
+    private float confidence;
+
+    @ColumnInfo(name = "symptoms")
     private String symptoms;
-    private long timestamp; // milliseconds since epoch
 
-    @ColumnInfo(name = "image_path")
-    private String imagePath;
+    @ColumnInfo(name = "treatment")
+    private String treatment;
+
+    @ColumnInfo(name = "prevention")
+    private String prevention;
+
+    @ColumnInfo(name = "image_uri")
+    private String imageUri;
+
+    @ColumnInfo(name = "latitude")
+    private double latitude;
+
+    @ColumnInfo(name = "longitude")
+    private double longitude;
+
+    @ColumnInfo(name = "timestamp")
+    private long timestamp;
 
     // Constructor, getters, setters
 }
@@ -303,20 +366,47 @@ public class ScanHistory {
 
 #### 2. DAO (Data Access Object)
 
-```java
+The **DAO** lists the exact database actions you allow. In Kotlin every method is a `suspend fun`, so callers run it inside a coroutine (`lifecycleScope.launch { ... }`) and the screen never freezes.
+
+```kotlin
+// Kotlin (primary) — ScanDao.kt
 @Dao
-public interface ScanHistoryDao {
-    @Insert
-    void insert(ScanHistory scan);
+interface ScanDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertScan(scanRecord: ScanRecord): Long
 
     @Query("SELECT * FROM scan_history ORDER BY timestamp DESC")
-    List<ScanHistory> getAll();
+    suspend fun getAllScans(): List<ScanRecord>
 
-    @Query("SELECT * FROM scan_history WHERE id = :scanId")
-    ScanHistory getById(int scanId);
+    @Query("SELECT * FROM scan_history WHERE id = :id LIMIT 1")
+    suspend fun getScanById(id: Long): ScanRecord?
+
+    @Query("SELECT * FROM scan_history ORDER BY timestamp DESC LIMIT :limit")
+    suspend fun getRecentScans(limit: Int): List<ScanRecord>
 
     @Delete
-    void delete(ScanHistory scan);
+    suspend fun deleteScan(scanRecord: ScanRecord)
+
+    @Query("DELETE FROM scan_history WHERE id = :id")
+    suspend fun deleteScanById(id: Long)
+}
+```
+
+```java
+// Java (secondary) — runs off the main thread with an ExecutorService instead of coroutines
+@Dao
+public interface ScanDao {
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    long insertScan(ScanRecord scan);
+
+    @Query("SELECT * FROM scan_history ORDER BY timestamp DESC")
+    List<ScanRecord> getAllScans();
+
+    @Query("SELECT * FROM scan_history WHERE id = :id LIMIT 1")
+    ScanRecord getScanById(long id);
+
+    @Delete
+    void deleteScan(ScanRecord scan);
 }
 ```
 
@@ -324,23 +414,47 @@ public interface ScanHistoryDao {
 - `@Dao`: Marks interface for database operations
 - `@Insert`, `@Delete`: Built-in operations
 - `@Query`: Custom SQL queries
-- Room generates implementation automatically
+- Room generates implementation automatically (Kotlin needs **kapt** to generate it; without kapt the build fails)
 
 #### 3. RoomDatabase
 
+The `AppDatabase` is created once (a singleton) and saved to the file `leafguard.db`.
+
+```kotlin
+// Kotlin (primary) — AppDatabase.kt
+@Database(entities = [ScanRecord::class], version = 1, exportSchema = false)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun scanDao(): ScanDao
+
+    companion object {
+        private const val DATABASE_NAME = "leafguard.db"
+
+        @Volatile private var instance: AppDatabase? = null
+
+        fun getInstance(context: Context): AppDatabase =
+            instance ?: synchronized(this) {
+                instance ?: Room.databaseBuilder(
+                    context.applicationContext, AppDatabase::class.java, DATABASE_NAME
+                ).fallbackToDestructiveMigration().build().also { instance = it }
+            }
+    }
+}
+```
+
 ```java
-@Database(entities = {ScanHistory.class}, version = 1)
+// Java (secondary)
+@Database(entities = {ScanRecord.class}, version = 1)
 public abstract class AppDatabase extends RoomDatabase {
     private static AppDatabase instance;
 
-    public abstract ScanHistoryDao scanHistoryDao();
+    public abstract ScanDao scanDao();
 
     public static synchronized AppDatabase getInstance(Context context) {
         if (instance == null) {
             instance = Room.databaseBuilder(
                 context.getApplicationContext(),
                 AppDatabase.class,
-                "leafguard_database"
+                "leafguard.db"
             ).build();
         }
         return instance;
@@ -363,8 +477,8 @@ public abstract class AppDatabase extends RoomDatabase {
 
 **Afternoon (Implementation - 1.5 hours):**
 - Add Room dependencies to build.gradle
-- Create ScanHistory entity class
-- Create ScanHistoryDao interface
+- Create ScanRecord entity class
+- Create ScanDao interface
 - Create AppDatabase class
 
 **Evening (Testing - 30 minutes):**
@@ -382,10 +496,10 @@ public abstract class AppDatabase extends RoomDatabase {
 - Learn about adapters
 
 **Afternoon (Implementation - 1.5 hours):**
-- Create HistoryListActivity layout
+- Create HistoryActivity layout
 - Add RecyclerView to layout
 - Create list item layout (item_scan_history.xml)
-- Create ScanHistoryAdapter class
+- Create HistoryAdapter class
 - Create ViewHolder inner class
 
 **Evening (Testing - 30 minutes):**
@@ -403,7 +517,7 @@ public abstract class AppDatabase extends RoomDatabase {
 - Insert 3-5 test records
 
 **Afternoon (Implementation - 1.5 hours):**
-- Query all scans from database in HistoryListActivity
+- Query all scans from database in HistoryActivity
 - Bind data to RecyclerView adapter
 - Display disease name, confidence, timestamp
 - Handle empty state (no scans yet)
@@ -442,7 +556,7 @@ public abstract class AppDatabase extends RoomDatabase {
 - Add Delete button to HistoryDetailActivity layout
 - Implement delete confirmation AlertDialog
 - Execute delete operation on confirmation
-- Return to HistoryListActivity after delete
+- Return to HistoryActivity after delete
 - Refresh list after delete
 
 **Evening (Testing - 30 minutes):**
@@ -461,7 +575,7 @@ public abstract class AppDatabase extends RoomDatabase {
 
 **Afternoon (Implementation - 1 hour):**
 - Add save logic after successful prediction in ResultActivity
-- Create ScanHistory object from prediction data
+- Create ScanRecord object from prediction data
 - Insert into database on background thread
 - Add Toast confirmation "Scan saved to history"
 
@@ -504,14 +618,14 @@ public abstract class AppDatabase extends RoomDatabase {
 // ✅ Correct - background thread
 ExecutorService executor = Executors.newSingleThreadExecutor();
 executor.execute(() -> {
-    database.scanHistoryDao().insert(scan);
+    database.scanDao().insert(scan);
     runOnUiThread(() -> {
         Toast.makeText(this, "Scan saved", Toast.LENGTH_SHORT).show();
     });
 });
 
 // ❌ Wrong - main thread (will crash)
-database.scanHistoryDao().insert(scan);
+database.scanDao().insert(scan);
 ```
 
 ### 2. ❌ Forgetting Room Dependencies
@@ -553,13 +667,13 @@ public static synchronized AppDatabase getInstance(Context context) {
 
 ```java
 @Entity
-public class ScanHistory {
+public class ScanRecord {
     @PrimaryKey(autoGenerate = true)
     private int id;
     private String disease;
 
     // Required constructor
-    public ScanHistory(String disease) {
+    public ScanRecord(String disease) {
         this.disease = disease;
     }
 
@@ -617,7 +731,7 @@ if (scanList.isEmpty()) {
 ### What to Show Your Teacher
 
 1. **Open app and tap "View History" button**
-2. **Show HistoryListActivity** with 5-10 past scans
+2. **Show HistoryActivity** with 5-10 past scans
 3. **Point out:**
    - Disease names displayed
    - Confidence percentages shown
@@ -640,7 +754,7 @@ if (scanList.isEmpty()) {
    - Less boilerplate than raw SQLite
 
 2. **"The database has three components: Entity, DAO, Database"**
-   - Entity = table structure (ScanHistory class)
+   - Entity = table structure (ScanRecord class)
    - DAO = query interface (insert, select, delete methods)
    - Database = connection manager (singleton pattern)
 
@@ -680,11 +794,11 @@ Before moving to Week 08, you MUST demonstrate:
 ### Technical Validation
 
 - [ ] Room dependencies added to build.gradle
-- [ ] ScanHistory entity created with all fields
-- [ ] ScanHistoryDao interface with CRUD methods
+- [ ] ScanRecord entity created with all fields
+- [ ] ScanDao interface with CRUD methods
 - [ ] AppDatabase class with singleton pattern
-- [ ] HistoryListActivity displays scans in RecyclerView
-- [ ] ScanHistoryAdapter properly binds data
+- [ ] HistoryActivity displays scans in RecyclerView
+- [ ] HistoryAdapter properly binds data
 - [ ] Clicking scan opens HistoryDetailActivity
 - [ ] Detail view shows all scan information
 - [ ] Delete button with confirmation dialog works

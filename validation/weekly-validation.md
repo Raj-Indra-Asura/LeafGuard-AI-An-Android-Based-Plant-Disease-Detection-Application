@@ -141,12 +141,12 @@ This document provides a comprehensive validation checklist spanning all 12 week
 
 ### /predict Endpoint
 - [ ] Created POST /predict endpoint
-- [ ] Accepts multipart/form-data file upload
+- [ ] Accepts a multipart/form-data upload with the part named `image` (not `file`)
 - [ ] Validates uploaded file is an image
 - [ ] Returns JSON response with dummy prediction data
 
 ### Dummy JSON Response
-- [ ] Response includes: disease_name, confidence, symptoms, treatment, prevention
+- [ ] Response includes JSON fields: `disease` (not `disease_name`), confidence, symptoms, treatment, prevention
 - [ ] Response format matches what Android app expects
 - [ ] Tested endpoint using Postman or curl
 - [ ] Confirmed endpoint works from browser or API testing tool
@@ -183,7 +183,7 @@ This document provides a comprehensive validation checklist spanning all 12 week
 ### JSON Parsing
 - [ ] Created data class/POJO for prediction response
 - [ ] Used Gson to parse JSON response automatically
-- [ ] Extracted disease_name, confidence, symptoms, treatment, prevention
+- [ ] Extracted `disease` (JSON field), confidence, symptoms, treatment, prevention
 - [ ] Displayed all fields in ResultActivity UI
 
 ### Loading State
@@ -323,7 +323,7 @@ This document provides a comprehensive validation checklist spanning all 12 week
 ## Week 08: XML Disease Library
 
 ### XML File Design
-- [ ] Created disease_library.xml in app/src/main/assets/
+- [ ] Created diseases.xml in app/src/main/assets/
 - [ ] XML structure has root element and disease elements
 - [ ] Each disease element has: name, symptoms, treatment, prevention
 - [ ] XML is well-formed (validated using XML validator)
@@ -592,7 +592,7 @@ This document provides a comprehensive validation checklist spanning all 12 week
 - [ ] FastAPI backend source code pushed to GitHub
 - [ ] Model file or model source documented
 - [ ] TFLite model and labels.txt in repository
-- [ ] disease_library.xml in repository
+- [ ] diseases.xml in repository
 - [ ] Sample test images in repository
 - [ ] APK file included (in releases or evidence folder)
 - [ ] README.md complete

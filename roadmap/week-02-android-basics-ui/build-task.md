@@ -163,12 +163,13 @@ dependencies {
     <string name="view_history">View Scan History</string>
     <string name="settings">Settings</string>
 
-    <!-- ScanActivity -->
+    <!-- MainActivity (Capture functionality is here) -->
     <string name="select_image_source">Select Image Source</string>
     <string name="camera">Take Photo with Camera</string>
     <string name="gallery">Choose from Gallery</string>
     <string name="image_preview">Image Preview</string>
     <string name="analyze">Analyze Leaf</string>
+    <string name="disease_library">Disease Library</string>
 
     <!-- ResultActivity -->
     <string name="scan_result">Scan Result</string>
@@ -272,18 +273,19 @@ dependencies {
 
 **Time:** 30 minutes
 
-Create 4 new activities:
+Create 5 new activities (in addition to MainActivity):
 
 1. Right-click `activities` package → New → Activity → Empty Activity
 2. Create:
-   - `ScanActivity`
    - `ResultActivity`
    - `HistoryActivity`
+   - `HistoryDetailActivity`
+   - `DiseaseLibraryActivity`
    - `SettingsActivity`
 3. Uncheck "Generate Layout File" (we'll create layouts manually)
 4. Uncheck "Launcher Activity"
 
-**Verify AndroidManifest.xml includes all activities:**
+**Verify AndroidManifest.xml includes all 6 activities:**
 
 ```xml
 <activity
@@ -296,11 +298,6 @@ Create 4 new activities:
 </activity>
 
 <activity
-    android:name=".activities.ScanActivity"
-    android:exported="false"
-    android:label="@string/select_image_source" />
-
-<activity
     android:name=".activities.ResultActivity"
     android:exported="false"
     android:label="@string/scan_result" />
@@ -311,17 +308,27 @@ Create 4 new activities:
     android:label="@string/scan_history" />
 
 <activity
+    android:name=".activities.HistoryDetailActivity"
+    android:exported="false"
+    android:label="@string/scan_detail" />
+
+<activity
+    android:name=".activities.DiseaseLibraryActivity"
+    android:exported="false"
+    android:label="@string/disease_library" />
+
+<activity
     android:name=".activities.SettingsActivity"
     android:exported="false"
     android:label="@string/app_settings" />
 ```
 
 **Verification:**
-- [ ] All 5 activity classes created
+- [ ] All 6 activity classes created
 - [ ] All activities in AndroidManifest.xml
 - [ ] Project builds successfully
 
-**Commit:** `Week 02: Create ScanActivity, ResultActivity, HistoryActivity, SettingsActivity`
+**Commit:** `Week 02: Create ResultActivity, HistoryActivity, HistoryDetailActivity, DiseaseLibraryActivity, SettingsActivity`
 
 ### Step 6: Design MainActivity Layout
 
@@ -428,10 +435,91 @@ Create `res/layout/activity_main.xml`:
 
 **Time:** 30 minutes
 
-Update `MainActivity.java`:
+**MainActivity.kt (Kotlin — primary):**
+
+```kotlin
+package com.leafguard.activities
+
+import android.content.Intent
+import android.os.Bundle
+import android.util.Log
+import android.widget.Button
+import androidx.appcompat.app.AppCompatActivity
+import com.leafguard.R
+
+class MainActivity : AppCompatActivity() {
+
+    companion object {
+        private const val TAG = "MainActivity"
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Log.d(TAG, "onCreate: Initializing MainActivity")
+        setContentView(R.layout.activity_main)
+
+        initializeViews()
+    }
+
+    private fun initializeViews() {
+        val btnCapture: Button = findViewById(R.id.btnCapture)
+        val btnHistory: Button = findViewById(R.id.btnHistory)
+        val btnLibrary: Button = findViewById(R.id.btnLibrary)
+        val btnSettings: Button = findViewById(R.id.btnSettings)
+
+        btnCapture.setOnClickListener {
+            Log.d(TAG, "Capture button clicked — opening camera/gallery")
+            // TODO: Week 03+ will add camera intent and call ResultActivity with image
+        }
+
+        btnHistory.setOnClickListener {
+            Log.d(TAG, "History button clicked")
+            startActivity(Intent(this, HistoryActivity::class.java))
+        }
+
+        btnLibrary.setOnClickListener {
+            Log.d(TAG, "Library button clicked")
+            startActivity(Intent(this, DiseaseLibraryActivity::class.java))
+        }
+
+        btnSettings.setOnClickListener {
+            Log.d(TAG, "Settings button clicked")
+            startActivity(Intent(this, SettingsActivity::class.java))
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        Log.i(TAG, "onStart: MainActivity is visible")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        Log.i(TAG, "onResume: MainActivity in foreground")
+    }
+
+    override fun onPause() {
+        super.onPause()
+        Log.i(TAG, "onPause: MainActivity losing focus")
+    }
+
+    override fun onStop() {
+        super.onStop()
+        Log.i(TAG, "onStop: MainActivity not visible")
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        Log.i(TAG, "onDestroy: MainActivity being destroyed")
+    }
+}
+```
+
+<details>
+<summary>Java (secondary)</summary>
 
 ```java
-package com.example.leafguard.activities;
+package com.leafguard.activities;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
@@ -439,7 +527,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 
-import com.example.leafguard.R;
+import com.leafguard.R;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -455,19 +543,25 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeViews() {
-        Button btnScan = findViewById(R.id.btnScan);
+        Button btnCapture = findViewById(R.id.btnCapture);
         Button btnHistory = findViewById(R.id.btnHistory);
+        Button btnLibrary = findViewById(R.id.btnLibrary);
         Button btnSettings = findViewById(R.id.btnSettings);
 
-        btnScan.setOnClickListener(v -> {
-            Log.d(TAG, "Scan button clicked");
-            Intent intent = new Intent(MainActivity.this, ScanActivity.class);
-            startActivity(intent);
+        btnCapture.setOnClickListener(v -> {
+            Log.d(TAG, "Capture button clicked — opening camera/gallery");
+            // TODO: Week 03+ will add camera intent and call ResultActivity with image
         });
 
         btnHistory.setOnClickListener(v -> {
             Log.d(TAG, "History button clicked");
             Intent intent = new Intent(MainActivity.this, HistoryActivity.class);
+            startActivity(intent);
+        });
+
+        btnLibrary.setOnClickListener(v -> {
+            Log.d(TAG, "Library button clicked");
+            Intent intent = new Intent(MainActivity.this, DiseaseLibraryActivity.class);
             startActivity(intent);
         });
 
@@ -509,6 +603,7 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 ```
+</details>
 
 **Verification:**
 - [ ] No compilation errors
@@ -525,16 +620,18 @@ Create layouts for each activity (detailed layouts provided in separate section 
 **For each activity:**
 1. Create layout XML file
 2. Design using ConstraintLayout
-3. Implement activity Java code
+3. Implement activity Kotlin code (or Java for secondary)
 4. Add navigation buttons
 5. Test navigation flow
 
 **Key Implementation Tips:**
 
-- **ScanActivity:** Two buttons (Camera, Gallery), ImageView placeholder
-- **ResultActivity:** ImageView, Disease name TextView, Confidence TextView, Save/Scan Another buttons
+- **MainActivity:** Capture buttons (Camera, Gallery), navigation buttons to other activities
+- **ResultActivity:** ImageView, Disease name TextView, Confidence TextView, Share/Save buttons
 - **HistoryActivity:** TextView placeholder (RecyclerView in Week 07)
-- **SettingsActivity:** Switch for offline mode, Clear cache button
+- **HistoryDetailActivity:** Full details of a past scan
+- **DiseaseLibraryActivity:** List of diseases loaded from `assets/diseases.xml`
+- **SettingsActivity:** Backend URL field, Confidence threshold slider
 
 **Commit after each activity:** `Week 02: Design and implement [ActivityName]`
 
@@ -543,8 +640,9 @@ Create layouts for each activity (detailed layouts provided in separate section 
 **Time:** 30 minutes
 
 Ensure navigation works:
-- MainActivity → ScanActivity → ResultActivity
-- MainActivity → HistoryActivity
+- MainActivity → (Capture button) → ResultActivity (after image analysis)
+- MainActivity → HistoryActivity → HistoryDetailActivity
+- MainActivity → DiseaseLibraryActivity
 - MainActivity → SettingsActivity
 - ResultActivity → MainActivity (with FLAG_ACTIVITY_CLEAR_TOP)
 - All activities support Back button
@@ -583,7 +681,68 @@ Test scenarios:
 
 ## Detailed Layouts (Copy-Paste Ready)
 
-### ScanActivity Layout (activity_scan.xml)
+> Note: MainActivity handles image capture directly. The layouts below demonstrate ConstraintLayout for all six activities.
+
+### MainActivity Layout (activity_main.xml)
+
+This layout includes capture buttons (Camera/Gallery) plus navigation to other activities. See Step 6 for the full layout.
+
+### HistoryDetailActivity Layout (activity_history_detail.xml)
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/padding_medium">
+
+        <ImageView
+            android:id="@+id/ivLeafImage"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/image_preview_height"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/scanned_leaf_image"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/tvDiseaseName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_size_headline"
+            android:textStyle="bold"
+            app:layout_constraintTop_toBottomOf="@id/ivLeafImage"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="@dimen/margin_large" />
+
+        <TextView
+            android:id="@+id/tvScanDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/tvDiseaseName"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="@dimen/margin_small" />
+
+        <TextView
+            android:id="@+id/tvConfidence"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toBottomOf="@id/tvScanDate"
+            app:layout_constraintStart_toStartOf="parent"
+            android:layout_marginTop="@dimen/margin_small" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
+```
+
+### DiseaseLibraryActivity Layout (activity_disease_library.xml)
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -595,46 +754,22 @@ Test scenarios:
     android:padding="@dimen/padding_medium">
 
     <TextView
-        android:id="@+id/tvSelectSource"
+        android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/select_image_source"
+        android:text="@string/disease_library"
         android:textSize="@dimen/text_size_headline"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/margin_xlarge" />
-
-    <ImageView
-        android:id="@+id/ivPreview"
-        android:layout_width="0dp"
-        android:layout_height="@dimen/image_preview_height"
-        android:scaleType="centerCrop"
-        android:background="@color/primary_light"
-        android:contentDescription="@string/image_preview"
-        app:layout_constraintTop_toBottomOf="@id/tvSelectSource"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="@dimen/margin_large" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnCamera"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvDiseases"
         android:layout_width="0dp"
-        android:layout_height="@dimen/button_height"
-        android:text="@string/camera"
-        app:layout_constraintTop_toBottomOf="@id/ivPreview"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="@dimen/margin_large" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnGallery"
-        android:layout_width="0dp"
-        android:layout_height="@dimen/button_height"
-        android:text="@string/gallery"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        app:layout_constraintTop_toBottomOf="@id/btnCamera"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="@dimen/margin_medium" />
@@ -860,10 +995,56 @@ Test scenarios:
 
 ## Activity Implementation Code
 
-### ScanActivity.java
+### MainActivity capture buttons (Kotlin primary)
+
+In LeafGuard the camera and gallery buttons live in **MainActivity** — there is no separate
+capture screen. This week you wire the buttons and navigate to `ResultActivity` with placeholder
+data; the real camera/gallery capture arrives in Week 03.
+
+```kotlin
+package com.leafguard
+
+import android.content.Intent
+import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+
+class MainActivity : AppCompatActivity() {
+
+    private val tag = "MainActivity"
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        Log.d(tag, "onCreate: initializing MainActivity")
+        setContentView(R.layout.activity_main)
+
+        // TODO: real capture arrives in Week 03 (camera intent + FileProvider, gallery picker)
+        findViewById<android.widget.Button>(R.id.buttonOpenCamera).setOnClickListener {
+            Toast.makeText(this, "Camera will be implemented in Week 03", Toast.LENGTH_SHORT).show()
+            navigateToResult("camera")
+        }
+        findViewById<android.widget.Button>(R.id.buttonOpenGallery).setOnClickListener {
+            Toast.makeText(this, "Gallery will be implemented in Week 03", Toast.LENGTH_SHORT).show()
+            navigateToResult("gallery")
+        }
+    }
+
+    private fun navigateToResult(source: String) {
+        // "source" and the extra keys are local intent extras (not the network JSON field)
+        val intent = Intent(this, ResultActivity::class.java)
+        intent.putExtra("source", source)
+        intent.putExtra(ResultActivity.EXTRA_DISEASE_NAME, "Sample Disease")
+        intent.putExtra(ResultActivity.EXTRA_CONFIDENCE, 0.85f)
+        startActivity(intent)
+    }
+}
+```
+
+### MainActivity capture buttons — Java (secondary)
 
 ```java
-package com.example.leafguard.activities;
+package com.leafguard;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
@@ -872,45 +1053,37 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.Toast;
 
-import com.example.leafguard.R;
+public class MainActivity extends AppCompatActivity {
 
-public class ScanActivity extends AppCompatActivity {
-
-    private static final String TAG = "ScanActivity";
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate: Initializing ScanActivity");
-        setContentView(R.layout.activity_scan);
+        Log.d(TAG, "onCreate: Initializing MainActivity");
+        setContentView(R.layout.activity_main);
 
-        Button btnCamera = findViewById(R.id.btnCamera);
-        Button btnGallery = findViewById(R.id.btnGallery);
+        Button btnCamera = findViewById(R.id.buttonOpenCamera);
+        Button btnGallery = findViewById(R.id.buttonOpenGallery);
 
         btnCamera.setOnClickListener(v -> {
-            Log.d(TAG, "Camera button clicked");
             // Week 03: Camera implementation
             Toast.makeText(this, "Camera will be implemented in Week 03", Toast.LENGTH_SHORT).show();
-
-            // Navigate to ResultActivity with dummy data
             navigateToResult("camera");
         });
 
         btnGallery.setOnClickListener(v -> {
-            Log.d(TAG, "Gallery button clicked");
             // Week 03: Gallery implementation
             Toast.makeText(this, "Gallery will be implemented in Week 03", Toast.LENGTH_SHORT).show();
-
-            // Navigate to ResultActivity with dummy data
             navigateToResult("gallery");
         });
     }
 
     private void navigateToResult(String source) {
-        Intent intent = new Intent(ScanActivity.this, ResultActivity.class);
+        Intent intent = new Intent(MainActivity.this, ResultActivity.class);
         intent.putExtra("source", source);
-        intent.putExtra("disease_name", "Sample Disease");
-        intent.putExtra("confidence", 0.85f);
+        intent.putExtra(ResultActivity.EXTRA_DISEASE_NAME, "Sample Disease");
+        intent.putExtra(ResultActivity.EXTRA_CONFIDENCE, 0.85f);
         startActivity(intent);
     }
 }
@@ -1072,10 +1245,10 @@ Before proceeding to Week 03, verify all items:
 
 **Functionality:**
 - [ ] App launches without crashes
-- [ ] MainActivity → ScanActivity navigation works
+- [ ] MainActivity camera/gallery buttons respond (capture flow lives in MainActivity)
 - [ ] MainActivity → HistoryActivity navigation works
 - [ ] MainActivity → SettingsActivity navigation works
-- [ ] ScanActivity → ResultActivity navigation works with data passing
+- [ ] MainActivity → ResultActivity navigation works with data passing
 - [ ] ResultActivity → MainActivity navigation works
 - [ ] Back button works correctly on all activities
 - [ ] Screen rotation preserves activities
@@ -1128,7 +1301,7 @@ Submit to `evidence/week-02/build-task/`:
 1. **Complete Android project** (commit to Git)
 2. **Screenshots folder** with:
    - MainActivity
-   - ScanActivity
+   - MainActivity (capture)
    - ResultActivity
    - HistoryActivity
    - SettingsActivity

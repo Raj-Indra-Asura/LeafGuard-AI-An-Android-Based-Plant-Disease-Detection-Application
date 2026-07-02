@@ -1,0 +1,27 @@
+# What is this file?
+# ------------------
+# A ".gitignore" file tells Git (the tool that tracks changes to your code)
+# which files and folders it should NOT save in the project history.
+# These are files that your computer generates automatically when you build
+# or run the project. They are different on every machine, can be very large,
+# and are re-created automatically — so we never commit them.
+
+# Gradle build system caches and outputs (created when you build the Android app)
+.gradle/
+build/
+
+# Android Studio / IntelliJ project settings (specific to your own computer)
+*.iml
+.idea/
+local.properties
+
+# Python caches and virtual environments (created when you run the backend)
+__pycache__/
+*.pyc
+.venv/
+
+# Compiled Android app packages (built from source; don't store in Git)
+*.apk
+
+# macOS system files
+.DS_Store

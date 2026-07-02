@@ -1,5 +1,7 @@
 # Week 09: Learning Notes - TensorFlow Lite Offline AI
 
+> **Kotlin-first & accuracy note:** The shipped classifier is `TFLiteClassifier` (Kotlin primary: `android-app-kotlin/.../ml/TFLiteClassifier.kt`; Java secondary twin). It loads `assets/model.tflite` + `assets/labels.txt`, resizes to **224×224**, uses **RGB floats 0..1**, and picks the class with **argmax** over 10 outputs. Because the committed `model.tflite` is a **text placeholder**, the classifier catches the load error and falls back to a **green-channel heuristic** so the app still runs. Replace it with a real model via [`model/model-acquisition-guide.md`](../../model/model-acquisition-guide.md) and [`model/generate_stub_model.py`](../../model/generate_stub_model.py).
+
 ## Table of Contents
 
 1. [Week Goal and Big Picture](#1-week-goal-and-big-picture)
@@ -406,7 +408,7 @@ auto_model = image_classifier.create(
 
 auto_model.export(
     export_dir='exported_model',
-    tflite_filename='plant_disease_model.tflite',
+    tflite_filename='model.tflite',
     label_filename='labels.txt'
 )
 ```

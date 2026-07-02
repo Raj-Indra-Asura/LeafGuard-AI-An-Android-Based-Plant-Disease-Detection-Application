@@ -106,12 +106,12 @@ Test these scenarios and document the lifecycle methods called:
    - Document: onPause → onStop → onDestroy → onCreate → onStart → onResume
 
 5. **Navigate to Another Activity:**
-   - From MainActivity, navigate to ScanActivity
-   - Document: MainActivity onPause → onCreate/onStart/onResume for ScanActivity → MainActivity onStop
+   - From MainActivity, navigate to MainActivity
+   - Document: MainActivity onPause → onCreate/onStart/onResume for MainActivity → MainActivity onStop
 
 6. **Back Button:**
-   - From ScanActivity, press Back
-   - Document: ScanActivity onPause/onStop/onDestroy → MainActivity onStart/onResume
+   - From MainActivity, press Back
+   - Document: MainActivity onPause/onStop/onDestroy → MainActivity onStart/onResume
 
 **Part C: State Preservation**
 
@@ -233,7 +233,7 @@ Implement complex navigation patterns with data passing between activities.
 
 Implement this flow:
 ```
-MainActivity → ScanActivity → ResultActivity → HistoryActivity
+MainActivity → MainActivity → ResultActivity → HistoryActivity
 ```
 
 Each activity should:
@@ -245,15 +245,15 @@ Each activity should:
 **Part B: Non-Linear Navigation**
 
 Add these navigation paths:
-- MainActivity → HistoryActivity (skip ScanActivity)
+- MainActivity → HistoryActivity (skip MainActivity)
 - ResultActivity → MainActivity (clear back stack, start fresh)
-- ResultActivity → ScanActivity (go back without destroying current activity)
+- ResultActivity → MainActivity (go back without destroying current activity)
 
 Implement buttons for each path.
 
 **Part C: Data Passing Practice**
 
-Create ScanActivity that passes multiple data types to ResultActivity:
+Create MainActivity that passes multiple data types to ResultActivity:
 - String: `plant_type` (e.g., "Tomato")
 - Float: `confidence` (e.g., 0.87f)
 - Boolean: `is_healthy` (e.g., false)
@@ -273,8 +273,8 @@ Implement "Start Over" button in ResultActivity:
 - Navigate to MainActivity
 - User cannot press Back to return to ResultActivity
 
-Implement "Cancel" button in ScanActivity:
-- Finish ScanActivity
+Implement "Cancel" button in MainActivity:
+- Finish MainActivity
 - Return to MainActivity with result code `RESULT_CANCELED`
 - MainActivity shows Toast: "Scan cancelled"
 
@@ -559,7 +559,7 @@ Review your AndroidManifest.xml:
 3. Add meaningful labels for each activity:
 ```xml
 <activity
-    android:name=".activities.ScanActivity"
+    android:name=".activities.MainActivity"
     android:label="@string/scan_activity_label"
     android:exported="false" />
 ```
@@ -597,7 +597,7 @@ Tasks:
 1. Explain what `MAIN` action means
 2. Explain what `LAUNCHER` category means
 3. What happens if you add this intent filter to ResultActivity?
-4. Test: Add launcher intent filter to ScanActivity, rebuild, check launcher (you'll see two app icons)
+4. Test: Add launcher intent filter to MainActivity, rebuild, check launcher (you'll see two app icons)
 5. Remove the test intent filter
 
 **Part D: Permission Preparation (Week 03 Preview)**
@@ -618,16 +618,16 @@ Tasks:
 
 **Part E: Screen Orientation**
 
-Configure screen orientation for ScanActivity:
+Configure screen orientation for MainActivity:
 ```xml
 <activity
-    android:name=".activities.ScanActivity"
+    android:name=".activities.MainActivity"
     android:screenOrientation="portrait"
     android:exported="false" />
 ```
 
 Tasks:
-1. Test: Run app, navigate to ScanActivity, try to rotate (it won't rotate)
+1. Test: Run app, navigate to MainActivity, try to rotate (it won't rotate)
 2. Explain why you might lock orientation for camera activities
 3. Test ResultActivity without orientation lock, rotate and observe
 
@@ -679,8 +679,8 @@ public class MainActivity extends AppCompatActivity {
 
         btnScan.setOnClickListener(v -> {
             Log.d(TAG, "onClick: Scan button clicked");
-            Intent intent = new Intent(MainActivity.this, ScanActivity.class);
-            Log.d(TAG, "onClick: Starting ScanActivity");
+            Intent intent = new Intent(MainActivity.this, MainActivity.class);
+            Log.d(TAG, "onClick: Starting MainActivity");
             startActivity(intent);
         });
 

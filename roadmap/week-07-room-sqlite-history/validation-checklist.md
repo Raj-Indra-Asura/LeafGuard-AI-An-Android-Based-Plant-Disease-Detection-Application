@@ -2,7 +2,7 @@
 
 ## Pass/Fail Validation Criteria
 
-Mark ✅ only when criterion fully met. No partial credit.
+Answer **Yes** or **No** for each item (tick the box for **Yes**). Every box should be **Yes** before you finish the week — no partial credit. A **No** just shows you what to go back and fix.
 
 ---
 
@@ -18,10 +18,10 @@ Mark ✅ only when criterion fully met. No partial credit.
 
 ## Section 2: Entity Class (8 points)
 
-- [ ] ScanHistory entity class exists
+- [ ] ScanRecord entity class exists
 - [ ] @Entity annotation present
 - [ ] @PrimaryKey with autoGenerate=true
-- [ ] All required fields: id, disease, confidence, symptoms, treatment, timestamp, imagePath
+- [ ] All required columns: `id`, `disease_name`, `confidence`, `symptoms`, `treatment`, `prevention`, `image_uri`, `latitude`, `longitude`, `timestamp`
 - [ ] Constructor implemented
 - [ ] All getters implemented
 - [ ] All setters implemented
@@ -31,12 +31,12 @@ Mark ✅ only when criterion fully met. No partial credit.
 
 ## Section 3: DAO Interface (8 points)
 
-- [ ] ScanHistoryDao interface exists
+- [ ] ScanDao interface exists
 - [ ] @Dao annotation present
-- [ ] @Insert method implemented
-- [ ] @Query for getAll() implemented with correct SQL
-- [ ] @Query for getById() implemented
-- [ ] @Delete method implemented
+- [ ] @Insert method `insertScan()` implemented (Kotlin: `suspend fun`)
+- [ ] @Query for `getAllScans()` implemented with correct SQL
+- [ ] @Query for `getScanById()` implemented
+- [ ] @Delete `deleteScan()` (and `deleteScanById()` query) implemented
 - [ ] All methods have correct return types
 - [ ] No SQL syntax errors
 
@@ -47,7 +47,7 @@ Mark ✅ only when criterion fully met. No partial credit.
 - [ ] AppDatabase class exists
 - [ ] Extends RoomDatabase
 - [ ] @Database annotation with entities and version
-- [ ] Abstract scanHistoryDao() method
+- [ ] Abstract scanDao() method
 - [ ] Singleton pattern implemented
 - [ ] getInstance() method is synchronized
 - [ ] Room.databaseBuilder configured correctly
@@ -57,13 +57,13 @@ Mark ✅ only when criterion fully met. No partial credit.
 
 ## Section 5: History List UI (12 points)
 
-- [ ] HistoryListActivity created
+- [ ] HistoryActivity created
 - [ ] activity_history_list.xml layout exists
 - [ ] RecyclerView in layout
 - [ ] Empty state TextView in layout
 - [ ] item_scan_history.xml item layout exists
 - [ ] Item layout has TextViews for disease, confidence, timestamp
-- [ ] ScanHistoryAdapter class created
+- [ ] HistoryAdapter class created
 - [ ] ViewHolder inner class implemented
 - [ ] RecyclerView displays scans from database
 - [ ] List scrolls smoothly
@@ -74,7 +74,7 @@ Mark ✅ only when criterion fully met. No partial credit.
 
 ## Section 6: Database Operations (10 points)
 
-- [ ] ExecutorService used for all database operations
+- [ ] Database work runs off the main thread (Kotlin: `suspend` + `lifecycleScope.launch`; Java secondary: `ExecutorService`)
 - [ ] No database operations on main thread
 - [ ] Insert operation works (scan saved)
 - [ ] Query all operation works (list populated)
@@ -92,7 +92,7 @@ Mark ✅ only when criterion fully met. No partial credit.
 - [ ] Scan automatically saved after successful prediction
 - [ ] All prediction data saved (disease, confidence, symptoms, treatment)
 - [ ] Timestamp generated at save time
-- [ ] Image path saved
+- [ ] Image URI saved (`image_uri`)
 - [ ] Save happens on background thread
 - [ ] Toast confirms "Scan saved to history"
 - [ ] New scan appears in history list

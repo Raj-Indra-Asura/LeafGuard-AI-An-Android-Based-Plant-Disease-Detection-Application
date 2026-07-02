@@ -1,5 +1,16 @@
 # Week 06 Learning Notes: Real ML Model Integration
 
+## Week 06 project reality check
+
+> Note: The committed `assets/model.tflite` is a placeholder TEXT file, not a real trained model. Until a real model is provided, the backend uses a **mock predictor** (in `model_loader.py`) and the on-device `TFLiteClassifier` uses a **green-channel heuristic fallback**, so the app still runs end-to-end. The real trained model arrives in **Week 09**. Low or odd confidence values are normal this week because predictions are placeholders.
+
+## Related materials
+
+- Exercises: [backend](../../exercises/backend/) and [ML](../../exercises/ml/)
+- Solutions: [Week 06 solutions](../../solutions/week-06/)
+- Notebooks: [Week 06 notebooks](../../notebooks/week-06/)
+- Glossary: [GLOSSARY.md](../../GLOSSARY.md)
+
 ## Core Concepts
 
 ### 1. Machine Learning Model as a Software Component
@@ -42,7 +53,7 @@ Models are trained on images processed in specific ways. If you feed images in a
 
 ### 3. The Output Contract: Prediction Arrays
 
-Models output arrays of numbers, not human-readable text. For a 6-class plant disease model:
+Models output arrays of numbers, not human-readable text. For a 10-label plant disease contract:
 
 ```
 Input: Image of tomato leaf with spots
@@ -60,19 +71,26 @@ Each number represents the model's confidence that the image belongs to that cla
 
 **Important**: The index with highest confidence is the prediction, not the confidence value itself.
 
-### 4. Label Mapping: Bridging Indices and Human Language
+### 4. Label Mapping
+
+**Current Week 06 labels (exact order)**: Tomato Early Blight, Tomato Late Blight, Tomato Healthy, Potato Early Blight, Potato Late Blight, Potato Healthy, Corn Gray Leaf Spot, Corn Northern Leaf Blight, Corn Healthy, Apple Scab. Keep this order when reading `assets/labels.txt`.
+: Bridging Indices and Human Language
 
 Models work with numbers (class indices), users need words (disease names). Label mapping is the dictionary between these two worlds.
 
 **Approach 1: Hardcoded dictionary**
 ```python
 LABELS = {
-    0: "Tomato Healthy",
-    1: "Tomato Early Blight",
-    2: "Tomato Late Blight",
-    3: "Potato Healthy",
-    4: "Potato Early Blight",
-    5: "Potato Late Blight"
+    0: "Tomato Early Blight",
+    1: "Tomato Late Blight",
+    2: "Tomato Healthy",
+    3: "Potato Early Blight",
+    4: "Potato Late Blight",
+    5: "Potato Healthy",
+    6: "Corn Gray Leaf Spot",
+    7: "Corn Northern Leaf Blight",
+    8: "Corn Healthy",
+    9: "Apple Scab"
 }
 ```
 
@@ -126,17 +144,19 @@ Loading a model file involves:
 
 This is expensive. Doing it for every API request adds 5+ seconds of latency.
 
-**Solution**: Load once at Flask startup
+**Solution**: Load once at FastAPI startup
 ```python
-# Global scope (runs once when Flask starts)
+# Global scope (runs once when FastAPI starts)
 MODEL = tf.keras.models.load_model('plant_disease_model.h5')
 print("Model loaded successfully")
 
 # Request handler (runs for every API call)
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.post('/predict')
+async def predict(image: UploadFile = File(...)):
     predictions = MODEL.predict(img)  # Uses pre-loaded model
 ```
+
+This is normal — here's the fix: if TensorFlow import fails on your computer, Week 06 can still continue because `model_loader.py` falls back to the mock predictor automatically.
 
 **Tradeoff**: Higher memory usage (model stays in RAM), but much faster inference (50-200ms vs 5000ms).
 
@@ -149,7 +169,7 @@ The complete flow from image bytes to prediction:
 ```
 [Android App]
      ↓ (HTTP POST with image file)
-[Flask Endpoint] receives request
+[FastAPI Endpoint in backend-api/main.py] receives request
      ↓
 [Extract image bytes] from multipart form data
      ↓
@@ -163,7 +183,7 @@ The complete flow from image bytes to prediction:
      ↓
 [Map to label] class index → disease name
      ↓
-[Generate recommendation] based on disease type
+[Generate treatment/prevention guidance] based on disease type
      ↓
 [Return JSON] structured response with status, prediction, confidence
      ↓
@@ -188,35 +208,35 @@ Machine learning systems have more failure modes than traditional software:
 **Defensive programming strategy**:
 
 ```python
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.post('/predict')
+async def predict(image: UploadFile = File(...)):
     try:
         # Validate request
-        if 'image' not in request.files:
-            return jsonify({"status": "error", "message": "No image provided"}), 400
+        if image is None:
+            raise HTTPException(status_code=400, detail="No image provided")
 
-        image_file = request.files['image']
+        image_file = image
 
         if image_file.filename == '':
-            return jsonify({"status": "error", "message": "Empty filename"}), 400
+            raise HTTPException(status_code=400, detail="Empty filename")
 
         # Read image
-        image_bytes = image_file.read()
+        image_bytes = await image_file.read()
 
         if len(image_bytes) == 0:
-            return jsonify({"status": "error", "message": "Empty file"}), 400
+            raise HTTPException(status_code=400, detail="Empty file")
 
         # Preprocess
         try:
             img_array = preprocess_image(image_bytes)
         except Exception as e:
-            return jsonify({"status": "error", "message": f"Preprocessing failed: {str(e)}"}), 400
+            raise HTTPException(status_code=400, detail=f"Preprocessing failed: {str(e)}")
 
         # Inference
         try:
             predictions = MODEL.predict(img_array)
         except Exception as e:
-            return jsonify({"status": "error", "message": f"Inference failed: {str(e)}"}), 500
+            raise HTTPException(status_code=500, detail=f"Inference failed: {str(e)}")
 
         # Decode
         class_idx = int(np.argmax(predictions[0]))
@@ -224,21 +244,23 @@ def predict():
         disease_name = LABELS.get(class_idx, "Unknown")
 
         # Return success
-        return jsonify({
+        return {
             "status": "success",
             "prediction": {
                 "disease": disease_name,
                 "confidence": confidence,
-                "recommendation": get_recommendation(disease_name)
+                "symptoms": get_symptoms(disease_name),
+                "treatment": get_recommendation(disease_name),
+                "prevention": get_prevention(disease_name)
             }
-        })
+        }
 
     except Exception as e:
         # Catch-all for unexpected errors
         print(f"Unexpected error: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({"status": "error", "message": "Internal server error"}), 500
+        raise HTTPException(status_code=500, detail="Internal server error")
 ```
 
 **Key principle**: Fail gracefully with informative error messages. Never crash silently.
@@ -281,7 +303,7 @@ import requests
 
 def test_valid_prediction():
     with open('test_images/tomato_early_blight.jpg', 'rb') as f:
-        response = requests.post('http://localhost:5000/predict', files={'image': f})
+        response = requests.post('http://localhost:8000/predict', files={'image': f})
 
     assert response.status_code == 200
     data = response.json()
@@ -290,7 +312,7 @@ def test_valid_prediction():
     assert data['prediction']['confidence'] > 0.5  # At least 50% confidence
 
 def test_missing_image():
-    response = requests.post('http://localhost:5000/predict')
+    response = requests.post('http://localhost:8000/predict')
     assert response.status_code == 400
     assert 'error' in response.json()['status']
 ```
@@ -347,7 +369,7 @@ All models have limitations. Professional engineering means acknowledging and co
 
 This is beyond the scope of a mobile development course.
 
-**Pragmatic solution**: Use a simplified 6-class model
+**Pragmatic solution**: Use a simplified 10-label placeholder/mock contract
 - Tomato Healthy, Tomato Early Blight, Tomato Late Blight
 - Potato Healthy, Potato Early Blight, Potato Late Blight
 
@@ -358,21 +380,25 @@ This is beyond the scope of a mobile development course.
 
 **How to implement fallback**:
 ```python
-# 6-class model labels (hardcoded)
+# 10-label placeholder/mock contract labels (hardcoded)
 LABELS = {
-    0: "Tomato Healthy",
-    1: "Tomato Early Blight",
-    2: "Tomato Late Blight",
-    3: "Potato Healthy",
-    4: "Potato Early Blight",
-    5: "Potato Late Blight"
+    0: "Tomato Early Blight",
+    1: "Tomato Late Blight",
+    2: "Tomato Healthy",
+    3: "Potato Early Blight",
+    4: "Potato Late Blight",
+    5: "Potato Healthy",
+    6: "Corn Gray Leaf Spot",
+    7: "Corn Northern Leaf Blight",
+    8: "Corn Healthy",
+    9: "Apple Scab"
 }
 
 # In UI, clearly state limitations
 disclaimer_text = "Currently supports tomato and potato disease detection. More crops coming soon!"
 ```
 
-**Where to find 6-class models**:
+**Where to find 10-label placeholder/mock contracts**:
 - Kaggle datasets with tomato/potato subsets
 - Train yourself with Teachable Machine (https://teachablemachine.withgoogle.com/) using small datasets
 - TensorFlow Lite example models
@@ -383,7 +409,7 @@ disclaimer_text = "Currently supports tomato and potato disease detection. More 
 - That this is a focused implementation for educational purposes
 - Future plans for expansion (if any)
 
-**Grading note**: A working 6-class system with excellent error handling, UI/UX, and documentation scores higher than a non-functional 38-class attempt. Engineering quality > model size.
+**Grading note**: A working placeholder/mock pipeline with excellent error handling, UI/UX, and documentation scores higher than a non-functional real-model attempt. Engineering quality > model size in Week 06.
 
 ### 12. Performance Considerations
 
@@ -518,7 +544,9 @@ Your Android app needs structured, predictable JSON responses.
     "scientific_name": "Alternaria solani",
     "confidence": 0.78,
     "confidence_level": "high",
-    "recommendation": "Remove infected leaves, apply copper-based fungicide, ensure proper plant spacing",
+    "symptoms": "See disease details for visible leaf symptoms",
+    "treatment": "Remove infected leaves, apply copper-based fungicide, ensure proper plant spacing",
+    "prevention": "Use clean tools, monitor plants, and avoid overhead watering",
     "severity": "moderate"
   },
   "alternatives": [
@@ -563,7 +591,9 @@ data class PredictionResponse(
 data class Prediction(
     val disease: String,
     val confidence: Double,
-    val recommendation: String
+    val symptoms: String,
+    val treatment: String,
+    val prevention: String
 )
 ```
 
@@ -572,7 +602,7 @@ data class Prediction(
 When predictions seem wrong or errors occur, work through this checklist:
 
 **1. Model loads successfully?**
-- [ ] Flask prints "Model loaded" message on startup
+- [ ] FastAPI prints "Model loaded" or mock fallback message on startup
 - [ ] No version compatibility errors
 - [ ] Check model file exists at specified path
 
@@ -604,7 +634,7 @@ When predictions seem wrong or errors occur, work through this checklist:
 **7. Error handling works?**
 - [ ] Send request without image → get 400 error
 - [ ] Send text file instead of image → get error (not crash)
-- [ ] Check Flask console logs for Python tracebacks
+- [ ] Check FastAPI console logs for Python tracebacks
 
 **8. Postman test passes?**
 - [ ] Valid image returns 200 status
@@ -624,7 +654,7 @@ Week 06 teaches you to integrate machine learning models as software components:
 - **Error handling essential**: ML systems have many failure modes
 - **Test thoroughly**: Postman before Android integration
 - **Be honest about limitations**: Transparency builds trust
-- **Fallback strategies**: 6-class model is acceptable for learning purposes
+- **Fallback strategies**: 10-label placeholder/mock contract is acceptable for learning purposes
 - **Focus on engineering**: API integration, error handling, UI/UX matter more than model accuracy
 
 You're not becoming a data scientist this week - you're learning to integrate AI as a mobile engineer. This skill applies to any pre-trained model: language models, recommendation systems, computer vision, speech recognition. The principles are the same: understand the contract, handle errors, communicate uncertainty, test thoroughly.
@@ -1054,7 +1084,7 @@ The index (0-based) must match your model's training class order exactly.
 - Grape: 4 classes (3 diseases + 1 healthy)
 - Others: 14 classes
 
-**For beginners**: Start with a 6-class model (Tomato + Potato only) to reduce complexity.
+**For beginners**: Start with a 10-label placeholder/mock contract (Tomato + Potato only) to reduce complexity.
 
 ---
 
@@ -1142,7 +1172,9 @@ if confidence < CONFIDENCE_THRESHOLD:
         "disease": "Unknown",
         "confidence": confidence,
         "low_confidence": True,
-        "recommendation": "Image quality may be too low. Retake photo in better lighting."
+        "symptoms": "See disease details for visible leaf symptoms",
+    "treatment": "Image quality may be too low. Retake photo in better lighting.",
+    "prevention": "Use clean tools, monitor plants, and avoid overhead watering"
     }
 ```
 

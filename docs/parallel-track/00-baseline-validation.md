@@ -24,7 +24,7 @@
 | `ml/TFLiteClassifier.java` | On-device TFLite classifier with heuristic fallback |
 | `utils/NotificationHelper.java` | Notification channel + reminder notification |
 
-14 Java files total. No `GalleryActivity`/`ScanActivity` exist. No `test/` or `androidTest/` source sets exist in the Java module (the Gradle test dependencies are declared but no test files are present).
+14 Java files total. No `GalleryActivity`/`ScanActivity` exist. *(Historical note from the baseline audit: at that time no `test/`/`androidTest` sources existed. As of the July 2026 reconstruction, both modules contain `PredictionResponseTest` and `MainActivityTest` — see `docs/JAVA_VS_KOTLIN.md`.)*
 
 ### Gradle
 - `android-app/build.gradle` — project-level, AGP `8.2.0` via `plugins` block

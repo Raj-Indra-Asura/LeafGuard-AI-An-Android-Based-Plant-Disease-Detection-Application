@@ -123,10 +123,10 @@ Display selected/captured image in ImageView and persist URI for later use.
 
 ### Tasks
 
-1. Update ScanActivity layout with ImageView
-2. Implement displayImage(Uri) method
-3. Save currentImageUri as class variable
-4. Enable "Analyze" button when image loaded
+1. Update MainActivity layout with ImageView (already present as `imagePlantPreview`)
+2. Implement updateSelectedImage(Uri) method
+3. Save selectedImageUri as class variable
+4. Enable "Detect" button when image loaded
 5. Handle rotation (save URI in onSaveInstanceState)
 6. Test image persistence across rotation
 7. Show placeholder when no image selected
@@ -143,14 +143,14 @@ Display selected/captured image in ImageView and persist URI for later use.
 
 ---
 
-## Exercise 6: Complete ScanActivity Integration
+## Exercise 6: Complete MainActivity Image-Input Integration
 
 ### Goal
-Integrate all components into working ScanActivity with error handling.
+Integrate all camera/gallery components into working MainActivity with error handling.
 
 ### Tasks
 
-1. Combine camera and gallery implementations
+1. Combine camera and gallery implementations in MainActivity
 2. Add permission checks for both features
 3. Implement error handling (null checks, try-catch)
 4. Add loading indicators during operations
@@ -160,7 +160,7 @@ Integrate all components into working ScanActivity with error handling.
 
 ### Deliverables
 
-- Fully functional ScanActivity
+- Fully functional MainActivity image input
 - Complete error handling
 - Video demonstrating full flow
 - Logcat showing complete execution

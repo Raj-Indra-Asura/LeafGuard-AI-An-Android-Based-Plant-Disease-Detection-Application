@@ -8,6 +8,17 @@ This unified learning system provides seamless navigation across all course mate
 
 ---
 
+## 🍴 Choose Your Track (Read First)
+
+A **"track"** is simply *the programming language you follow the lessons in*. The same app is built twice; pick one and stay with it.
+
+- **Track A — Kotlin (Primary / Recommended)** → build in [`android-app-kotlin/`](android-app-kotlin/); practice with [`exercises/android-kotlin/`](exercises/android-kotlin/). Kotlin is Google's recommended language for new Android apps.
+- **Track B — Java (Secondary)** → build in [`android-app/`](android-app/); practice with [`exercises/android/`](exercises/android/). A behavior-identical twin kept for the traditional "Java for Android" framing.
+
+**If unsure, choose Kotlin.** Throughout this path, Kotlin files and exercises are listed first; the Java twin lives at the mirrored path.
+
+---
+
 ## 📚 Learning System Components
 
 ### Core Materials (Every Week Has These)
@@ -67,6 +78,7 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection Journal](roadmap/week-01-project-understanding/reflection.md)
 
 ### Supplementary Materials
+- 💪 [Kotlin Exercises — primary track](exercises/android-kotlin/) · [Java Exercises](exercises/android/)
 - 📓 [Interactive Notebook](notebooks/week-01/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-01/) *(Available)*
 
@@ -109,6 +121,7 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-02-android-basics-ui/reflection.md)
 
 ### Supplementary Materials
+- 💪 [Kotlin Exercises — primary track](exercises/android-kotlin/) · [Java Exercises](exercises/android/)
 - 📓 [Interactive Notebook](notebooks/week-02/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-02/) *(Available)*
 
@@ -121,8 +134,7 @@ This unified learning system provides seamless navigation across all course mate
 
 ### Prerequisites
 - Week 01 completed and validated
-- Android Studio installed
-- Java JDK 11+ installed
+- Development tools already installed in the [pre-Week-01 setup](README.md#pre-week-01-setup-checklist-do-this-first) (Android Studio + emulator; the Java JDK ships with Android Studio)
 
 ### Estimated Time
 - **Total: 20-25 hours**
@@ -148,6 +160,7 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-03-camera-gallery/reflection.md)
 
 ### Supplementary Materials
+- 💪 [Kotlin Exercises — primary track](exercises/android-kotlin/) · [Java Exercises](exercises/android/)
 - 📓 [Interactive Notebook](notebooks/week-03/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-03/) *(Available)*
 
@@ -187,6 +200,7 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-04-fastapi-backend/reflection.md)
 
 ### Supplementary Materials
+- 💪 [Backend Exercises](exercises/backend/) · Android track: [Kotlin](exercises/android-kotlin/) · [Java](exercises/android/)
 - 📓 [Interactive Notebook](notebooks/week-04/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-04/) *(Available)*
 
@@ -200,9 +214,9 @@ This unified learning system provides seamless navigation across all course mate
 
 ### Prerequisites
 - Week 03 validated
-- Python 3.8+ installed
-- Basic understanding of HTTP methods
-- Postman or similar API testing tool
+- Python 3 installed in the [pre-Week-01 setup](README.md#pre-week-01-setup-checklist-do-this-first)
+- Basic understanding of HTTP methods (HTTP is how apps and servers exchange messages; see [GLOSSARY.md](GLOSSARY.md))
+- Postman or similar API testing tool (an API is the set of endpoints your app calls on the server)
 
 ### Estimated Time
 - **Total: 20-24 hours**
@@ -228,6 +242,7 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-05-android-networking/reflection.md)
 
 ### Supplementary Materials
+- 💪 [Kotlin Exercises — primary track](exercises/android-kotlin/) · [Java Exercises](exercises/android/)
 - 📓 [Interactive Notebook](notebooks/week-05/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-05/) *(Available)*
 
@@ -269,6 +284,7 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-06-cloud-ml-model/reflection.md)
 
 ### Supplementary Materials
+- 💪 [ML Exercises](exercises/ml/) · [Backend Exercises](exercises/backend/) · Android: [Kotlin](exercises/android-kotlin/) · [Java](exercises/android/)
 - 📓 [Interactive Notebook](notebooks/week-06/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-06/) *(Available)*
 
@@ -308,6 +324,7 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-07-room-sqlite-history/reflection.md)
 
 ### Supplementary Materials
+- 💪 [Database Exercises](exercises/database/) · Android: [Kotlin](exercises/android-kotlin/) · [Java](exercises/android/)
 - 📓 [Interactive Notebook](notebooks/week-07/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-07/) *(Available)*
 
@@ -347,6 +364,7 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-08-xml-disease-library/reflection.md)
 
 ### Supplementary Materials
+- 💪 [Kotlin Exercises — primary track](exercises/android-kotlin/) · [Java Exercises](exercises/android/)
 - 📓 [Interactive Notebook](notebooks/week-08/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-08/) *(Available)*
 
@@ -386,6 +404,7 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-09-tensorflow-lite-offline-ai/reflection.md)
 
 ### Supplementary Materials
+- 💪 [ML Exercises](exercises/ml/) · Android: [Kotlin](exercises/android-kotlin/) · [Java](exercises/android/)
 - 📓 [Interactive Notebook](notebooks/week-09/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-09/) *(Available)*
 
@@ -425,6 +444,7 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-10-notifications-share-location/reflection.md)
 
 ### Supplementary Materials
+- 💪 [Kotlin Exercises — primary track](exercises/android-kotlin/) · [Java Exercises](exercises/android/)
 - 📓 [Interactive Notebook](notebooks/week-10/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-10/) *(Available)*
 
@@ -464,6 +484,7 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-11-testing-debugging-performance/reflection.md)
 
 ### Supplementary Materials
+- 💪 [Testing Exercises](exercises/testing/) · Android: [Kotlin](exercises/android-kotlin/) · [Java](exercises/android/)
 - 📓 [Interactive Notebook](notebooks/week-11/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-11/) *(Available)*
 
@@ -504,6 +525,7 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-12-final-submission/reflection.md)
 
 ### Supplementary Materials
+- 💪 Android exercises: [Kotlin — primary track](exercises/android-kotlin/) · [Java](exercises/android/)
 - 📓 [Interactive Notebook](notebooks/week-12/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-12/) *(Available)*
 
@@ -546,7 +568,8 @@ This unified learning system provides seamless navigation across all course mate
 - [reflection-journal/](reflection-journal/) - Weekly reflection prompts
 
 ### Practice Materials
-- [exercises/android/](exercises/android/) - Android-specific exercises
+- [exercises/android-kotlin/](exercises/android-kotlin/) - Kotlin Android exercises (primary track)
+- [exercises/android/](exercises/android/) - Java Android exercises (secondary track)
 - [exercises/backend/](exercises/backend/) - Backend practice
 - [exercises/ml/](exercises/ml/) - ML integration exercises
 - [exercises/database/](exercises/database/) - Database operations

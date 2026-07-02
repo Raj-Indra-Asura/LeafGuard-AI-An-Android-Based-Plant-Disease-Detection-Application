@@ -10,7 +10,7 @@
 - Run code blocks in Android Studio, Terminal, or a Python shell as indicated.
 - Keep LeafGuard AI open in Android Studio while you work.
 - Save screenshots for your evidence folder after each big milestone.
-- Use Java for Android code in this repository. Do not switch to Kotlin.
+- Kotlin is the primary track for Android code in this repository; a complete Java twin lives in `android-app/`. Pick one track and stay consistent.
 
 ### Weekly outcomes
 

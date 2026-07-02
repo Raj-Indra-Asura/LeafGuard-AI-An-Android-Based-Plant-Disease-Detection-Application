@@ -1,5 +1,16 @@
 # Week 06 Exercises: Real ML Model Integration
 
+## Week 06 project reality check
+
+> Note: The committed `assets/model.tflite` is a placeholder TEXT file, not a real trained model. Until a real model is provided, the backend uses a **mock predictor** (in `model_loader.py`) and the on-device `TFLiteClassifier` uses a **green-channel heuristic fallback**, so the app still runs end-to-end. The real trained model arrives in **Week 09**. Low or odd confidence values are normal this week because predictions are placeholders.
+
+## Related materials
+
+- Exercises: [backend](../../exercises/backend/) and [ML](../../exercises/ml/)
+- Solutions: [Week 06 solutions](../../solutions/week-06/)
+- Notebooks: [Week 06 notebooks](../../notebooks/week-06/)
+- Glossary: [GLOSSARY.md](../../GLOSSARY.md)
+
 Complete these exercises to build proficiency with machine learning model integration. Each exercise builds on concepts from the learning notes and prepares you for the build task.
 
 ## Exercise 1: Model Information Inspector
@@ -9,7 +20,7 @@ Complete these exercises to build proficiency with machine learning model integr
 **Task**: Create a Python script that loads a model and prints detailed information about its structure.
 
 **Steps**:
-1. Create a file named `model_inspector.py` in your Flask project directory
+1. Create a file named `model_inspector.py` in your FastAPI project directory
 2. Import TensorFlow (or PyTorch if using that framework)
 3. Load your plant disease model
 4. Print the following information:
@@ -23,7 +34,7 @@ Complete these exercises to build proficiency with machine learning model integr
 ```
 Model loaded successfully
 Input shape: (None, 224, 224, 3)
-Output shape: (None, 6)
+Output shape: (None, 10)
 Number of classes: 6
 Total parameters: 1,234,567
 
@@ -68,7 +79,7 @@ if __name__ == "__main__":
 **Task**: Create a function that takes raw image bytes and returns a model-ready array, then test it with various image formats.
 
 **Steps**:
-1. Create `preprocess.py` in your Flask project
+1. Create `preprocess.py` in your FastAPI project
 2. Implement `preprocess_image(image_bytes, target_size=(224, 224))` function
 3. Handle RGBA to RGB conversion (4 channels → 3 channels)
 4. Implement normalization to [0, 1] range
@@ -144,7 +155,10 @@ if __name__ == "__main__":
 
 ---
 
-## Exercise 3: Label Mapping Implementation
+## Exercise 3: Label Mapping
+
+**Current Week 06 labels (exact order)**: Tomato Early Blight, Tomato Late Blight, Tomato Healthy, Potato Early Blight, Potato Late Blight, Potato Healthy, Corn Gray Leaf Spot, Corn Northern Leaf Blight, Corn Healthy, Apple Scab. Keep this order when reading `assets/labels.txt`.
+ Implementation
 
 **Objective**: Create and test label mapping from class indices to disease names.
 
@@ -153,19 +167,23 @@ if __name__ == "__main__":
 **Steps**:
 1. Create `labels.py` with label mapping for your model
 2. Implement function to map class index to disease name
-3. Implement function to map class index to recommendation text
+3. Implement function to map class index to treatment and prevention text
 4. Test with simulated prediction arrays
 5. Handle invalid class indices gracefully
 
-**Approach 1: Hardcoded dictionary (for 6-class model)**:
+**Approach 1: Hardcoded dictionary (for 10-label placeholder/mock contract)**:
 ```python
 DISEASE_LABELS = {
-    0: "Tomato Healthy",
-    1: "Tomato Early Blight",
-    2: "Tomato Late Blight",
-    3: "Potato Healthy",
-    4: "Potato Early Blight",
-    5: "Potato Late Blight"
+    0: "Tomato Early Blight",
+    1: "Tomato Late Blight",
+    2: "Tomato Healthy",
+    3: "Potato Early Blight",
+    4: "Potato Late Blight",
+    5: "Potato Healthy",
+    6: "Corn Gray Leaf Spot",
+    7: "Corn Northern Leaf Blight",
+    8: "Corn Healthy",
+    9: "Apple Scab"
 }
 
 RECOMMENDATIONS = {
@@ -208,7 +226,7 @@ def get_disease_name(class_index):
 import numpy as np
 
 def test_label_mapping():
-    # Simulate model output for 6 classes
+    # Simulate model output for 10 labels
     test_predictions = [
         np.array([0.05, 0.80, 0.05, 0.03, 0.04, 0.03]),  # Should predict class 1
         np.array([0.85, 0.05, 0.02, 0.03, 0.02, 0.03]),  # Should predict class 0
@@ -247,7 +265,7 @@ if __name__ == "__main__":
 
 ## Exercise 4: Minimal Inference Endpoint
 
-**Objective**: Build a basic Flask endpoint that performs real model inference.
+**Objective**: Build a basic FastAPI endpoint that performs real model inference.
 
 **Task**: Create a minimal working `/predict` endpoint before adding error handling and features.
 
@@ -260,24 +278,24 @@ if __name__ == "__main__":
 
 **Starter code**:
 ```python
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, UploadFile, File, HTTPException
 import tensorflow as tf
 import numpy as np
 from preprocess import preprocess_image  # From Exercise 2
 from labels import get_disease_name, get_recommendation  # From Exercise 3
 
-app = Flask(__name__)
+app = FastAPI()
 
 # Load model at startup
 print("Loading model...")
 MODEL = tf.keras.models.load_model('plant_disease_model.h5')
 print("Model loaded successfully")
 
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.post('/predict')
+async def predict(image: UploadFile = File(...)):
     # Get image from request
-    image_file = request.files['image']
-    image_bytes = image_file.read()
+    image_file = image
+    image_bytes = await image_file.read()
 
     # Preprocess
     img_array = preprocess_image(image_bytes)
@@ -291,23 +309,25 @@ def predict():
     disease_name = get_disease_name(class_idx)
 
     # Return JSON
-    return jsonify({
+    return {
         "status": "success",
         "prediction": {
             "disease": disease_name,
             "confidence": confidence,
-            "recommendation": get_recommendation(disease_name)
+            "symptoms": get_symptoms(disease_name),
+            "treatment": get_recommendation(disease_name),
+            "prevention": get_prevention(disease_name)
         }
-    })
+    }
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    # Run with: uvicorn main:app --reload --port 8000
 ```
 
 **Testing checklist**:
-1. Run `python app_minimal.py`
+1. Run `python app_minimal.py` (Windows) or `python3 app_minimal.py` (macOS/Linux)
 2. Verify model loads without errors
-3. Open Postman and create POST request to `http://localhost:5000/predict`
+3. Open Postman and create POST request to `http://localhost:8000/predict` (computer/browser/curl; Android emulator uses `http://10.0.2.2:8000/`)
 4. Set Body type to `form-data`
 5. Add key `image`, change type to `File`, upload test image
 6. Send request
@@ -321,7 +341,9 @@ if __name__ == '__main__':
   "prediction": {
     "disease": "Tomato Early Blight",
     "confidence": 0.7834,
-    "recommendation": "Remove infected leaves. Apply copper-based fungicide..."
+    "symptoms": "See disease details for visible leaf symptoms",
+    "treatment": "Remove infected leaves. Apply copper-based fungicide...",
+    "prevention": "Use clean tools, monitor plants, and avoid overhead watering"
   }
 }
 ```
@@ -349,22 +371,22 @@ if __name__ == '__main__':
 
 1. **No image in request**:
 ```python
-if 'image' not in request.files:
-    return jsonify({"status": "error", "message": "No image provided"}), 400
+if image is None:
+    raise HTTPException(status_code=400, detail="No image provided")
 ```
 
 2. **Empty filename**:
 ```python
-image_file = request.files['image']
+image_file = image
 if image_file.filename == '':
-    return jsonify({"status": "error", "message": "Empty filename"}), 400
+    raise HTTPException(status_code=400, detail="Empty filename")
 ```
 
 3. **Empty file**:
 ```python
-image_bytes = image_file.read()
+image_bytes = await image_file.read()
 if len(image_bytes) == 0:
-    return jsonify({"status": "error", "message": "Empty file"}), 400
+    raise HTTPException(status_code=400, detail="Empty file")
 ```
 
 4. **Preprocessing errors**:
@@ -372,7 +394,7 @@ if len(image_bytes) == 0:
 try:
     img_array = preprocess_image(image_bytes)
 except Exception as e:
-    return jsonify({"status": "error", "message": f"Invalid image format: {str(e)}"}), 400
+    raise HTTPException(status_code=400, detail=f"Invalid image format: {str(e)}")
 ```
 
 5. **Inference errors**:
@@ -380,7 +402,7 @@ except Exception as e:
 try:
     predictions = MODEL.predict(img_array)
 except Exception as e:
-    return jsonify({"status": "error", "message": f"Inference failed: {str(e)}"}), 500
+    raise HTTPException(status_code=500, detail=f"Inference failed: {str(e)}")
 ```
 
 6. **Catch-all for unexpected errors**:
@@ -389,42 +411,42 @@ except Exception as e:
     print(f"Unexpected error: {e}")
     import traceback
     traceback.print_exc()
-    return jsonify({"status": "error", "message": "Internal server error"}), 500
+    raise HTTPException(status_code=500, detail="Internal server error")
 ```
 
 **Complete implementation**:
 ```python
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.post('/predict')
+async def predict(image: UploadFile = File(...)):
     try:
         # Validate request has image
-        if 'image' not in request.files:
-            return jsonify({"status": "error", "message": "No image provided"}), 400
+        if image is None:
+            raise HTTPException(status_code=400, detail="No image provided")
 
-        image_file = request.files['image']
+        image_file = image
 
         # Validate filename not empty
         if image_file.filename == '':
-            return jsonify({"status": "error", "message": "Empty filename"}), 400
+            raise HTTPException(status_code=400, detail="Empty filename")
 
         # Read image bytes
-        image_bytes = image_file.read()
+        image_bytes = await image_file.read()
 
         # Validate file not empty
         if len(image_bytes) == 0:
-            return jsonify({"status": "error", "message": "Empty file"}), 400
+            raise HTTPException(status_code=400, detail="Empty file")
 
         # Preprocess (may fail for invalid formats)
         try:
             img_array = preprocess_image(image_bytes)
         except Exception as e:
-            return jsonify({"status": "error", "message": f"Invalid image format: {str(e)}"}), 400
+            raise HTTPException(status_code=400, detail=f"Invalid image format: {str(e)}")
 
         # Inference (may fail for out-of-memory or model errors)
         try:
             predictions = MODEL.predict(img_array)
         except Exception as e:
-            return jsonify({"status": "error", "message": f"Inference failed: {str(e)}"}), 500
+            raise HTTPException(status_code=500, detail=f"Inference failed: {str(e)}")
 
         # Decode output
         class_idx = int(np.argmax(predictions[0]))
@@ -432,21 +454,23 @@ def predict():
         disease_name = get_disease_name(class_idx)
 
         # Return success response
-        return jsonify({
+        return {
             "status": "success",
             "prediction": {
                 "disease": disease_name,
                 "confidence": confidence,
-                "recommendation": get_recommendation(disease_name)
+                "symptoms": get_symptoms(disease_name),
+                "treatment": get_recommendation(disease_name),
+                "prevention": get_prevention(disease_name)
             }
-        })
+        }
 
     except Exception as e:
         # Catch-all for unexpected errors
         print(f"Unexpected error: {e}")
         import traceback
         traceback.print_exc()
-        return jsonify({"status": "error", "message": "Internal server error"}), 500
+        raise HTTPException(status_code=500, detail="Internal server error")
 ```
 
 **Test cases in Postman**:
@@ -493,8 +517,8 @@ def get_confidence_warning(confidence_level):
         return "Moderate confidence. Review alternative predictions or retake photo for better results."
     return None
 
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.post('/predict')
+async def predict(image: UploadFile = File(...)):
     try:
         # ... (validation and preprocessing code from Exercise 5)
 
@@ -517,7 +541,9 @@ def predict():
                 "disease": disease_name,
                 "confidence": confidence,
                 "confidence_level": confidence_level,
-                "recommendation": get_recommendation(disease_name)
+                "symptoms": get_symptoms(disease_name),
+                "treatment": get_recommendation(disease_name),
+                "prevention": get_prevention(disease_name)
             }
         }
 
@@ -534,10 +560,10 @@ def predict():
                 alternatives.append({
                     "disease": get_disease_name(int(idx)),
                     "confidence": float(predictions[0][idx])
-                })
+                }
             response["alternatives"] = alternatives
 
-        return jsonify(response)
+        return response
 
     except Exception as e:
         # ... (error handling from Exercise 5)
@@ -553,7 +579,9 @@ def predict():
     "disease": "Tomato Early Blight",
     "confidence": 0.85,
     "confidence_level": "high",
-    "recommendation": "..."
+    "symptoms": "See disease details for visible leaf symptoms",
+    "treatment": "...",
+    "prevention": "Use clean tools, monitor plants, and avoid overhead watering"
   }
 }
 ```
@@ -567,7 +595,9 @@ def predict():
     "confidence": 0.55,
     "confidence_level": "medium",
     "warning": "Moderate confidence. Review alternative predictions...",
-    "recommendation": "..."
+    "symptoms": "See disease details for visible leaf symptoms",
+    "treatment": "...",
+    "prevention": "Use clean tools, monitor plants, and avoid overhead watering"
   },
   "alternatives": [
     {"disease": "Tomato Late Blight", "confidence": 0.32},
@@ -585,7 +615,9 @@ def predict():
     "confidence": 0.35,
     "confidence_level": "low",
     "warning": "Low confidence detected. Consider retaking photo...",
-    "recommendation": "..."
+    "symptoms": "See disease details for visible leaf symptoms",
+    "treatment": "...",
+    "prevention": "Use clean tools, monitor plants, and avoid overhead watering"
   },
   "alternatives": [
     {"disease": "Tomato Late Blight", "confidence": 0.28},
@@ -607,8 +639,8 @@ Add timing measurements to identify bottlenecks:
 ```python
 import time
 
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.post('/predict')
+async def predict(image: UploadFile = File(...)):
     start_time = time.time()
 
     # ... validation ...
@@ -640,7 +672,7 @@ def predict():
         "total_time_ms": int((response_time - start_time) * 1000)
     }
 
-    return jsonify(response)
+    return response
 ```
 
 Analyze output to identify slow operations. Typical results: validation (5-10ms), preprocessing (20-50ms), inference (100-500ms).
@@ -658,8 +690,8 @@ def get_image_hash(image_bytes):
     """Generate MD5 hash of image for caching."""
     return hashlib.md5(image_bytes).hexdigest()
 
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.post('/predict')
+async def predict(image: UploadFile = File(...)):
     # ... validation ...
 
     # Check cache
@@ -668,7 +700,7 @@ def predict():
         print(f"Returning cached prediction for {image_hash}")
         cached_response = PREDICTION_CACHE[image_hash]
         cached_response["cached"] = True
-        return jsonify(cached_response)
+        return cached_response
 
     # Normal inference
     # ...
@@ -677,7 +709,7 @@ def predict():
     if len(PREDICTION_CACHE) < 100:
         PREDICTION_CACHE[image_hash] = response
 
-    return jsonify(response)
+    return response
 ```
 
 Test by sending same image twice. Second request should return instantly with `"cached": true`.
@@ -687,19 +719,19 @@ Test by sending same image twice. Second request should return instantly with `"
 Add endpoint for processing multiple images at once:
 
 ```python
-@app.route('/predict_batch', methods=['POST'])
-def predict_batch():
+@app.post('/predict_batch')
+async def predict_batch(images: list[UploadFile] = File(...)):
     try:
         # Get multiple files from request
-        files = request.files.getlist('images')
+        files = images
 
         if not files:
-            return jsonify({"status": "error", "message": "No images provided"}), 400
+            raise HTTPException(status_code=400, detail="No images provided")
 
         # Preprocess all images
         img_arrays = []
         for file in files:
-            image_bytes = file.read()
+            image_bytes = await file.read()
             img_array = preprocess_image(image_bytes)
             img_arrays.append(img_array[0])  # Remove batch dimension for stacking
 
@@ -720,13 +752,13 @@ def predict_batch():
                 "confidence_level": get_confidence_level(confidence)
             })
 
-        return jsonify({
+        return {
             "status": "success",
             "predictions": results
-        })
+        }
 
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        raise HTTPException(status_code=500, detail=str(e))
 ```
 
 Test in Postman by selecting multiple files for the `images` key.
@@ -744,7 +776,7 @@ After completing these exercises, you should be able to:
 
 These skills prepare you for the Week 06 build task: integrating a real ML model into your full LeafGuard AI backend. The exercises follow the incremental development approach: start simple, add complexity gradually, test thoroughly at each step.
 
-**Next step**: Apply these components to your main Flask application and integrate with your Android app from Week 05.
+**Next step**: Apply these components to your main FastAPI application and integrate with your Android app from Week 05.
 
 
 <!-- NAV_FOOTER_START -->

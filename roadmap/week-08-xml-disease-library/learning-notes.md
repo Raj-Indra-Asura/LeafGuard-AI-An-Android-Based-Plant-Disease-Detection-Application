@@ -1,5 +1,7 @@
 # Week 08: Learning Notes - XML Disease Library
 
+> **Accuracy note (read first):** The **shipped** library is `app/src/main/assets/diseases.xml` (in `assets/`, filename `diseases.xml`), parsed by `DiseaseLibraryActivity` with `XmlPullParser`. It has **10** `<disease>` entries using five child tags — `<name>`, `<plant>`, `<symptoms>`, `<treatment>`, `<prevention>` — and each `<name>` matches a line in `assets/labels.txt` exactly (labels use spaces, e.g. `Tomato Late Blight`, **not** underscores). The larger 38-class PlantVillage schema and `label="Tomato___Late_blight"` style shown below are an **optional real-world extension** for learning; the app itself ships the 10-entry, five-tag file. Kotlin is the primary track — Java examples are the secondary reference.
+
 ## Week 08 Context
 
 Since you are working on **Week 08**, the focus is building an **offline XML Disease Library** for LeafGuard AI.
@@ -32,7 +34,7 @@ If you complete this week well, your app becomes much more useful for farmers, s
 By the end of this week, you should be able to:
 
 - explain what XML is and why it is used in Android projects
-- design a structured `disease_library.xml` file in the `assets/` folder
+- design a structured `diseases.xml` file in the `assets/` folder
 - parse XML using `XmlPullParser` in Java
 - compare **DOM**, **SAX**, and **XmlPullParser**
 - build a `Disease` model class from XML tags
@@ -133,12 +135,12 @@ Always validate your XML mentally by checking:
 
 ---
 
-## Designing `disease_library.xml`
+## Designing `diseases.xml`
 
 The XML file should live at:
 
 ```text
-app/src/main/assets/disease_library.xml
+app/src/main/assets/diseases.xml
 ```
 
 The `assets/` folder is a good choice because:
@@ -225,7 +227,7 @@ The most important rule is this:
 If the model outputs `Tomato___Target_Spot` but the XML says `Tomato_Target_Spot`, lookup will fail.
 
 Below is a recommended master catalogue for the full PlantVillage label set.
-Use it when designing the final `disease_library.xml`.
+Use it when designing the final `diseases.xml`.
 
 | # | ML Label | Display Name | Plant | Category | Suggested Drawable |
 |---|---|---|---|---|---|
@@ -1038,7 +1040,7 @@ Disease disease = repository.findByLabel(predictedLabel);
 if (disease == null) {
     titleTextView.setText(formatLabel(predictedLabel));
     summaryTextView.setText("Detailed library information is not available yet for this prediction.");
-    symptomsTextView.setText("Please review the leaf manually and update disease_library.xml later.");
+    symptomsTextView.setText("Please review the leaf manually and update diseases.xml later.");
 }
 ```
 
@@ -1530,7 +1532,7 @@ Your XML feature should handle these cases:
 ### Example logging
 
 ```java
-Log.e("DiseaseRepository", "Failed to parse disease_library.xml", exception);
+Log.e("DiseaseRepository", "Failed to parse diseases.xml", exception);
 ```
 
 ### Example user-facing message
@@ -1652,7 +1654,7 @@ Because XML parsing is part of the CSE 2206 syllabus, and Android already uses X
 
 ### 3. What is the role of the `assets/` folder?
 
-The `assets/` folder stores raw files packaged with the APK. I used it to keep `disease_library.xml` so the app can load disease information offline.
+The `assets/` folder stores raw files packaged with the APK. I used it to keep `diseases.xml` so the app can load disease information offline.
 
 ### 4. How do you handle nested symptom lists?
 
@@ -1686,7 +1688,7 @@ I could add search filters, multilingual disease descriptions, local Room storag
 
 ## Practice Explanation You Should Be Able to Say Out Loud
 
-> In Week 08 of LeafGuard AI, I created an offline XML disease library. I stored `disease_library.xml` in the assets folder and parsed it in Java using `XmlPullParser`. Each XML disease entry is converted into a `Disease` object. I then cache the data inside a singleton `DiseaseRepository`, which provides fast list access for the RecyclerView and fast label lookup for the result screen. This design keeps parsing logic separate from UI logic and improves performance by avoiding repeated parsing.
+> In Week 08 of LeafGuard AI, I created an offline XML disease library. I stored `diseases.xml` in the assets folder and parsed it in Java using `XmlPullParser`. Each XML disease entry is converted into a `Disease` object. I then cache the data inside a singleton `DiseaseRepository`, which provides fast list access for the RecyclerView and fast label lookup for the result screen. This design keeps parsing logic separate from UI logic and improves performance by avoiding repeated parsing.
 
 Practice saying that until it feels natural.
 
@@ -1694,7 +1696,7 @@ Practice saying that until it feels natural.
 
 ## Mini Checklist Before You Move On
 
-- [ ] `disease_library.xml` exists in `assets/`
+- [ ] `diseases.xml` exists in `assets/`
 - [ ] labels exactly match ML outputs
 - [ ] all important diseases have symptoms, treatment, and prevention
 - [ ] parser handles nested `<item>` tags
@@ -1765,7 +1767,7 @@ Do not forget to save proof of your work in the week folder.
 
 Recommended evidence items:
 
-- screenshot of `disease_library.xml` in `assets/`
+- screenshot of `diseases.xml` in `assets/`
 - screenshot of RecyclerView disease list
 - screenshot of disease detail view
 - screenshot of result screen showing lookup integration

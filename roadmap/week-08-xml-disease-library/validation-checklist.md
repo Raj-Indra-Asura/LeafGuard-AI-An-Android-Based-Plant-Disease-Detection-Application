@@ -1,20 +1,22 @@
 # Week 08 Validation Checklist — XML Disease Library
 
-> Complete all items before marking Week 08 done.
+> Complete all items before marking Week 08 done. **How to use this:** for each row, answer **Yes** or **No**. Every row should be **Yes** before you finish the week. A **No** just tells you what to go back and fix.
+>
+> **Accuracy note:** the shipped `assets/diseases.xml` uses five tags — `<name>`, `<plant>`, `<symptoms>`, `<treatment>`, `<prevention>` — with **10** `<disease>` entries whose `<name>` matches `assets/labels.txt` exactly. Extra fields (scientific name, severity, etc.) are an optional extension if you chose the richer schema.
 
 ---
 
 ## 1. XML File Quality
 
-| # | Check | ✓/✗ |
+| # | Check | Yes / No |
 |---|-------|-----|
-| 1.1 | `assets/disease_library.xml` exists | |
+| 1.1 | `assets/diseases.xml` exists | |
 | 1.2 | XML opens in browser without parse errors | |
 | 1.3 | Root element is `<diseases>` | |
 | 1.4 | At least 10 `<disease>` entries present | |
-| 1.5 | All 8 required fields present per disease | |
-| 1.6 | No empty `<label>` elements | |
-| 1.7 | Labels match model output exactly (e.g., `Tomato___Late_blight`) | |
+| 1.5 | All 5 shipped fields present per disease (`name`, `plant`, `symptoms`, `treatment`, `prevention`) | |
+| 1.6 | No empty `<name>` elements | |
+| 1.7 | Each `<name>` matches a line in `labels.txt` exactly (e.g., `Tomato Late Blight`, with spaces — not underscores) | |
 | 1.8 | UTF-8 encoding declared in XML header | |
 | 1.9 | Covers at least 4 different crops | |
 | 1.10 | Includes both diseased and healthy entries | |
@@ -23,7 +25,7 @@
 
 ## 2. Disease.java Model Class
 
-| # | Check | ✓/✗ |
+| # | Check | Yes / No |
 |---|-------|-----|
 | 2.1 | Class has all 8 fields: label, commonName, scientificName, affectedCrop, symptoms, treatment, prevention, severity | |
 | 2.2 | Default (no-arg) constructor present | |
@@ -35,7 +37,7 @@
 
 ## 3. DiseaseXmlParser.java
 
-| # | Check | ✓/✗ |
+| # | Check | Yes / No |
 |---|-------|-----|
 | 3.1 | Uses `XmlPullParser` (NOT DOM or SAX) | |
 | 3.2 | `parse(InputStream)` method signature correct | |
@@ -50,7 +52,7 @@
 
 ## 4. DiseaseRepository.java
 
-| # | Check | ✓/✗ |
+| # | Check | Yes / No |
 |---|-------|-----|
 | 4.1 | Implements singleton pattern (`getInstance()`) | |
 | 4.2 | `loadIfNeeded()` parses XML only once per app session | |
@@ -67,7 +69,7 @@
 
 ## 5. ResultActivity Integration
 
-| # | Check | ✓/✗ |
+| # | Check | Yes / No |
 |---|-------|-----|
 | 5.1 | Disease info loaded on background thread | |
 | 5.2 | UI updated via `runOnUiThread()` | |
@@ -82,7 +84,7 @@
 
 ## 6. DiseaseLibraryActivity
 
-| # | Check | ✓/✗ |
+| # | Check | Yes / No |
 |---|-------|-----|
 | 6.1 | Activity listed in AndroidManifest.xml | |
 | 6.2 | Opens from MainActivity menu or button | |
@@ -99,7 +101,7 @@
 
 ## 7. Testing
 
-| # | Check | ✓/✗ |
+| # | Check | Yes / No |
 |---|-------|-----|
 | 7.1 | Unit test: single disease parsed correctly | |
 | 7.2 | Unit test: multiple diseases parsed correctly | |

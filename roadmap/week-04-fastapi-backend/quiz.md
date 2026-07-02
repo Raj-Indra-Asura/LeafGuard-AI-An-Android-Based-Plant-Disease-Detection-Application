@@ -12,9 +12,9 @@ This quiz tests your understanding of Week 04 concepts. Answer all questions wit
 
 ---
 
-## Section 1: REST API Fundamentals (Questions 1-3)
+## Section 1: REST (REpresentational State Transfer) API Fundamentals (Questions 1-3)
 
-### Question 1: HTTP Methods
+### Question 1: HTTP (HyperText Transfer Protocol) Methods
 
 **Which HTTP method should be used for the LeafGuard /predict endpoint and why?**
 
@@ -56,7 +56,7 @@ D) DELETE - because we are removing the disease from the image
 - [ ] B. Server remembers previous requests (stateful sessions)
 - [ ] C. Use standard HTTP methods (GET, POST, PUT, DELETE)
 - [ ] D. Always use XML for responses (not JSON)
-- [ ] E. Resources are accessed via URLs (/api/predict, /api/diseases)
+- [ ] E. Resources are accessed via URLs (/predict, /api/diseases)
 
 **Correct Options:** _______
 
@@ -69,7 +69,7 @@ D) DELETE - because we are removing the disease from the image
 **What is the purpose of Pydantic models in FastAPI?**
 
 ```python
-class PredictionResponse(BaseModel):
+class PredictionResult(BaseModel):
     disease: str
     confidence: float = Field(..., ge=0.0, le=1.0)
 ```
@@ -135,11 +135,14 @@ D) To compress responses
 
 **Explain the difference between these two URLs:**
 - http://127.0.0.1:8000
-- http://192.168.1.100:8000
+- http://10.0.2.2:8000 (Android emulator)
+- http://192.168.1.100:8000 (physical phone on same Wi-Fi)
 
 **Your Answer:**
 
 127.0.0.1: _______________________________________________
+
+10.0.2.2: _______________________________________________
 
 192.168.1.100: _______________________________________________
 
@@ -165,7 +168,7 @@ uvicorn main:app --reload
 
 ### Question 9: Firewall Troubleshooting
 
-**Your phone cannot connect to FastAPI backend at http://192.168.1.100:8000**
+**Your Android emulator cannot connect to FastAPI backend at http://10.0.2.2:8000, or your physical phone cannot connect at http://192.168.1.100:8000**
 
 **List 4 things to check:**
 
@@ -223,10 +226,10 @@ D) Multipart is faster to parse
 
 ```python
 @app.post("/predict")
-async def predict(file: UploadFile = File(...)):
-    contents = await file.read()
-    image = Image.open(io.BytesIO(contents))
-    result = model.predict(image)
+async def predict(image: UploadFile = File(...)):
+    contents = await image.read()
+    pil_image = Image.open(io.BytesIO(contents))
+    result = model.predict(pil_image)
     return {"disease": result}
 ```
 
@@ -274,7 +277,7 @@ def validate_image(file: UploadFile) -> Optional[str]:
 
 **Arrange these steps in correct order for a successful disease prediction:**
 
-- [ ] A. Android app uploads image to /api/predict
+- [ ] A. Android app uploads image to /predict
 - [ ] B. FastAPI validates file type and size
 - [ ] C. User captures leaf photo with camera
 - [ ] D. Server returns JSON with disease information
@@ -352,7 +355,8 @@ ERROR: Error loading ASGI app. Could not import module "main".
 **Q7:**
 - 127.0.0.1: Localhost, refers to "this device" only
 - 192.168.1.100: Local network IP, accessible from other devices on same network
-- Phone can access: 192.168.1.100:8000
+- Emulator can access: 10.0.2.2:8000
+- Physical phone can access: 192.168.1.100:8000
 
 **Q8:**
 - Problem: Binds to 127.0.0.1 only (localhost)
@@ -384,7 +388,7 @@ ERROR: Error loading ASGI app. Could not import module "main".
 **Q14:** C → A → B → E → D → F
 
 **Q15:**
-1. Cause: Not in correct directory | Solution: cd to leafguard-backend
+1. Cause: Not in correct directory | Solution: cd to backend-api
 2. Cause: main.py doesn't exist | Solution: Verify file exists
 3. Cause: Virtual environment not activated | Solution: source venv/bin/activate
 

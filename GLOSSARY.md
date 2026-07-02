@@ -23,6 +23,9 @@ Collection of tools, libraries, and APIs needed to develop Android applications.
 **API (Application Programming Interface)**
 Set of rules and protocols for building software. In LeafGuard AI: REST API endpoints that Android app calls to communicate with backend.
 
+**argmax**
+The index of the largest value in a list. The classifier's output position with the highest score is the predicted disease (argmax of the 10 scores).
+
 **APK (Android Package)**
 File format for distributing and installing Android apps. Contains compiled code, resources, assets, and manifest. Your final deliverable will be an APK file.
 
@@ -70,6 +73,9 @@ Probability (0.0 to 1.0 or 0% to 100%) that represents how certain the ML model 
 **ConstraintLayout**
 Android layout that allows flexible positioning of UI elements using constraints (relationships between views). Modern alternative to RelativeLayout.
 
+**Coroutine**
+Kotlin's way of doing slow work (network calls, database reads) without freezing the screen. Started with `lifecycleScope.launch { }` in an Activity; functions that must run inside one are marked `suspend`. The Java track uses `ExecutorService` threads instead.
+
 **CRUD (Create, Read, Update, Delete)**
 Four basic operations for persistent storage. In Room DAO: `@Insert` (Create), `@Query` (Read), `@Update` (Update), `@Delete` (Delete).
 
@@ -93,6 +99,9 @@ Resource type in Android for images and graphics. Stored in `res/drawable/`. Can
 
 ## E
 
+**data class**
+A Kotlin class that just holds data; the compiler auto-generates `equals`, `toString`, and `copy`. LeafGuard AI uses data classes like `PredictionResponse` and `ScanRecord`. The Java equivalent is a POJO with getters/setters.
+
 **Edge Case**
 Unusual or extreme scenario that may cause software to behave unexpectedly. Examples: no internet, permission denied, empty database, corrupted image.
 
@@ -101,6 +110,9 @@ Software that simulates an Android device on your computer. Used for testing app
 
 **Entity**
 Class decorated with `@Entity` annotation in Room database. Represents a table in SQLite database. Each instance is a row; each field is a column.
+
+**enqueue**
+Retrofit method that runs a network request in the background and calls your `onResponse`/`onFailure` callback when it finishes, so the screen never freezes.
 
 **Endpoint**
 Specific URL path on a server that performs an operation. Example: `POST /predict` is an endpoint that accepts image uploads.
@@ -111,6 +123,12 @@ Specific URL path on a server that performs an operation. Example: `POST /predic
 
 **FastAPI**
 Modern Python web framework for building APIs. Used in LeafGuard AI backend for handling image upload and returning predictions.
+
+**Espresso**
+Android's library for UI (user interface) tests: it launches a real screen on an emulator and checks what is visible, like a robot user. Used in `MainActivityTest`.
+
+**FileProvider**
+Android component that lets your app safely share a file (like a camera photo) with another app via a content URI, without exposing the raw file path.
 
 **Fragment**
 Reusable portion of an Android UI. Like a mini-activity that can be embedded in activities. Not required for LeafGuard AI but good to know.
@@ -175,10 +193,21 @@ Lightweight data format for exchanging data between client and server. Example: 
 
 ---
 
+**JUnit**
+The standard Java/Kotlin testing library. Marks test methods with `@Test`; used for LeafGuard AI's unit tests.
+
+**Jupyter Notebook**
+An interactive document that mixes explanations and runnable Python code cells. The `notebooks/` folder has one per week; open with `jupyter notebook`.
+
+---
+
 ## K
 
+**kapt (Kotlin Annotation Processing Tool)**
+Gradle plugin that lets Kotlin projects run annotation processors like Room's code generator. kapt lets Kotlin generate the database code; without it, Room produces no code and the app crashes. The Java track uses `annotationProcessor` instead.
+
 **Kotlin**
-Modern programming language for Android development, interoperable with Java. Not used in LeafGuard AI (Java preferred for course), but good to be aware of.
+Modern programming language for Android development, fully interoperable with Java and recommended by Google. **Kotlin is the primary track for LeafGuard AI** (`android-app-kotlin/`); a complete Java twin lives in `android-app/` as the secondary track.
 
 ---
 
@@ -186,6 +215,9 @@ Modern programming language for Android development, interoperable with Java. No
 
 **Label**
 Text identifier for a class in machine learning. Example: "Tomato Early Blight", "Potato Late Blight". Stored in `labels.txt` and mapped to model output indices.
+
+**lifecycleScope**
+A coroutine scope tied to an Activity's lifetime. Work launched with `lifecycleScope.launch { }` is cancelled automatically when the screen closes, preventing crashes and leaks.
 
 **Latency**
 Time delay between action and response. In LeafGuard AI: time from image upload to receiving prediction. Measured in milliseconds or seconds.
@@ -218,6 +250,9 @@ Field of AI where computers learn patterns from data without explicit programmin
 **Model**
 In machine learning: trained neural network that makes predictions. In Android: data class representing business entities.
 
+**Mock predictor**
+A stand-in that returns realistic fake predictions so you can build and test the app before a real trained model exists. The backend uses one when `USE_MOCK` is on or no model file is found.
+
 **Multipart Form Data**
 HTTP encoding type for uploading files. Content-Type: `multipart/form-data`. Used when posting images to backend.
 
@@ -247,6 +282,9 @@ HTTP client library for Java/Android. Used internally by Retrofit for making net
 **onActivityResult()**
 Callback method in Activity that receives results from other activities (camera, gallery). Being replaced by Activity Result API but still widely used.
 
+**Instrumented Test (UI Test)**
+An automated test that runs on a real emulator or phone and interacts with real screens. Lives in `app/src/androidTest/`; run with `./gradlew connectedDebugAndroidTest`.
+
 **Offline Mode**
 LeafGuard AI feature where prediction runs on-device using TensorFlow Lite instead of uploading to backend. Works without internet.
 
@@ -265,6 +303,9 @@ User authorization required to access sensitive device features (camera, locatio
 
 **PIL (Python Imaging Library) / Pillow**
 Python library for image processing. Used in FastAPI backend to load and preprocess images.
+
+**Placeholder model**
+The committed `assets/model.tflite` is a small text file standing in for a real trained model so the project builds; the classifier detects it and uses a simple green-channel fallback until you replace it in Week 09.
 
 **PlantVillage**
 Public dataset of plant leaf images labeled with diseases. Commonly used for training plant disease models.
@@ -318,7 +359,10 @@ Permission that must be requested while app is running (not just in Manifest). R
 See "Android SDK" above.
 
 **Singleton**
-Design pattern ensuring a class has only one instance. Used for RetrofitClient and AppDatabase to avoid creating multiple instances.
+Design pattern ensuring a class has only one instance. Used for RetrofitClient and AppDatabase to avoid creating multiple instances. In Kotlin this is an `object` declaration.
+
+**suspend function**
+A Kotlin function that must run inside a coroutine because it may take time (like a database query). Room DAO methods in the Kotlin app are `suspend fun`.
 
 **SQLite**
 Lightweight relational database engine built into Android. Room is an abstraction on top of SQLite.
@@ -339,6 +383,9 @@ Lightweight version of TensorFlow optimized for mobile and embedded devices. Run
 **Tensor**
 Multi-dimensional array. ML models work with tensors. Image input: 4D tensor `[1, 224, 224, 3]` (batch, height, width, channels).
 
+**Track (learning track)**
+The programming-language path you follow the course in. Track A = Kotlin (primary, `android-app-kotlin/`), Track B = Java (secondary, `android-app/`); both build the same app.
+
 **Toast**
 Small popup message displayed briefly at bottom of screen. Created with `Toast.makeText(context, message, Toast.LENGTH_SHORT).show()`.
 
@@ -348,6 +395,9 @@ Small popup message displayed briefly at bottom of screen. Created with `Toast.m
 
 **UI (User Interface)**
 Visual elements users interact with. In Android: layouts, buttons, text fields, images defined in XML.
+
+**Unit Test**
+A tiny program that checks one small piece of your code on your computer — no phone or emulator needed. Lives in `app/src/test/`; run with `./gradlew testDebugUnitTest`.
 
 **URI (Uniform Resource Identifier)**
 String identifying a resource. Android uses URIs to reference images from camera or gallery.
@@ -361,6 +411,9 @@ ASGI server for running FastAPI applications. Command: `uvicorn main:app --host 
 
 **Validation**
 Process of checking if code meets requirements. In LeafGuard AI: weekly validation checklists with pass/fail criteria.
+
+**ViewBinding**
+Android feature that generates a type-safe class for each layout XML so you can write `binding.buttonOpenCamera` instead of `findViewById`. Enabled in both LeafGuard apps.
 
 **ViewHolder**
 Design pattern used with RecyclerView. Caches view references to avoid repeated `findViewById()` calls, improving performance.
@@ -386,7 +439,7 @@ Code that encapsulates another library or system to simplify its use. Gradle Wra
 Markup language for storing and transporting data. Used in Android for layouts, manifest, and disease library file.
 
 **XmlPullParser**
-Android API for parsing XML files. Used to read `disease_library.xml` and extract disease information.
+Android API for parsing XML files. Used in `DiseaseLibraryActivity` to read `assets/diseases.xml` and extract disease information.
 
 ---
 
@@ -441,6 +494,9 @@ Method called before Activity is destroyed. Clean up resources here.
 
 **Base URL**
 Root address of API (e.g., `http://192.168.1.5:8000`).
+
+**enqueue**
+Retrofit method that runs a network request in the background and calls your `onResponse`/`onFailure` callback when it finishes, so the screen never freezes.
 
 **Endpoint**
 Specific path on server (e.g., `/predict`).

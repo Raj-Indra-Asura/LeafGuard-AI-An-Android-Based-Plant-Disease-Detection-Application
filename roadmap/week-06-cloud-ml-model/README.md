@@ -1,8 +1,36 @@
 # Week 06: Real ML Model Integration in Backend
 
+## What you'll learn & why
+
+This week you learn how LeafGuard AI turns a leaf photo into a prediction. You will see how an image is prepared, how a model output index maps to a disease label, and how the backend returns the result as JSON for Android. The real trained model is not part of Week 06; it arrives in Week 09, so this week focuses on understanding Convolutional Neural Network (CNN) inference and wiring the prediction pipeline with the current mock/placeholder behavior.
+
+## New words this week
+
+- **backend**: The server-side part of the app that receives the photo, runs prediction logic, and sends results back to Android.
+- **API (Application Programming Interface)**: A clear contract for how Android talks to the backend, including the URL, request format, and response fields.
+- **HTTP POST**: A web request method used when Android sends data, such as an image, to the backend.
+- **multipart** (**multipart/form-data**): A request format used to upload files; for `/predict`, the file part must be named `image`.
+- **JSON (JavaScript Object Notation)**: A simple text format for structured data; the backend returns fields such as `disease`, `confidence`, `symptoms`, `treatment`, and `prevention`.
+- **inference**: Running an already-trained model on a new image to get a prediction.
+- **model**: The Machine Learning (ML) component that converts preprocessed image numbers into class scores.
+- **label**: The human-readable disease name assigned to a model class index.
+
+See the full [glossary](../../GLOSSARY.md) for more terms.
+
+## Week 06 project reality check
+
+> Note: The committed `assets/model.tflite` is a placeholder TEXT file, not a real trained model. Until a real model is provided, the backend uses a **mock predictor** (in `model_loader.py`) and the on-device `TFLiteClassifier` uses a **green-channel heuristic fallback**, so the app still runs end-to-end. The real trained model arrives in **Week 09**. Low or odd confidence values are normal this week because predictions are placeholders.
+
+## Related materials
+
+- Exercises: [backend](../../exercises/backend/) and [ML](../../exercises/ml/)
+- Solutions: [Week 06 solutions](../../solutions/week-06/)
+- Notebooks: [Week 06 notebooks](../../notebooks/week-06/)
+- Glossary: [GLOSSARY.md](../../GLOSSARY.md)
+
 ## 1. Overview
 
-This week marks the critical transition from mock predictions to real machine learning model inference in your Flask backend. You will integrate a convolutional neural network (CNN) model trained for plant disease detection, implement proper image preprocessing pipelines, decode model outputs using label mapping, and return confidence scores to your Android client. This transforms LeafGuard AI from a proof-of-concept into a functional disease detection system.
+This week marks the critical transition from placeholder/mock predictions to a correctly wired inference pipeline in your FastAPI backend. You will integrate a convolutional neural network (CNN) model trained for plant disease detection, implement proper image preprocessing pipelines, decode model outputs using label mapping, and return confidence scores to your Android client. This transforms LeafGuard AI from a proof-of-concept into a functional disease detection system.
 
 The focus is on mobile engineering principles: understanding how to integrate pre-trained models without needing deep ML expertise, handling real-world constraints like limited model accuracy, implementing fallback strategies when full models are unavailable, and managing the complete inference pipeline from raw image bytes to human-readable predictions.
 
@@ -12,13 +40,13 @@ The focus is on mobile engineering principles: understanding how to integrate pr
 
 By the end of Week 06, you will be able to:
 
-1. Load and initialize TensorFlow/PyTorch models in a Flask application for inference
+1. Load and initialize TensorFlow/PyTorch models in a FastAPI application for inference
 2. Implement image preprocessing pipelines (resize, normalize, tensor conversion) matching training parameters
 3. Decode model outputs using label mapping files or hardcoded class lists
 4. Extract confidence scores from softmax probability distributions
 5. Design robust inference endpoints handling various image formats and error conditions
 6. Implement fallback strategies using limited class models when full datasets are unavailable
-7. Return structured JSON responses containing disease name, confidence, and recommendations
+7. Return structured JSON responses containing disease name, confidence, symptoms, treatment, and prevention
 8. Test model integration using tools like Postman before Android integration
 9. Understand model limitations and communicate uncertainty to users appropriately
 10. Apply CSE 2206 concepts: file I/O for model loading, data structures for label mapping, exception handling for inference errors
@@ -27,9 +55,9 @@ By the end of Week 06, you will be able to:
 
 Before starting Week 06, ensure you have completed:
 
-- **Week 05 fully functional**: Your Android app can capture images, send them to your Flask `/predict` endpoint via Retrofit, and display mock responses in the UI
-- **Flask development environment**: Python 3.8+, virtual environment activated, Flask server running on localhost:5000 or deployed URL
-- **Model file access**: Downloaded a pre-trained plant disease model (TFLite, SavedModel, or PyTorch) or prepared to use the fallback 6-class model approach
+- **Week 05 fully functional**: Your Android app can capture images, send them to your FastAPI `/predict` endpoint via Retrofit, and display mock responses in the UI
+- **FastAPI development environment**: Python 3.8+, virtual environment activated, FastAPI server running on `http://localhost:8000` for computer/browser/curl, and Android emulator using `http://10.0.2.2:8000/` or deployed URL
+- **Model file access**: Downloaded a pre-trained plant disease model (TFLite, SavedModel, or PyTorch) or prepared to use the current 10-label placeholder/mock contract
 - **Basic Python understanding**: File I/O, dictionaries, lists, function definitions, imports
 - **HTTP testing tools**: Postman installed or familiarity with curl for API testing
 
@@ -60,7 +88,7 @@ The machine learning model is treated as a **black box component** you integrate
 - Specific channel order (RGB vs BGR)
 - Batch dimension (shape: [1, height, width, channels])
 
-**Output contract**: A 1D array of probabilities, length equal to number of classes. Example for 6-class model:
+**Output contract**: A 1D array of probabilities, length equal to number of classes. Example for 10-label placeholder/mock contract:
 ```
 [0.02, 0.85, 0.01, 0.05, 0.03, 0.04]
   ↑     ↑
@@ -102,17 +130,24 @@ img_array = np.expand_dims(img_array, axis=0)  # Shape: (1, 224, 224, 3)
 
 ### 5.3 Label Mapping
 
+**Current Week 06 labels (exact order)**: Tomato Early Blight, Tomato Late Blight, Tomato Healthy, Potato Early Blight, Potato Late Blight, Potato Healthy, Corn Gray Leaf Spot, Corn Northern Leaf Blight, Corn Healthy, Apple Scab. Keep this order when reading `assets/labels.txt`.
+
+
 Models output class indices (0, 1, 2, ...), but users need disease names ("Tomato Early Blight"). You need a mapping:
 
 **Approach 1: Hardcoded dictionary (simple, good for small class counts)**
 ```python
 LABELS = {
-    0: "Tomato Healthy",
-    1: "Tomato Early Blight",
-    2: "Tomato Late Blight",
-    3: "Potato Healthy",
-    4: "Potato Early Blight",
-    5: "Potato Late Blight"
+    0: "Tomato Early Blight",
+    1: "Tomato Late Blight",
+    2: "Tomato Healthy",
+    3: "Potato Early Blight",
+    4: "Potato Late Blight",
+    5: "Potato Healthy",
+    6: "Corn Gray Leaf Spot",
+    7: "Corn Northern Leaf Blight",
+    8: "Corn Healthy",
+    9: "Apple Scab"
 }
 ```
 
@@ -130,20 +165,20 @@ with open('labels.txt', 'r') as f:
     LABELS = [line.strip() for line in f.readlines()]
 ```
 
-**For Week 06**: Use the approach that matches your model. If using a fallback 6-class model, hardcode the labels for simplicity.
+**For Week 06**: Use `assets/labels.txt` in the exact 10-label order above. The file is real even though `assets/model.tflite` is a placeholder text file.
 
 ### 5.4 Inference Pipeline
 
-Putting it all together in Flask:
+Putting it all together in FastAPI (`backend-api/main.py`, single-file route layout):
 
 ```python
 import tensorflow as tf
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, UploadFile, File, HTTPException
 import numpy as np
 from PIL import Image
 import io
 
-app = Flask(__name__)
+app = FastAPI()
 
 # Load model once at startup
 MODEL = tf.keras.models.load_model('plant_disease_model.h5')
@@ -154,12 +189,12 @@ LABELS = {
     # ... full mapping
 }
 
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.post('/predict')
+async def predict(image: UploadFile = File(...)):
     try:
         # 1. Get image bytes from request
-        image_file = request.files['image']
-        image_bytes = image_file.read()
+        image_file = image
+        image_bytes = await image_file.read()
 
         # 2. Preprocess
         image = Image.open(io.BytesIO(image_bytes))
@@ -176,17 +211,19 @@ def predict():
         disease_name = LABELS[class_idx]
 
         # 5. Return JSON
-        return jsonify({
+        return {
             "status": "success",
             "prediction": {
                 "disease": disease_name,
                 "confidence": confidence,
-                "recommendation": get_recommendation(disease_name)
+                "symptoms": get_symptoms(disease_name),
+                "treatment": get_recommendation(disease_name),
+                "prevention": get_prevention(disease_name)
             }
-        })
+        }
 
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        raise HTTPException(status_code=500, detail=str(e))
 ```
 
 ### 5.5 Confidence Scores and Thresholding
@@ -207,7 +244,9 @@ Raw confidence scores may not reflect true certainty. A model might output 0.65 
     "disease": "Tomato Early Blight",
     "confidence": 0.78,
     "confidence_level": "high",
-    "recommendation": "Remove infected leaves, apply copper fungicide"
+    "symptoms": "See disease details for visible leaf symptoms",
+    "treatment": "Remove infected leaves, apply copper fungicide",
+    "prevention": "Use clean tools, monitor plants, and avoid overhead watering"
   },
   "alternatives": [
     {"disease": "Tomato Late Blight", "confidence": 0.15},
@@ -216,29 +255,25 @@ Raw confidence scores may not reflect true certainty. A model might output 0.65 
 }
 ```
 
-### 5.6 Fallback Strategy: 6-Class Model
+### 5.6 Placeholder/Mock Strategy for Week 06
 
-**Reality check**: You may not have access to a trained 38-class PlantVillage model. Training requires GPUs, large datasets, and ML expertise beyond this course's scope.
+**Reality check**: The committed `assets/model.tflite` is a text placeholder, so Week 06 predictions are not real diagnoses yet.
 
-**Fallback solution**: Use a simplified 6-class model covering:
-1. Tomato Healthy
-2. Tomato Early Blight
-3. Tomato Late Blight
-4. Potato Healthy
-5. Potato Early Blight
-6. Potato Late Blight
+**Current solution**: Keep the end-to-end contract working with the backend mock predictor and the Android green-channel heuristic fallback. Both use the same 10 labels listed in `assets/labels.txt`.
 
-**Why this works**: These are the most common classes in plant disease datasets, models are easier to train with small datasets, and it demonstrates full integration skills without requiring extensive ML resources.
+**Why this works**: You can validate the mobile engineering pipeline now: image upload, preprocessing, class-index-to-label mapping, JSON parsing, and user-friendly display. The trained model is acquired in Week 09.
 
-**Implementation**: If you use the fallback, clearly communicate limitations in your UI: "LeafGuard AI currently supports tomato and potato disease detection. More crops coming soon!"
+**Implementation**: Clearly communicate limitations in your UI and documentation: "Predictions are placeholders while the trained model is being prepared."
 
-**Grading note**: Your project is evaluated on mobile engineering skills (API integration, UI/UX, error handling), not ML model accuracy. A working 6-class system is better than a non-functional 38-class attempt.
+**Grading note**: Your project is evaluated this week on integration quality, API correctness, error handling, and honest communication—not model accuracy.
 
 ### 5.7 Testing Before Android Integration
 
 **Use Postman to test your `/predict` endpoint**:
 
-1. Create new POST request to `http://localhost:5000/predict`
+**Expected result:** Your request reaches `/predict`, the multipart part is named `image`, and the JSON response includes `disease`, `confidence`, `symptoms`, `treatment`, and `prevention`.
+
+1. Create new POST request to `http://localhost:8000/predict` (computer/browser/curl; Android emulator uses `http://10.0.2.2:8000/`)
 2. Set Body type to `form-data`
 3. Add key `image`, change type to `File`, upload a test plant leaf image
 4. Send request
@@ -251,7 +286,7 @@ Raw confidence scores may not reflect true certainty. A model might output 0.65 
 - Non-leaf image (e.g., cat photo) → Should still return a class but with low confidence (model limitation)
 - Invalid file format (e.g., .txt file) → Should return error with 400 status code
 
-**Only proceed to Android integration after Flask endpoint passes all tests.**
+**Only proceed to Android integration after FastAPI endpoint passes all tests.**
 
 ### 5.8 Model Limitations and User Communication
 
@@ -277,7 +312,7 @@ Raw confidence scores may not reflect true certainty. A model might output 0.65 
 
 ### Practice 1: Model Loading Test
 
-Create a minimal Flask script that loads a model and prints its input/output shapes:
+Create a minimal FastAPI script that loads a model and prints its input/output shapes:
 
 ```python
 import tensorflow as tf
@@ -323,12 +358,16 @@ Test label mapping logic:
 
 ```python
 LABELS = {
-    0: "Tomato Healthy",
-    1: "Tomato Early Blight",
-    2: "Tomato Late Blight",
-    3: "Potato Healthy",
-    4: "Potato Early Blight",
-    5: "Potato Late Blight"
+    0: "Tomato Early Blight",
+    1: "Tomato Late Blight",
+    2: "Tomato Healthy",
+    3: "Potato Early Blight",
+    4: "Potato Late Blight",
+    5: "Potato Healthy",
+    6: "Corn Gray Leaf Spot",
+    7: "Corn Northern Leaf Blight",
+    8: "Corn Healthy",
+    9: "Apple Scab"
 }
 
 # Simulate model output
@@ -348,21 +387,21 @@ Expected output: `Prediction: Tomato Early Blight (75.00%)`
 Test how your endpoint handles invalid inputs:
 
 ```python
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.post('/predict')
+async def predict(image: UploadFile = File(...)):
     try:
-        if 'image' not in request.files:
-            return jsonify({"status": "error", "message": "No image provided"}), 400
+        if image is None:
+            raise HTTPException(status_code=400, detail="No image provided")
 
-        image_file = request.files['image']
+        image_file = image
 
         if image_file.filename == '':
-            return jsonify({"status": "error", "message": "Empty filename"}), 400
+            raise HTTPException(status_code=400, detail="Empty filename")
 
         # ... rest of inference logic
 
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        raise HTTPException(status_code=500, detail=str(e))
 ```
 
 Test with Postman by sending requests without image, with empty files, with non-image files.
@@ -374,8 +413,8 @@ Measure inference time to understand latency:
 ```python
 import time
 
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.post('/predict')
+async def predict(image: UploadFile = File(...)):
     start_time = time.time()
 
     # ... preprocessing and inference
@@ -383,11 +422,11 @@ def predict():
     inference_time = time.time() - start_time
     print(f"Inference took {inference_time:.3f} seconds")
 
-    return jsonify({
+    return {
         "status": "success",
         "prediction": {...},
         "inference_time_ms": int(inference_time * 1000)
-    })
+    }
 ```
 
 Typical inference times: 100-500ms on CPU, 20-100ms on GPU. If > 2 seconds, investigate preprocessing bottlenecks.
@@ -445,20 +484,20 @@ print("Min:", img_array.min(), "Max:", img_array.max())  # Should be 0.0 and 1.0
 
 **Problem**: You load the model inside the `/predict` function, causing 5-10 second delays per request.
 
-**Solution**: Load model once at Flask startup (global scope), reuse for all requests:
+**Solution**: Load model once at FastAPI startup (global scope), reuse for all requests:
 
 ```python
 # BAD: Loads every request
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.post('/predict')
+async def predict(image: UploadFile = File(...)):
     model = tf.keras.models.load_model('model.h5')  # 5 seconds!
     predictions = model.predict(img)
 
 # GOOD: Load once at startup
 MODEL = tf.keras.models.load_model('model.h5')
 
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.post('/predict')
+async def predict(image: UploadFile = File(...)):
     predictions = MODEL.predict(img)  # 100ms
 ```
 
@@ -470,19 +509,21 @@ def predict():
 
 ```python
 if confidence < 0.5:
-    return jsonify({
+    return {
         "status": "success",
         "prediction": {
             "disease": disease_name,
             "confidence": confidence,
             "warning": "Low confidence - consider retaking photo or consulting expert"
         }
-    })
+    }
 ```
 
 ### Pitfall 6: No Error Handling for Missing Dependencies
 
-**Problem**: Flask crashes on startup if TensorFlow isn't installed, giving cryptic errors.
+This is normal — here's the fix: TensorFlow import failures should not stop Week 06. In this repository, `model_loader.py` automatically falls back to the mock predictor when TensorFlow is missing, `USE_MOCK` is enabled, or no real Keras model file exists.
+
+**Problem**: FastAPI startup can fail if TensorFlow isn't installed, giving cryptic errors.
 
 **Solution**: Add graceful error handling:
 
@@ -523,7 +564,7 @@ MODEL = tf.keras.models.load_model(MODEL_PATH)
 
 You have successfully completed Week 06 when:
 
-1. **Model loads successfully** at Flask startup without errors
+1. **Model loads successfully** at FastAPI startup without errors
 2. **Preprocessing pipeline** correctly resizes, normalizes, and batches images
 3. **Inference endpoint** returns predictions with disease name and confidence score
 4. **Label mapping** accurately converts class indices to human-readable names
@@ -531,20 +572,20 @@ You have successfully completed Week 06 when:
 6. **Postman tests pass** for valid images, missing images, and invalid formats
 7. **Performance acceptable**: Inference completes in < 2 seconds on development machine
 8. **Confidence scores displayed**: JSON response includes 0-1 confidence value
-9. **Android integration working**: LeafGuard AI displays real predictions from model (Week 05 integration + Week 06 backend)
+9. **Android integration working**: LeafGuard AI displays prediction responses from model (Week 05 integration + Week 06 backend)
 10. **Documentation updated**: Model choice, class count, and limitations documented in README
 
-**Validation test**: Take a photo of a tomato leaf with your Android app, send to backend, receive real prediction with confidence score displayed in UI. This proves full stack integration.
+**Validation test**: Take a photo of a tomato leaf with your Android app, send to backend, receive prediction response with confidence score displayed in UI. This proves full stack integration.
 
 ## 9. Build Task
 
-**Objective**: Integrate a real plant disease detection model into your Flask backend and return real predictions to your Android app.
+**Objective**: Integrate a real plant disease detection model into your FastAPI backend and return prediction responses to your Android app.
 
 **Requirements**:
 
 1. **Model Integration**
-   - Load a pre-trained plant disease model (38-class PlantVillage or 6-class fallback)
-   - Model must load at Flask startup, not per-request
+   - Use the current placeholder/mock model contract now and document that the real trained model arrives in Week 09
+   - Model must load at FastAPI startup, not per-request
    - Print model input/output shapes to console on startup for verification
 
 2. **Preprocessing Pipeline**
@@ -556,14 +597,16 @@ You have successfully completed Week 06 when:
 
 3. **Label Mapping**
    - Create label mapping from class indices to disease names
-   - Use hardcoded dictionary for 6-class model or load from file for larger models
+   - Use hardcoded dictionary for 10-label placeholder/mock contract or load from file for larger models
    - Ensure class order matches model training
 
 4. **Inference Endpoint**
    - Modify `/predict` endpoint to use real model instead of mock responses
-   - Return JSON with structure: `{"status": "success", "prediction": {"disease": "...", "confidence": 0.xx, "recommendation": "..."}}`
+   - Return JSON with structure: `{"status": "success", "prediction": {"disease": "...", "confidence": 0.xx, "symptoms": "See disease details for visible leaf symptoms",
+    "treatment": "...",
+    "prevention": "Use clean tools, monitor plants, and avoid overhead watering"}}`
    - Include confidence score as float (0.0 to 1.0)
-   - Add basic recommendation text based on disease type
+   - Add basic symptoms, treatment, and prevention text based on disease type
 
 5. **Error Handling**
    - Return 400 status for missing/invalid images
@@ -576,20 +619,20 @@ You have successfully completed Week 06 when:
    - Document test results (screenshot of Postman response)
 
 7. **Android Integration**
-   - Update Android app to parse and display real predictions
+   - Update Android app to parse and display prediction responses
    - Show disease name and confidence percentage in UI
    - Test end-to-end: capture photo → send to backend → display prediction
 
 **Deliverables**:
-- Updated `app.py` (Flask backend) with model integration
+- Updated `app.py` (FastAPI backend) with model integration
 - `labels.txt` or hardcoded label mapping in code
 - Screenshots of Postman tests showing successful predictions
-- Updated Android app displaying real predictions
+- Updated Android app displaying prediction responses
 - Brief documentation (200-300 words) explaining model choice, preprocessing steps, and any limitations
 
 **Time estimate**: 6-8 hours (2 hours model setup, 2 hours preprocessing, 2 hours integration, 2 hours testing)
 
-**Fallback option**: If you cannot access a pre-trained model, use the 6-class fallback strategy and clearly document this choice. You will not be penalized for using a smaller model if engineering implementation is solid.
+**Fallback option**: The repository already uses a mock/placeholder fallback. Clearly document that predictions are placeholders until Week 09; you will not be penalized for honest mock behavior if the engineering implementation is solid.
 
 ## 10. Knowledge Check
 
@@ -604,7 +647,7 @@ Test your understanding before proceeding:
 3. **What does np.argmax() do when applied to model predictions?**
    - Returns the index of the highest value in the array, which corresponds to the predicted class
 
-4. **Why should models be loaded at Flask startup, not per-request?**
+4. **Why should models be loaded at FastAPI startup, not per-request?**
    - Loading models is slow (5-10 seconds). Loading once and reusing for all requests keeps inference time low (100-500ms)
 
 5. **What should you return if model confidence is below 30%?**
@@ -630,13 +673,13 @@ Test your understanding before proceeding:
 ### Official Documentation
 - TensorFlow Keras Model Loading: https://www.tensorflow.org/guide/keras/save_and_serialize
 - PyTorch Model Loading: https://pytorch.org/tutorials/beginner/saving_loading_models.html
-- Flask Request Handling: https://flask.palletsprojects.com/en/2.3.x/api/#flask.Request
+- FastAPI request files: https://fastapi.tiangolo.com/tutorial/request-files/
 - PIL Image Processing: https://pillow.readthedocs.io/en/stable/reference/Image.html
 
 ### Tutorials and Guides
 - Image Classification Inference: https://www.tensorflow.org/lite/examples/image_classification/overview
 - PlantVillage Dataset: https://github.com/spMohanty/PlantVillage-Dataset (reference for class labels)
-- Flask REST API Best Practices: https://flask-restful.readthedocs.io/en/latest/
+- FastAPI documentation: https://fastapi.tiangolo.com/
 
 ### Model Sources
 - TensorFlow Hub Plant Models: https://tfhub.dev/s?q=plant
@@ -650,12 +693,12 @@ Test your understanding before proceeding:
 
 ### Reference Projects
 - TensorFlow Lite Plant Disease Detection: https://github.com/tensorflow/examples/tree/master/lite/examples/image_classification
-- Flask ML API Template: https://github.com/cosmic-cortex/pytorch-flask-api
+- FastAPI ML API example: https://fastapi.tiangolo.com/tutorial/request-files/
 
 ### Debugging Resources
 - TensorFlow Model Compatibility: Check TensorFlow version used for training vs. inference (e.g., TF 2.10 model might not load in TF 2.15 without conversion)
 - Common NumPy Errors: https://numpy.org/doc/stable/user/troubleshooting-importerror.html
-- Flask Debugging Mode: Set `FLASK_ENV=development` for detailed error traces
+- FastAPI debugging: Use `uvicorn main:app --reload` for detailed error traces
 
 ## 12. Additional Challenges
 
@@ -690,12 +733,12 @@ for idx in top_k_indices:
     results.append({
         "disease": LABELS[idx],
         "confidence": float(predictions[0][idx])
-    })
+    }
 
-return jsonify({
+return {
     "status": "success",
     "top_predictions": results
-})
+}
 ```
 
 Display all 3 in Android UI to show uncertainty.
@@ -755,7 +798,7 @@ tflite_model = converter.convert()
 with open('model.tflite', 'wb') as f:
     f.write(tflite_model)
 
-# Then load in Flask with TFLite interpreter
+# Then load in FastAPI with a TFLite interpreter if you add one later
 interpreter = tf.lite.Interpreter(model_path='model.tflite')
 interpreter.allocate_tensors()
 ```
@@ -771,9 +814,9 @@ import hashlib
 
 CACHE = {}
 
-@app.route('/predict', methods=['POST'])
-def predict():
-    image_bytes = request.files['image'].read()
+@app.post('/predict')
+async def predict(image: UploadFile = File(...)):
+    image_bytes = await image.read()
 
     # Generate hash of image
     image_hash = hashlib.md5(image_bytes).hexdigest()
@@ -781,7 +824,7 @@ def predict():
     # Check cache
     if image_hash in CACHE:
         print("Returning cached prediction")
-        return jsonify(CACHE[image_hash])
+        return CACHE[image_hash]
 
     # Normal inference
     result = run_inference(image_bytes)
@@ -789,14 +832,14 @@ def predict():
     # Store in cache
     CACHE[image_hash] = result
 
-    return jsonify(result)
+    return result
 ```
 
 Be careful with memory usage if cache grows large.
 
 ## 13. Week 06 Summary
 
-Week 06 transformed your Flask backend from returning mock data to performing real machine learning inference. You learned how to:
+Week 06 transformed your FastAPI backend from returning placeholder data to a correctly wired inference pipeline. You learned how to:
 
 - Load pre-trained models and understand their input/output contracts
 - Implement image preprocessing pipelines matching training parameters
@@ -809,17 +852,17 @@ Week 06 transformed your Flask backend from returning mock data to performing re
 
 **What's next**: Week 07 introduces Room database for storing scan history locally on the device. You'll learn SQLite fundamentals, implement Entity/DAO/Database architecture, and build a history screen showing past predictions. This enables offline access to previous scans and sets the stage for analytics features in later weeks.
 
-**Integration checkpoint**: By end of Week 06, your full stack should work end-to-end: Android captures image → sends via Retrofit → Flask backend preprocesses and runs inference → returns real prediction → Android displays disease name and confidence. This is your project's core functionality. Weeks 7-10 add features around this foundation.
+**Integration checkpoint**: By end of Week 06, your full stack should work end-to-end: Android captures image → sends via Retrofit → FastAPI backend preprocesses and runs inference → returns prediction response → Android displays disease name and confidence. This is your project's core functionality. Weeks 7-10 add features around this foundation.
 
 ## 14. Troubleshooting Guide
 
-### Problem: "Model file not found" error on Flask startup
+### Problem: "Model file not found" error on FastAPI startup
 
 **Cause**: Incorrect file path or model file not in expected location.
 
 **Solutions**:
 1. Print the absolute path you're trying to load: `print(os.path.abspath('model.h5'))`
-2. Check Flask's working directory: `print(os.getcwd())`
+2. Check FastAPI's working directory: `print(os.getcwd())`
 3. Place model file in same directory as `app.py` or use absolute path
 4. Use environment variable for flexibility: `MODEL_PATH = os.environ.get('MODEL_PATH', './model.h5')`
 
@@ -875,14 +918,14 @@ Week 06 transformed your Flask backend from returning mock data to performing re
 2. Implement model unloading/reloading if memory constrained
 3. Monitor memory usage: `ps aux | grep python` on Linux/macOS
 4. Reduce batch size (should be 1 for single image inference)
-5. Restart Flask server periodically if memory leaks (not ideal but works for development)
+5. Restart FastAPI server periodically if memory leaks (not ideal but works for development)
 
-### Problem: Android app receives 500 error from Flask
+### Problem: Android app receives 500 error from FastAPI
 
-**Cause**: Unhandled exception in Flask endpoint.
+**Cause**: Unhandled exception in FastAPI endpoint.
 
 **Solutions**:
-1. Check Flask console logs for Python traceback
+1. Check FastAPI console logs for Python traceback
 2. Add comprehensive try-catch in endpoint:
    ```python
    try:
@@ -891,10 +934,10 @@ Week 06 transformed your Flask backend from returning mock data to performing re
        print(f"Error during inference: {e}")
        import traceback
        traceback.print_exc()
-       return jsonify({"status": "error", "message": str(e)}), 500
+       raise HTTPException(status_code=500, detail=str(e))
    ```
-3. Test endpoint in Postman to isolate Flask vs Android issue
-4. Enable Flask debug mode: `app.run(debug=True)` for detailed error pages
+3. Test endpoint in Postman to isolate FastAPI vs Android issue
+4. Run FastAPI with reload for detailed logs: `uvicorn main:app --reload --port 8000`
 
 ### Problem: Model works locally but fails when deployed (Heroku/AWS)
 
@@ -920,7 +963,7 @@ Week 06 transformed your Flask backend from returning mock data to performing re
    image = Image.open(io.BytesIO(image_bytes))
    image = ImageOps.exif_transpose(image)  # Fix rotation
    ```
-4. Log image properties on Flask side to compare: `print(image.size, image.mode)`
+4. Log image properties on FastAPI side to compare: `print(image.size, image.mode)`
 
 ### Problem: "Cannot convert NumPy types to JSON" error
 
@@ -929,7 +972,7 @@ Week 06 transformed your Flask backend from returning mock data to performing re
 **Solutions**:
 1. Convert to Python native types: `float(numpy_value)`, `int(numpy_value)`
 2. Use `.tolist()` for arrays: `predictions[0].tolist()`
-3. Ensure all values in response dict are native Python types before `jsonify()`
+3. Ensure all values in response dict are native Python types before returning a FastAPI dictionary
 
 ## 15. Reflection Prompts
 
@@ -941,7 +984,7 @@ After completing Week 06, reflect on these questions (write 2-3 paragraphs in yo
 
 3. **Model as Black Box**: You treated the ML model as a black box, focusing only on input/output contracts. When might you need to understand model internals? When is black-box integration sufficient?
 
-4. **Fallback Strategies**: If you used a 6-class model instead of 38-class, how did you handle this limitation in your app? How do real-world products handle feature limitations while maintaining user trust?
+4. **Fallback Strategies**: If you used a 10-label placeholder/mock contract instead of 38-class, how did you handle this limitation in your app? How do real-world products handle feature limitations while maintaining user trust?
 
 5. **Testing ML Systems**: How did testing change compared to previous weeks? What challenges arise when the system's output isn't deterministic (same input doesn't always give same output due to preprocessing variations)?
 

@@ -1,5 +1,7 @@
 # Week 08 Build Task - Implement the XML Disease Library
 
+> **Accuracy note (read first):** The **shipped** file is `app/src/main/assets/diseases.xml` (folder `assets/`, filename `diseases.xml`), parsed by `DiseaseLibraryActivity` using `XmlPullParser`. It contains **10** `<disease>` entries with five tags each — `<name>`, `<plant>`, `<symptoms>`, `<treatment>`, `<prevention>` — and every `<name>` matches a line in `assets/labels.txt` exactly (spaces, e.g. `Tomato Late Blight`, not `Tomato___Late_blight`). The bigger PlantVillage schema (with `label`/`image`/`severity` attributes) shown below is an **optional extension**. **Kotlin is the primary track**; Java snippets here are the secondary reference (`XmlPullParser` code is nearly identical in both).
+
 ## Week 08 Context
 
 This build task is the implementation side of the Week 08 roadmap.
@@ -11,7 +13,7 @@ The final result should allow the user to:
 1. browse a list of diseases in `DiseaseLibraryActivity`
 2. tap a disease to see full details
 3. receive disease information automatically in `ResultActivity` after ML prediction
-4. keep all disease information available offline from `assets/disease_library.xml`
+4. keep all disease information available offline from `assets/diseases.xml`
 
 This task directly supports the CSE 2206 requirement for **XML parsing in Android using Java**.
 
@@ -21,7 +23,7 @@ This task directly supports the CSE 2206 requirement for **XML parsing in Androi
 
 By the end of this build task, your app should have:
 
-- `disease_library.xml` in the `assets/` folder
+- `diseases.xml` in the `assets/` folder
 - `Disease.java` model class
 - `DiseaseXmlParser.java` parser using `XmlPullParser`
 - `DiseaseRepository.java` singleton with cache and background loading
@@ -38,7 +40,7 @@ By the end of this build task, your app should have:
 ```text
 app/src/main/
 ├── assets/
-│   └── disease_library.xml
+│   └── diseases.xml
 ├── java/com/leafguardai/
 │   ├── model/
 │   │   └── Disease.java
@@ -66,7 +68,7 @@ If your package names differ, adapt the imports accordingly.
 Create this file:
 
 ```text
-app/src/main/assets/disease_library.xml
+app/src/main/assets/diseases.xml
 ```
 
 Use the following starter content with **12 complete entries**.
@@ -695,7 +697,7 @@ import java.util.concurrent.Executors;
 
 public class DiseaseRepository {
     private static final String TAG = "DiseaseRepository";
-    private static final String FILE_NAME = "disease_library.xml";
+    private static final String FILE_NAME = "diseases.xml";
 
     private static DiseaseRepository instance;
 
@@ -1516,7 +1518,7 @@ public class ResultActivity extends AppCompatActivity {
     private void showFallback(String predictedLabel) {
         textPredictionTitle.setText(predictedLabel != null ? predictedLabel : "Unknown prediction");
         textSummary.setText("Detailed disease information is not available yet.");
-        textSymptoms.setText("Please inspect the leaf carefully and update disease_library.xml later.");
+        textSymptoms.setText("Please inspect the leaf carefully and update diseases.xml later.");
         textTreatment.setText("Use the library screen to browse known diseases.");
         textPrevention.setText("Keep the app data updated as new disease entries are added.");
     }
@@ -1800,7 +1802,7 @@ public void parse_validXml_returnsOneDisease() throws Exception {
 
 Practice this answer:
 
-> In Week 08, I implemented an offline disease library using XML because XML parsing is a core CSE 2206 topic. I stored a `disease_library.xml` file in the assets folder and parsed it in Java using `XmlPullParser`. Each disease entry becomes a `Disease` object. I then used a singleton `DiseaseRepository` to cache the parsed data in memory using both a list and a map. The list is used for RecyclerView display in `DiseaseLibraryActivity`, and the map is used for fast lookup in `ResultActivity` after the ML model predicts a label. I also added graceful fallback handling for missing labels and missing images.
+> In Week 08, I implemented an offline disease library using XML because XML parsing is a core CSE 2206 topic. I stored a `diseases.xml` file in the assets folder and parsed it in Java using `XmlPullParser`. Each disease entry becomes a `Disease` object. I then used a singleton `DiseaseRepository` to cache the parsed data in memory using both a list and a map. The list is used for RecyclerView display in `DiseaseLibraryActivity`, and the map is used for fast lookup in `ResultActivity` after the ML model predicts a label. I also added graceful fallback handling for missing labels and missing images.
 
 If you can explain that smoothly, you understand the architecture.
 
@@ -1810,7 +1812,7 @@ If you can explain that smoothly, you understand the architecture.
 
 ### Core files
 
-- [ ] `disease_library.xml`
+- [ ] `diseases.xml`
 - [ ] `Disease.java`
 - [ ] `DiseaseXmlParser.java`
 - [ ] `DiseaseRepository.java`

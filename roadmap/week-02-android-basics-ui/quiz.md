@@ -94,7 +94,7 @@ D) To improve app performance
 
 ### Question 7
 
-How do you pass a String from ScanActivity to ResultActivity?
+How do you pass a String from MainActivity to ResultActivity?
 
 A) `intent.putExtra("key", "value"); startActivity(intent);`
 B) `intent.setString("key", "value");`
@@ -182,30 +182,30 @@ D) It is required syntax for Log.d()
 
 ### Question 14
 
-**Question:** You navigate from MainActivity → ScanActivity → ResultActivity. The user presses the Back button twice. Describe the activity stack at each step and which lifecycle methods are called.
+**Question:** You navigate from MainActivity → MainActivity → ResultActivity. The user presses the Back button twice. Describe the activity stack at each step and which lifecycle methods are called.
 
 **Your Answer:**
 ```
 Initial State: [MainActivity]
 
-After navigating to ScanActivity:
+After navigating to MainActivity:
 Stack: ___
 MainActivity lifecycle: ___
-ScanActivity lifecycle: ___
+MainActivity lifecycle: ___
 
 After navigating to ResultActivity:
 Stack: ___
-ScanActivity lifecycle: ___
+MainActivity lifecycle: ___
 ResultActivity lifecycle: ___
 
 After first Back button press:
 Stack: ___
 ResultActivity lifecycle: ___
-ScanActivity lifecycle: ___
+MainActivity lifecycle: ___
 
 After second Back button press:
 Stack: ___
-ScanActivity lifecycle: ___
+MainActivity lifecycle: ___
 MainActivity lifecycle: ___
 ```
 
@@ -245,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
 
         Button btnScan = findViewById(R.id.btnScan);
         btnScan.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, ScanActivity.class);
+            Intent intent = new Intent(MainActivity.this, MainActivity.class);
             startActivity(intent);
         });
 

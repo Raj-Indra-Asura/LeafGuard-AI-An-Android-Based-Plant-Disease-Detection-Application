@@ -15,8 +15,8 @@ Reference this in your Week 11 testing work and in your final report.
 | ID | Feature | Description | Input / Action | Expected Result | Actual Result | Status | Notes |
 |----|---------|-------------|---------------|-----------------|---------------|--------|-------|
 | TC-001 | Camera | Launch camera with permission granted | Grant camera permission, tap "📷 Take Photo" | Camera app opens for capture | | | |
-| TC-002 | Camera | Capture leaf image | Aim at a leaf, press shutter button | Captured image displays in ScanActivity ImageView | | | |
-| TC-003 | Camera | Cancel camera without capturing | Open camera, press Back | Returns to ScanActivity; no image displayed; Analyze button stays disabled | | | |
+| TC-002 | Camera | Capture leaf image | Aim at a leaf, press shutter button | Captured image displays in the MainActivity preview ImageView | | | |
+| TC-003 | Camera | Cancel camera without capturing | Open camera, press Back | Returns to MainActivity; no image displayed; Analyze button stays disabled | | | |
 | TC-004 | Camera | Camera permission denied first time | Deny camera permission dialog | Permission rationale message or Snackbar shown; camera does NOT open | | | |
 | TC-005 | Camera | Camera permission permanently denied | Deny twice (or "Don't ask again") | Snackbar with "Open Settings" action shown | | | |
 | TC-006 | Camera | Repeat capture (replace previous photo) | Capture image A, then tap Camera again and capture image B | ImageView shows image B; Analyze button still enabled | | | |
@@ -25,8 +25,8 @@ Reference this in your Week 11 testing work and in your final report.
 
 | ID | Feature | Description | Input / Action | Expected Result | Actual Result | Status | Notes |
 |----|---------|-------------|---------------|-----------------|---------------|--------|-------|
-| TC-010 | Gallery | Open gallery and select an image | Tap "🖼️ Choose from Gallery", select any leaf photo | Selected image displays in ScanActivity ImageView | | | |
-| TC-011 | Gallery | Cancel gallery without selecting | Open gallery picker, press Back | Returns to ScanActivity; previously displayed state unchanged | | | |
+| TC-010 | Gallery | Open gallery and select an image | Tap "🖼️ Choose from Gallery", select any leaf photo | Selected image displays in the MainActivity preview ImageView | | | |
+| TC-011 | Gallery | Cancel gallery without selecting | Open gallery picker, press Back | Returns to MainActivity; previously displayed state unchanged | | | |
 | TC-012 | Gallery | Select a non-JPEG image (PNG, HEIC) | Choose a PNG file from gallery | Image displays without crash | | | |
 | TC-013 | Gallery | Select a very large image (>5MP) | Choose a high-resolution photo | App does NOT crash (OutOfMemoryError absent); image scaled to 224×224 | | | |
 
@@ -79,10 +79,10 @@ Reference this in your Week 11 testing work and in your final report.
 | ID | Feature | Description | Input / Action | Expected Result | Actual Result | Status | Notes |
 |----|---------|-------------|---------------|-----------------|---------------|--------|-------|
 | TC-060 | Disease Library | Open disease library | Tap "📚 Disease Library" on main screen | DiseaseLibraryActivity opens with disease list | | | |
-| TC-061 | Disease Library | All diseases from XML appear in list | Open DiseaseLibraryActivity | All entries from disease_library.xml appear as list items | | | |
+| TC-061 | Disease Library | All diseases from XML appear in list | Open DiseaseLibraryActivity | All entries from diseases.xml appear as list items | | | |
 | TC-062 | Disease Library | Tap on a disease | Tap a disease in the list | Detailed view shows symptoms, treatment, prevention | | | |
 | TC-063 | Disease Library | Search by disease name | Type "tomato" in search bar | List filters to show only tomato diseases | | | |
-| TC-064 | Disease Library | XML parse error handled | Corrupt disease_library.xml, open library | Error message shown; app does NOT crash | | | |
+| TC-064 | Disease Library | XML parse error handled | Corrupt diseases.xml, open library | Error message shown; app does NOT crash | | | |
 
 ### 1.8 Notifications
 
@@ -106,12 +106,12 @@ Reference this in your Week 11 testing work and in your final report.
 
 | ID | Feature | Description | Input / Action | Expected Result | Actual Result | Status | Notes |
 |----|---------|-------------|---------------|-----------------|---------------|--------|-------|
-| TC-090 | Navigation | Main → ScanActivity (camera) | Tap Camera button | ScanActivity opens; camera intent triggered | | | |
+| TC-090 | Navigation | Main → camera capture | Tap Camera button | System camera opens from MainActivity | | | |
 | TC-091 | Navigation | Main → HistoryActivity | Tap History button | HistoryActivity opens with scan list | | | |
 | TC-092 | Navigation | Main → DiseaseLibraryActivity | Tap Disease Library button | DiseaseLibraryActivity opens | | | |
-| TC-093 | Navigation | Back from ScanActivity | Press Back in ScanActivity | Returns to MainActivity | | | |
-| TC-094 | Navigation | Back from ResultActivity | Press Back in ResultActivity | Returns to ScanActivity | | | |
-| TC-095 | Navigation | Rapid navigation (no double-open) | Quickly double-tap Camera button | Only one ScanActivity opens | | | |
+| TC-093 | Navigation | Back from camera | Press Back in the camera | Returns to MainActivity | | | |
+| TC-094 | Navigation | Back from ResultActivity | Press Back in ResultActivity | Returns to MainActivity | | | |
+| TC-095 | Navigation | Rapid navigation (no double-open) | Quickly double-tap Camera button | Only one camera instance opens | | | |
 
 ---
 
@@ -133,7 +133,7 @@ Reference this in your Week 11 testing work and in your final report.
 | ID | Feature | Description | Target | Actual | Pass? | Notes |
 |----|---------|-------------|--------|--------|-------|-------|
 | TC-110 | Performance | App launch time (cold start) | < 3 seconds | | | Measure with Logcat timer |
-| TC-111 | Performance | Image load time in ScanActivity | < 1 second | | | From camera return to ImageView display |
+| TC-111 | Performance | Image load time in MainActivity preview | < 1 second | | | From camera return to ImageView display |
 | TC-112 | Performance | Cloud prediction response time | < 5 seconds | | | From tap Analyze to ResultActivity open |
 | TC-113 | Performance | Offline TFLite inference time | < 3 seconds | | | Measure with `System.currentTimeMillis()` |
 | TC-114 | Performance | History list load time (50 items) | < 500ms | | | Time from Activity start to list visible |

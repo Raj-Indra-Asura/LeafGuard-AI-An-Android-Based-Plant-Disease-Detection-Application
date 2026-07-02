@@ -149,7 +149,7 @@
 
 **NARRATION:**
 
-> "Step 4: The result screen displays comprehensive disease information. Notice the symptoms, treatment, and prevention sections. These are not hardcoded - they're parsed from our disease_library.xml file using Android's XmlPullParser, demonstrating XML parsing as required by the syllabus."
+> "Step 4: The result screen displays comprehensive disease information. Notice the symptoms, treatment, and prevention sections. These are not hardcoded - they're parsed from our diseases.xml file using Android's XmlPullParser, demonstrating XML parsing as required by the syllabus."
 
 **TIMING**: 10 seconds
 
@@ -374,7 +374,7 @@
 
 **NARRATION:**
 
-> "Step 18: Browsing the offline disease library. All disease data is stored in disease_library.xml in the assets folder and parsed at startup. This allows users to learn about diseases without making predictions. This further demonstrates XML parsing and offline data access."
+> "Step 18: Browsing the offline disease library. All disease data is stored in diseases.xml in the assets folder and parsed at startup. This allows users to learn about diseases without making predictions. This further demonstrates XML parsing and offline data access."
 
 **TIMING**: 10 seconds
 

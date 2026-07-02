@@ -1,5 +1,29 @@
 # Week 11: Testing, Debugging, and Performance
 
+## What you'll learn & why
+
+This week you make sure LeafGuard AI actually works — and prove it. You will run the project's automated **tests** (small programs that check your app for you), read the phone's log (**Logcat**) to hunt down bugs, and measure how fast detection is so you can compare the online (server) path with the offline (on-device) path. Testing, debugging, and performance analysis are all required by your CSE 2206 course, and this week gives you the evidence (screenshots, tables, logs) your report needs.
+
+Good news: the four automated tests already exist in the project and pass. Your job is to *understand* them, *run* them, and add your own manual test table and debugging notes.
+
+## New words this week
+
+See the shared [glossary](../../GLOSSARY.md) for more. The key terms this week:
+
+- **Test** — a small program that automatically checks that part of your app behaves correctly, so you don't have to check it by hand every time.
+- **Unit test** — a test that runs on your computer (no phone or emulator needed) and checks one small piece of code, like parsing a server reply. LeafGuard's unit test is `PredictionResponseTest`.
+- **UI (instrumented) test** — a test that runs the real app on an emulator or phone and checks the screen, like a user would. LeafGuard's UI test is `MainActivityTest` (it uses **Espresso**, Android's UI-testing tool).
+- **Logcat** — the live stream of log messages from your app; the main tool for debugging on Android.
+- **Latency** — how long something takes, measured in milliseconds (ms). Lower is faster.
+
+> **Try it now:** the project already contains four passing tests. Open a terminal in
+> `android-app-kotlin/` and run `./gradlew testDebugUnitTest` (Windows: `gradlew.bat testDebugUnitTest`).
+> You should see `BUILD SUCCESSFUL`. Full walkthroughs are in
+> [`../../solutions/week-11/`](../../solutions/week-11/) and the practice files live in
+> [`../../exercises/testing/`](../../exercises/testing/).
+
+---
+
 ## Weekly Objective
 
 Create comprehensive test suite, document debugging process, and measure performance.
@@ -52,87 +76,117 @@ Create comprehensive test suite, document debugging process, and measure perform
 
 Run more unit tests and fewer UI tests — unit tests are faster and give more precise failure messages.
 
-### JUnit 4 Unit Test
+### JUnit 4 Unit Test — the real one in LeafGuard
 
-```java
-// app/src/test/java/com/leafguard/DiseaseParserTest.java
-import org.junit.Test;
-import static org.junit.Assert.*;
+LeafGuard's real unit test is `PredictionResponseTest`. It checks that the app can
+correctly read (parse) the JSON reply the FastAPI backend sends from `POST /predict`.
+The important field is `disease` (**not** `disease_name`).
 
-public class DiseaseParserTest {
+**Kotlin (primary track)** —
+`android-app-kotlin/app/src/test/java/com/leafguard/network/PredictionResponseTest.kt`:
+
+```kotlin
+class PredictionResponseTest {
 
     @Test
-    public void parseConfidence_returnsPercentage() {
-        float raw = 0.93f;
-        int percent = Math.round(raw * 100);
-        assertEquals(93, percent);
+    fun parsesDiseaseFieldFromServerJson() {
+        val json = """
+            {
+              "disease": "Tomato Early Blight",
+              "confidence": 92.5,
+              "symptoms": "Small brown spots with concentric rings.",
+              "treatment": "Remove infected leaves.",
+              "prevention": "Rotate crops."
+            }
+        """.trimIndent()
+
+        val response = Gson().fromJson(json, PredictionResponse::class.java)
+
+        assertEquals("Tomato Early Blight", response.disease)
+        assertEquals(92.5f, response.confidence, 0.001f)
     }
 
     @Test
-    public void diseaseLabel_isNotEmpty() {
-        String label = "Tomato Late Blight";
-        assertFalse("Disease label must not be empty", label.isEmpty());
-    }
-}
-```
-
-Run with: **Android Studio → Run → Run Tests** or `./gradlew test`.
-
-### Espresso UI Test
-
-```java
-// app/src/androidTest/java/com/leafguard/MainActivityTest.java
-import androidx.test.espresso.Espresso;
-import androidx.test.espresso.action.ViewActions;
-import androidx.test.espresso.assertion.ViewAssertions;
-import androidx.test.espresso.matcher.ViewMatchers;
-import androidx.test.ext.junit.rules.ActivityScenarioRule;
-import org.junit.Rule;
-import org.junit.Test;
-
-public class MainActivityTest {
-
-    @Rule
-    public ActivityScenarioRule<MainActivity> activityRule =
-        new ActivityScenarioRule<>(MainActivity.class);
-
-    @Test
-    public void scanButton_isDisplayed() {
-        Espresso.onView(ViewMatchers.withId(R.id.btnScan))
-            .check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
-    }
-
-    @Test
-    public void historyButton_navigatesToHistoryActivity() {
-        Espresso.onView(ViewMatchers.withId(R.id.btnHistory))
-            .perform(ViewActions.click());
-        Espresso.onView(ViewMatchers.withId(R.id.rvHistory))
-            .check(ViewAssertions.matches(ViewMatchers.isDisplayed()));
+    fun missingOptionalFieldsAreNullNotCrash() {
+        val json = """{"disease": "Potato Healthy", "confidence": 88.0}"""
+        val response = Gson().fromJson(json, PredictionResponse::class.java)
+        assertEquals("Potato Healthy", response.disease)
+        assertEquals(null, response.symptoms)
     }
 }
 ```
 
-Run with: **Android Studio → Run → Run Instrumented Tests** (requires emulator).
+**Java (secondary track)** —
+`android-app/app/src/test/java/com/leafguard/network/PredictionResponseTest.java` is the
+byte-for-byte-behavior twin; it uses `response.getDisease()` getters instead of Kotlin
+properties.
+
+Run it in **Android Studio** by right-clicking the file → **Run 'PredictionResponseTest'**,
+or from a terminal in `android-app-kotlin/`:
+
+```bash
+./gradlew testDebugUnitTest        # macOS/Linux
+gradlew.bat testDebugUnitTest      # Windows
+```
+
+Expected result: **2 tests passed** and **BUILD SUCCESSFUL**.
+
+### Espresso UI Test — the real one in LeafGuard
+
+LeafGuard's real UI (instrumented) test is `MainActivityTest`. It launches the real
+`MainActivity` and checks that the two capture buttons — `buttonOpenCamera` and
+`buttonOpenGallery` — are visible on screen.
+
+**Kotlin (primary track)** —
+`android-app-kotlin/app/src/androidTest/java/com/leafguard/MainActivityTest.kt`:
+
+```kotlin
+@RunWith(AndroidJUnit4::class)
+class MainActivityTest {
+
+    @get:Rule
+    val activityRule = ActivityScenarioRule(MainActivity::class.java)
+
+    @Test
+    fun captureButtonsAreVisibleOnLaunch() {
+        onView(withId(R.id.buttonOpenCamera)).check(matches(isDisplayed()))
+        onView(withId(R.id.buttonOpenGallery)).check(matches(isDisplayed()))
+    }
+}
+```
+
+**Java (secondary track)** —
+`android-app/app/src/androidTest/java/com/leafguard/MainActivityTest.java` is the twin.
+
+Run it in **Android Studio** by right-clicking the file → **Run 'MainActivityTest'**
+(an emulator must be running), or from a terminal in `android-app-kotlin/`:
+
+```bash
+./gradlew connectedDebugAndroidTest        # macOS/Linux
+gradlew.bat connectedDebugAndroidTest      # Windows
+```
+
+Expected result: **1 test passed** and **BUILD SUCCESSFUL**. If you see "No connected
+devices", start an emulator first (Android Studio → Device Manager → ▶).
 
 ### Debugging with Logcat
 
+```kotlin
+// Add structured logging in every Activity (Kotlin — primary track)
+private val TAG = "LeafGuard.MainActivity"
+
+Log.v(TAG, "Image URI: $uri")                        // Verbose — development only
+Log.d(TAG, "Calling /predict endpoint...")           // Debug — trace execution path
+Log.i(TAG, "Prediction received: ${result.disease}") // Info — major lifecycle events
+Log.w(TAG, "Location null, saving scan without coordinates") // Warn — recoverable
+Log.e(TAG, "Failed to connect to API", exception)    // Error — failures
+```
+
+**Java (secondary track):**
 ```java
-// Add structured logging in every Activity
-private static final String TAG = "LeafGuard.ScanActivity";
-
-// Verbose — development only
-Log.v(TAG, "Image URI: " + uri);
-
-// Debug — trace execution path
+private static final String TAG = "LeafGuard.MainActivity";
 Log.d(TAG, "Calling /predict endpoint...");
-
-// Info — major lifecycle events
 Log.i(TAG, "Prediction received: " + result.getDisease());
-
-// Warn — recoverable issues
-Log.w(TAG, "Location null, saving scan without coordinates");
-
-// Error — failures
 Log.e(TAG, "Failed to connect to API", exception);
 ```
 
@@ -140,14 +194,14 @@ Log.e(TAG, "Failed to connect to API", exception);
 
 ### Latency Measurement
 
-```java
-long startTime = System.currentTimeMillis();
+```kotlin
+val startTime = System.currentTimeMillis()
 
 // ... run prediction (cloud or TFLite) ...
 
-long latency = System.currentTimeMillis() - startTime;
-Log.d(TAG, "Prediction latency: " + latency + " ms");
-tvLatency.setText("Latency: " + latency + " ms");
+val latency = System.currentTimeMillis() - startTime
+Log.d(TAG, "Prediction latency: $latency ms")
+tvLatency.text = "Latency: $latency ms"
 ```
 
 Collect 5+ measurements for each mode (cloud / offline) and average them for the report.
@@ -206,6 +260,12 @@ Collect 5+ measurements for each mode (cloud / offline) and average them for the
 ---
 
 **This week proves your app works reliably.**
+
+## Where to practice and check your work
+
+- Practice files: [`../../exercises/testing/`](../../exercises/testing/)
+- Worked solution & line-by-line test walkthrough: [`../../solutions/week-11/`](../../solutions/week-11/)
+- Supporting notebooks: [`../../notebooks/week-11/`](../../notebooks/week-11/)
 
 **Next:** `learning-notes.md` for deeper testing patterns and debugging techniques.
 

@@ -153,7 +153,7 @@ Lesson Learned:
 **Your Answer:**
 ```
 Topic 1: [e.g., Activities]
-Evidence: [e.g., Created 5 activities in MainActivity.java, ScanActivity.java, etc.]
+Evidence: [e.g., Created 5 activities in MainActivity.java, MainActivity.java, etc.]
 
 Topic 2:
 Evidence:

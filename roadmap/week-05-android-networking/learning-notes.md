@@ -1,5 +1,15 @@
 # Week 05: Learning Notes - Android Networking with Retrofit
 
+## Related materials
+
+- Exercises (primary Kotlin): [../../exercises/android-kotlin/](../../exercises/android-kotlin/)
+- Exercises (secondary Java): [../../exercises/android/](../../exercises/android/)
+- Solutions: [../../solutions/week-05/](../../solutions/week-05/)
+- Notebooks: [../../notebooks/week-05/](../../notebooks/week-05/)
+- Glossary: [../../GLOSSARY.md](../../GLOSSARY.md)
+
+---
+
 ## Table of Contents
 
 1. [HTTP Networking Fundamentals](#1-http-networking-fundamentals)
@@ -97,7 +107,7 @@ Tells the server what format the request body is in:
 
 ```java
 // ❌ Verbose, error-prone
-URL url = new URL("http://192.168.1.10:8000/predict");
+URL url = new URL("http://10.0.2.2:8000/predict");  // Android emulator → your computer
 HttpURLConnection connection = (HttpURLConnection) url.openConnection();
 connection.setRequestMethod("POST");
 connection.setDoOutput(true);
@@ -121,7 +131,7 @@ RequestBody requestBody = new MultipartBody.Builder()
     .addFormDataPart("image", "photo.jpg", imageBody)
     .build();
 Request request = new Request.Builder()
-    .url("http://192.168.1.10:8000/predict")
+    .url("http://10.0.2.2:8000/predict")
     .post(requestBody)
     .build();
 client.newCall(request).enqueue(callback);
@@ -134,8 +144,18 @@ client.newCall(request).enqueue(callback);
 
 #### Option 3: Retrofit (Square Library, Built on OkHttp)
 
+**Kotlin (primary):**
+```kotlin
+// ✅ Clean, simple, professional
+@Multipart
+@POST("predict")
+fun uploadImage(@Part image: MultipartBody.Part): Call<PredictionResponse>
+```
+
+**Java (secondary reference):**
 ```java
 // ✅ Clean, simple, professional
+@Multipart
 @POST("predict")
 Call<PredictionResponse> uploadImage(@Part MultipartBody.Part image);
 ```
@@ -214,6 +234,16 @@ Call<PredictionResponse> uploadImage(@Part MultipartBody.Part image);
 
 #### Step 1: Define API Interface
 
+**Kotlin (primary):**
+```kotlin
+interface ApiService {
+    @Multipart
+    @POST("predict")
+    fun uploadImage(@Part image: MultipartBody.Part): Call<PredictionResponse>
+}
+```
+
+**Java (secondary reference):**
 ```java
 public interface ApiService {
     @Multipart
@@ -230,16 +260,25 @@ public interface ApiService {
 
 #### Step 2: Build Retrofit Instance
 
+**Kotlin (primary):**
+```kotlin
+val retrofit = Retrofit.Builder()
+    .baseUrl("http://10.0.2.2:8000/")
+    .addConverterFactory(GsonConverterFactory.create())
+    .build()
+```
+
+**Java (secondary reference):**
 ```java
 Retrofit retrofit = new Retrofit.Builder()
-    .baseUrl("http://192.168.1.10:8000/")
+    .baseUrl("http://10.0.2.2:8000/")
     .addConverterFactory(GsonConverterFactory.create())
     .build();
 ```
 
 **What this does:**
 - Sets base URL (all endpoint paths will be appended to this)
-- Registers Gson converter (JSON ↔ Java objects)
+- Registers Gson converter (JSON ↔ Kotlin data classes / Java objects)
 - Creates Retrofit instance with configuration
 
 #### Step 3: Create Service Implementation
@@ -256,6 +295,24 @@ ApiService apiService = retrofit.create(ApiService.class);
 
 #### Step 4: Make API Call
 
+**Kotlin (primary):**
+```kotlin
+val call = apiService.uploadImage(imagePart)
+call.enqueue(object : Callback<PredictionResponse> {
+    override fun onResponse(
+        call: Call<PredictionResponse>,
+        response: Response<PredictionResponse>
+    ) {
+        // Handle success
+    }
+
+    override fun onFailure(call: Call<PredictionResponse>, t: Throwable) {
+        // Handle error
+    }
+})
+```
+
+**Java (secondary reference):**
 ```java
 Call<PredictionResponse> call = apiService.uploadImage(imagePart);
 call.enqueue(new Callback<PredictionResponse>() {
@@ -270,6 +327,8 @@ call.enqueue(new Callback<PredictionResponse>() {
     }
 });
 ```
+
+This is normal — if you hit `NetworkOnMainThreadException`, use `enqueue()` or a coroutine so the screen does not freeze.
 
 **Behind the scenes:**
 1. Retrofit builds HTTP request from annotations
@@ -389,8 +448,20 @@ String symptoms = jsonObject.getString("symptoms");
 
 ### Automatic Parsing with Gson
 
-#### Step 1: Create Java Class Matching JSON Structure
+#### Step 1: Create Kotlin Data Class Matching JSON Structure
 
+**Kotlin (primary):**
+```kotlin
+data class PredictionResponse(
+    @SerializedName("disease") val disease: String,
+    val confidence: Double,
+    val symptoms: String,
+    val treatment: String,
+    val prevention: String
+)
+```
+
+**Java (secondary reference):**
 ```java
 public class PredictionResponse {
     private String disease;
@@ -424,8 +495,8 @@ double confidence = prediction.getConfidence(); // 0.87
 
 2. **Use @SerializedName for different names**
    ```java
-   @SerializedName("disease_name")
-   private String disease;  // JSON key: "disease_name", Java field: disease
+   @SerializedName("disease")
+   private String disease;  // JSON key: "disease", Java field: disease
    ```
 
 3. **Nested objects**
@@ -681,9 +752,11 @@ Retrofit retrofit = new Retrofit.Builder()
 - Protects users from man-in-the-middle attacks
 
 **Problem for LeafGuard:**
-- Your local backend uses HTTP (http://192.168.1.10:8000)
+- Your local backend uses HTTP. In the Android emulator, use `http://10.0.2.2:8000`; on your computer browser, use `http://localhost:8000`; on a physical phone, use your computer's LAN IP.
 - Not HTTPS (https://...)
 - Android blocks it by default
+
+This is normal — if the request fails with `CLEARTEXT communication not permitted`, add the config below. If it fails with connection refused, make sure the backend is running and the emulator URL is `http://10.0.2.2:8000/`.
 
 ### Solution: Network Security Configuration
 
@@ -694,7 +767,7 @@ Retrofit retrofit = new Retrofit.Builder()
 <network-security-config>
     <!-- Allow cleartext traffic to local IP -->
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">192.168.1.10</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
     </domain-config>
 </network-security-config>
 ```
@@ -810,7 +883,7 @@ OkHttpClient client = new OkHttpClient.Builder()
 
 ```java
 private static final String BASE_URL = BuildConfig.DEBUG
-    ? "http://192.168.1.10:8000/"  // Development
+    ? "http://10.0.2.2:8000/"  // Development emulator URL
     : "https://api.leafguard.com/";  // Production
 ```
 
@@ -900,21 +973,23 @@ private static final String BASE_URL = BuildConfig.DEBUG
 2. User taps "Detect Disease" button
 3. App shows ProgressBar and disables button for feedback
 4. App converts the Bitmap to a File, then creates RequestBody and MultipartBody.Part
-5. Retrofit sends HTTP POST request to http://[LOCAL_IP]:8000/predict with the image
+5. Retrofit sends HTTP POST request to `http://10.0.2.2:8000/predict` in the emulator (or your LAN IP on a physical phone) with the image
 6. Request runs on background thread (via OkHttp)
 7. FastAPI backend receives image, preprocesses it, runs ML model inference
 8. Backend returns JSON response with disease, confidence, symptoms, treatment
-9. Retrofit receives response on background thread, Gson parses JSON to PredictionResponse object
+9. Retrofit receives response on background thread, Gson parses JSON to a PredictionResponse data object
 10. `onResponse()` callback executes on main thread
 11. App hides ProgressBar, creates Intent with prediction data
 12. App navigates to ResultActivity
 13. ResultActivity displays disease name, confidence percentage, and recommendations
 
+Expected result: the Result screen should show the disease name and confidence percentage.
+
 ---
 
 **Q6: What permissions does your app need for networking?**
 
-**A:** The app requires the INTERNET permission, declared in AndroidManifest.xml with `<uses-permission android:name="android.permission.INTERNET"/>`. Additionally, since Android 9 (API 28) blocks HTTP traffic by default, I created a network security configuration file that allows cleartext traffic to my local backend IP (192.168.1.10). This is referenced in the manifest with `android:networkSecurityConfig="@xml/network_security_config"`. In production, I would use HTTPS instead of HTTP.
+**A:** The app requires the INTERNET permission, declared in AndroidManifest.xml with `<uses-permission android:name="android.permission.INTERNET"/>`. Additionally, since Android 9 (API 28) blocks HTTP traffic by default, I created a network security configuration file that allows cleartext traffic to my local backend at `10.0.2.2` in the emulator (or my computer LAN IP for a physical phone). This is referenced in the manifest with `android:networkSecurityConfig="@xml/network_security_config"`. In production, I would use HTTPS instead of HTTP.
 
 ---
 

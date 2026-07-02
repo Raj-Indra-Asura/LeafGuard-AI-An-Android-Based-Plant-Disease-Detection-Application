@@ -1,26 +1,37 @@
 # Week 06 Build Task: Real ML Model Integration
 
+## Week 06 project reality check
+
+> Note: The committed `assets/model.tflite` is a placeholder TEXT file, not a real trained model. Until a real model is provided, the backend uses a **mock predictor** (in `model_loader.py`) and the on-device `TFLiteClassifier` uses a **green-channel heuristic fallback**, so the app still runs end-to-end. The real trained model arrives in **Week 09**. Low or odd confidence values are normal this week because predictions are placeholders.
+
+## Related materials
+
+- Exercises: [backend](../../exercises/backend/) and [ML](../../exercises/ml/)
+- Solutions: [Week 06 solutions](../../solutions/week-06/)
+- Notebooks: [Week 06 notebooks](../../notebooks/week-06/)
+- Glossary: [GLOSSARY.md](../../GLOSSARY.md)
+
 ## Objective
 
-Transform your LeafGuard AI Flask backend from returning mock predictions to performing real machine learning inference using a plant disease detection model. By the end of this task, your Android app will receive genuine disease predictions with confidence scores from an actual CNN model.
+Transform your LeafGuard AI FastAPI backend from returning mock predictions to performing Machine Learning (ML) inference pipeline wiring using a plant disease detection model. By the end of this task, your Android app will receive prediction responses with confidence scores from the Convolutional Neural Network (CNN) model contract.
 
 ## Task Overview
 
-You will integrate a pre-trained convolutional neural network into your Flask application, implement image preprocessing to match model requirements, decode model outputs using label mapping, and return structured JSON responses containing disease names, confidence scores, and treatment recommendations. This task focuses on engineering integration, not machine learning expertise.
+You will integrate a placeholder/mock Convolutional Neural Network (CNN) contract into your FastAPI application, implement image preprocessing to match model requirements, decode model outputs using label mapping, and return structured JSON responses containing disease names, confidence scores, symptoms, treatment, and prevention guidance. This task focuses on engineering integration, not machine learning expertise.
 
-**Core deliverable**: A working `/predict` endpoint that accepts plant leaf images and returns real AI-powered disease predictions.
+**Core deliverable**: A working `/predict` endpoint that accepts plant leaf images and returns mock/placeholder predictions now, and real AI-powered predictions after Week 09.
 
 ## Prerequisites
 
 Before starting this task, ensure you have:
 
-- **Week 05 completed**: Your Android app successfully sends images to Flask and displays mock responses
-- **Flask environment ready**: Python 3.8+, virtual environment activated, Flask running
-- **Model file acquired**: Either downloaded a pre-trained model or prepared to implement the 6-class fallback
-- **Dependencies installed**: TensorFlow (or PyTorch), Pillow, NumPy, Flask
+- **Week 05 completed**: Your Android app successfully sends images to FastAPI and displays mock responses
+- **FastAPI environment ready**: Python 3.8+, virtual environment activated, FastAPI running on `http://localhost:8000` for computer/browser/curl
+- **Model contract ready**: Use the current `assets/model.tflite` placeholder plus `assets/labels.txt`; the real trained model arrives in Week 09
+- **Dependencies installed**: TensorFlow (or PyTorch), Pillow, NumPy, FastAPI
 - **Testing tools ready**: Postman installed or curl available
 
-**Checkpoint**: Run your Week 05 Flask server and confirm you can send images from Android. If networking isn't working, fix that first.
+**Checkpoint**: Run your Week 05 FastAPI server and confirm you can send images from Android. If networking isn't working, fix that first.
 
 ## Requirements
 
@@ -28,16 +39,16 @@ Before starting this task, ensure you have:
 
 **Load and initialize a plant disease detection model:**
 
-- Use a pre-trained CNN model (TensorFlow .h5, SavedModel, or PyTorch .pt)
-- Recommended: 6-class model (Tomato/Potato healthy/early blight/late blight)
-- Alternative: Larger PlantVillage model if available
-- Load model once at Flask startup (global scope), not per-request
+- Use the current placeholder/mock model contract now; replace it with the real trained model in Week 09
+- Recommended: current 10-label placeholder/mock contract from `assets/labels.txt`
+- Alternative: If your instructor provides a real model early, document its input/output contract before using it
+- Load model once at FastAPI startup (global scope), not per-request
 - Print model input/output shapes to console on successful loading
 - Handle loading errors gracefully with informative messages
 
 **Acceptance criteria**:
-- Flask starts without errors and prints "Model loaded successfully"
-- Console shows input shape (e.g., `(None, 224, 224, 3)`) and output shape (e.g., `(None, 6)`)
+- FastAPI starts without errors and prints "Model loaded successfully"
+- Console shows input shape (e.g., `(None, 224, 224, 3)`) and output shape (e.g., `(None, 10)`)
 - Model remains in memory for all subsequent requests
 
 **Example code structure**:
@@ -105,30 +116,37 @@ def preprocess_image(image_bytes, target_size=(224, 224)):
     return img_array
 ```
 
-### 3. Label Mapping System (15 points)
+### 3. Label Mapping System
+
+**Current Week 06 labels (exact order)**: Tomato Early Blight, Tomato Late Blight, Tomato Healthy, Potato Early Blight, Potato Late Blight, Potato Healthy, Corn Gray Leaf Spot, Corn Northern Leaf Blight, Corn Healthy, Apple Scab. Keep this order when reading `assets/labels.txt`.
+ (15 points)
 
 **Create mapping from model class indices to human-readable disease names:**
 
 - Define label mapping matching your model's class order
-- For 6-class model: hardcode dictionary with 6 entries
+- For the 10-label placeholder/mock contract: use all 10 entries in `assets/labels.txt` order
 - For larger models: load from labels.txt file (one label per line)
 - Handle invalid class indices (return "Unknown" or similar)
-- Include function to map disease name to treatment recommendation
+- Include functions or data to map disease name to symptoms, treatment, and prevention text
 
 **Acceptance criteria**:
 - All classes have corresponding labels
 - Label order matches model training (verify with test images)
-- Recommendations are specific and actionable (not generic placeholders)
+- Treatment and prevention guidance is specific and actionable, while prediction accuracy is clearly marked as placeholder/mock this week
 
-**Example for 6-class model**:
+**Example for 10-label placeholder/mock contract**:
 ```python
 DISEASE_LABELS = {
-    0: "Tomato Healthy",
-    1: "Tomato Early Blight",
-    2: "Tomato Late Blight",
-    3: "Potato Healthy",
-    4: "Potato Early Blight",
-    5: "Potato Late Blight"
+    0: "Tomato Early Blight",
+    1: "Tomato Late Blight",
+    2: "Tomato Healthy",
+    3: "Potato Early Blight",
+    4: "Potato Late Blight",
+    5: "Potato Healthy",
+    6: "Corn Gray Leaf Spot",
+    7: "Corn Northern Leaf Blight",
+    8: "Corn Healthy",
+    9: "Apple Scab"
 }
 
 RECOMMENDATIONS = {
@@ -166,7 +184,9 @@ def get_recommendation(disease_name):
   "prediction": {
     "disease": "Tomato Early Blight",
     "confidence": 0.78,
-    "recommendation": "Remove infected leaves. Apply copper-based fungicide..."
+    "symptoms": "See disease details for visible leaf symptoms",
+    "treatment": "Remove infected leaves. Apply copper-based fungicide...",
+    "prevention": "Use clean tools, monitor plants, and avoid overhead watering"
   }
 }
 ```
@@ -179,15 +199,15 @@ def get_recommendation(disease_name):
 
 **Example implementation**:
 ```python
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.post('/predict')
+async def predict(image: UploadFile = File(...)):
     try:
         # Get image from request
-        if 'image' not in request.files:
-            return jsonify({"status": "error", "message": "No image provided"}), 400
+        if image is None:
+            raise HTTPException(status_code=400, detail="No image provided")
 
-        image_file = request.files['image']
-        image_bytes = image_file.read()
+        image_file = image
+        image_bytes = await image_file.read()
 
         # Preprocess
         img_array = preprocess_image(image_bytes)
@@ -201,17 +221,19 @@ def predict():
         disease_name = get_disease_name(class_idx)
 
         # Return response
-        return jsonify({
+        return {
             "status": "success",
             "prediction": {
                 "disease": disease_name,
                 "confidence": confidence,
-                "recommendation": get_recommendation(disease_name)
+                "symptoms": get_symptoms(disease_name),
+                "treatment": get_recommendation(disease_name),
+                "prevention": get_prevention(disease_name)
             }
-        })
+        }
 
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        raise HTTPException(status_code=500, detail=str(e))
 ```
 
 ### 5. Error Handling (10 points)
@@ -253,13 +275,13 @@ def predict():
 
 ### 7. Android Integration Update (10 points)
 
-**Update your Android app to display real predictions:**
+**Update your Android app to display prediction responses:**
 
-- Modify response parsing to extract disease, confidence, and recommendation
+- Modify response parsing to extract disease, confidence, symptoms, treatment, and prevention
 - Update UI to show confidence percentage (e.g., "Early Blight (78% confidence)")
-- Display recommendation text in a TextView or expandable section
+- Display treatment and prevention text in a TextView or expandable section
 - Handle error responses from backend gracefully
-- Test end-to-end: capture photo → send to backend → display real prediction
+- Test end-to-end: capture photo → send to backend → display prediction response
 
 **Acceptance criteria**:
 - Android app displays disease name from real model
@@ -273,14 +295,16 @@ def predict():
 data class Prediction(
     val disease: String,
     val confidence: Double,
-    val recommendation: String
+    val symptoms: String,
+    val treatment: String,
+    val prevention: String
 )
 
 // Update UI after receiving response
 private fun displayPrediction(prediction: Prediction) {
     binding.tvDiseaseName.text = prediction.disease
     binding.tvConfidence.text = "Confidence: ${(prediction.confidence * 100).toInt()}%"
-    binding.tvRecommendation.text = prediction.recommendation
+    binding.tvRecommendation.text = prediction.treatment
 
     // Show confidence bar or indicator
     binding.confidenceProgress.progress = (prediction.confidence * 100).toInt()
@@ -291,7 +315,7 @@ private fun displayPrediction(prediction: Prediction) {
 
 Submit the following in your project repository:
 
-1. **Updated Flask application** (`app.py` or similar)
+1. **Updated FastAPI application** (`app.py` or similar)
    - Model loading code at startup
    - Preprocessing function
    - Label mapping
@@ -313,13 +337,13 @@ Submit the following in your project repository:
 
 5. **Updated Android app**
    - Modified data classes for prediction response
-   - Updated UI code displaying confidence and recommendations
-   - Screenshots of app showing real predictions
+   - Updated UI code displaying confidence, symptoms, treatment, and preventions
+   - Screenshots of app showing prediction responses
 
 6. **Documentation** (200-300 words in README or separate doc)
-   - Model choice explanation (why 6-class or larger model)
+   - Model choice explanation (why the current 10-label placeholder/mock contract is used now)
    - Preprocessing steps summary
-   - Known limitations (e.g., "Currently supports tomato/potato only")
+   - Known limitations (e.g., "Uses placeholder/mock predictions until Week 09")
    - Testing summary (what worked, any issues encountered)
 
 ## Grading Rubric
@@ -332,7 +356,7 @@ Submit the following in your project repository:
 | Inference Endpoint | 25 | Real predictions returned, correct JSON structure |
 | Error Handling | 10 | All error cases handled, appropriate status codes |
 | Testing | 15 | Comprehensive Postman tests, documented results |
-| Android Integration | 10 | UI displays confidence and recommendations |
+| Android Integration | 10 | UI displays confidence, symptoms, treatment, and preventions |
 | Documentation | 10 | Clear explanation of choices and limitations |
 | **Total** | **130** | **Score out of 130, normalized to 100** |
 
@@ -365,7 +389,7 @@ Submit the following in your project repository:
 - Debug any issues (shape mismatches, normalization errors)
 
 **Hours 7-8: Android Integration and Polish**
-- Update Android app to display confidence and recommendations
+- Update Android app to display confidence, symptoms, treatment, and preventions
 - Test end-to-end from phone to backend
 - Take screenshots for documentation
 - Write brief documentation explaining choices
@@ -413,15 +437,17 @@ If image looks correct, model might be broken. Try redownloading.
 
 ### Issue 4: "Confidence scores don't make sense"
 
+This is normal — here's the fix: low or odd confidence is expected while the mock/placeholder predictor is active. Verify the response shape now, then replace the model in Week 09 for meaningful predictions.
+
 **Cause**: Label mapping order doesn't match model training.
 
 **Solution**: Test with known images from training dataset. If predictions are wrong, reorder labels.
 
 ### Issue 5: "Android receives 500 error"
 
-**Cause**: Unhandled exception in Flask.
+**Cause**: Unhandled exception in FastAPI.
 
-**Solution**: Check Flask console logs for Python traceback. Add print statements to find where error occurs:
+**Solution**: Check FastAPI console logs for Python traceback. Add print statements to find where error occurs:
 ```python
 print("1. Received request")
 print("2. Read image bytes")
@@ -435,10 +461,10 @@ print("5. Inference complete")
 
 **If you cannot obtain a pre-trained model:**
 
-Use the 6-class fallback strategy:
+Use the current 10-label placeholder/mock strategy:
 1. Train a simple model using Teachable Machine (https://teachablemachine.withgoogle.com/)
 2. Export as TensorFlow Lite or Keras model
-3. Use 6 classes: Tomato Healthy/Early/Late Blight, Potato Healthy/Early/Late Blight
+3. Use the exact 10 labels from `assets/labels.txt` in order
 4. Clearly document this is a simplified implementation for learning purposes
 
 **You will NOT be penalized** for using a smaller model if implementation quality is high. Engineering skills (integration, error handling, testing) are more important than model size.
@@ -447,10 +473,10 @@ Use the 6-class fallback strategy:
 
 Your build task is successful when:
 
-1. ✅ Flask server starts and loads model without errors
+1. ✅ FastAPI server starts and loads model without errors
 2. ✅ Postman tests return predictions with varying disease names and confidence scores
 3. ✅ Error cases (no image, invalid format) return appropriate error responses
-4. ✅ Android app displays disease name, confidence percentage, and recommendation
+4. ✅ Android app displays disease name, confidence percentage, symptoms, treatment, and prevention
 5. ✅ End-to-end test works: Capture photo on Android → Real prediction appears in UI
 6. ✅ Documentation explains model choice and known limitations
 
@@ -461,7 +487,7 @@ Your build task is successful when:
 - TensorFlow Model Loading: https://www.tensorflow.org/guide/keras/save_and_serialize
 - PIL Image Processing: https://pillow.readthedocs.io/en/stable/
 - NumPy Array Operations: https://numpy.org/doc/stable/reference/arrays.ndarray.html
-- Flask File Uploads: https://flask.palletsprojects.com/en/2.3.x/patterns/fileuploads/
+- FastAPI file uploads: https://fastapi.tiangolo.com/tutorial/request-files/
 - Postman Documentation: https://learning.postman.com/docs/getting-started/introduction/
 
 **Pre-trained Model Sources**:

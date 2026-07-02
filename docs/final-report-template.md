@@ -672,7 +672,7 @@ This report is organized into eight chapters:
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
-    private val viewModel: ScanViewModel by viewModels()
+    private val viewModel: MainActivity by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -840,7 +840,7 @@ etc.]
 
 [Include key code files:
 - MainActivity.kt
-- ScanViewModel.kt
+- MainActivity.kt
 - ApiService.kt
 - ScanResultDao.kt
 - Important utility classes

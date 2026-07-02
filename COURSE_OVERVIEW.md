@@ -1,5 +1,11 @@
 # CSE 2206 - Mobile Application Development Course Overview
 
+## What Is Mobile App Development? (Plain-Language Opener)
+
+Mobile app development means building the programs ("apps") that run on smartphones and tablets. In this course you build a **native Android app** — an app written specifically for Android phones using their official tools — that takes a photo of a plant leaf and reports possible diseases. You learn the whole journey: designing screens, using the camera, saving data, talking to a server over the internet, and packaging the finished app so it can be installed on a real phone.
+
+> **Language track:** This course is **Kotlin-first with a parallel Java track**. Kotlin is Google's recommended language for new Android apps and is the primary track ([`android-app-kotlin/`](android-app-kotlin/)); an identical Java twin ([`android-app/`](android-app/)) is provided for the traditional "Java for Android" framing. If unsure, choose Kotlin.
+
 ## Course Context
 
 **Course Code**: CSE 2206
@@ -76,9 +82,9 @@ LeafGuard AI is designed as the **perfect CSE 2206 course project** because it i
 | **Introduction to Mobile Application Development** | Complete native Android app built from scratch | Week 01, Final APK |
 | **Platform Comparison (Android/iOS/Windows Phone)** | Report section comparing platforms for plant disease detection apps | Week 01 proposal, Final report |
 | **Development Environment Setup** | Android Studio, SDK, Gradle, AVD setup; Python FastAPI backend setup | Week 02 |
-| **Java for Android Development** | Entire Android codebase written in Java | Weeks 02-12 |
+| **Java for Android Development** | Android codebase written primarily in Kotlin, with a behavior-identical Java twin | Weeks 02-12 |
 | **Designing and Building Applications** | Multi-screen UI: Home, Camera, Result, History, Settings, Disease Library | Weeks 02-03 |
-| **XML Parsing** | Parse local `disease_library.xml` file to display disease information | Week 08 |
+| **XML Parsing** | Parse local `diseases.xml` file (in `assets/`) to display disease information | Week 08 |
 | **HTTP POST/GET Requests** | POST image to FastAPI backend; receive JSON prediction response | Week 05 |
 | **App-to-App Communication** | Share scan results using Android Share Intent | Week 10 |
 | **Notifications** | Reminder notifications using NotificationChannel and PendingIntent | Week 10 |
@@ -214,7 +220,7 @@ Based on typical CSE 2206 assessment patterns, your project will likely be evalu
 
 ### What IS Required (Must Have)
 
-- Native Android app in Java
+- Native Android app in Kotlin (Java twin available)
 - Camera and gallery image selection
 - HTTP POST to backend API
 - JSON parsing

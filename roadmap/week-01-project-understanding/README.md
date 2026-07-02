@@ -1,5 +1,30 @@
 # Week 01: Project Understanding & Foundation
 
+## What You'll Learn
+
+By the end of this week, you will understand:
+- How LeafGuard AI is organized (6 Activities, no ViewModel layer)
+- How images flow from camera capture to disease prediction
+- How the app communicates with the FastAPI backend
+- How scan history is stored locally using Room database
+
+## New Words
+
+| Term | Plain-English Definition |
+|------|-------------------------|
+| **Activity** | A single screen in an Android app (like a page in a website) |
+| **Intent** | A message that asks Android to do something (open camera, start another screen) |
+| **Room** | Android's built-in way to save data permanently on the phone (like a mini-database) |
+| **Retrofit** | A library that makes it easy to talk to web servers (send/receive data) |
+| **TensorFlow Lite** | A way to run AI models directly on a phone (offline mode) |
+| **FastAPI** | A Python framework for building web APIs (our backend server) |
+| **Multipart** | A way to upload files (like images) over the internet |
+| **JSON** | A text format for exchanging data between apps and servers |
+
+> **🎯 Kotlin Learner? Start here:** This project uses Kotlin as the primary language. If you're new to Kotlin, focus on understanding the concepts first—the syntax will become familiar with practice. When you see Java code examples, know that Kotlin equivalents are shown first.
+
+---
+
 ## Weekly Objective
 
 By the end of Week 01, you will:
@@ -40,7 +65,7 @@ Week 01 is your foundation. Without proper understanding, you will:
 ### Academic Requirement Alignment
 
 CSE 2206 expects you to demonstrate:
-1. **Android fundamentals:** Activities, Intents, Lifecycle (LeafGuard has 6+ activities)
+1. **Android fundamentals:** Activities, Intents, Lifecycle (LeafGuard has 6 activities)
 2. **UI design:** XML layouts, Material Design, RecyclerView (Disease library, History screens)
 3. **Networking:** Retrofit, REST API, HTTP methods (Cloud AI backend communication)
 4. **Data persistence:** Room database, SQLite, CRUD operations (Scan history storage)
@@ -137,19 +162,18 @@ You do NOT need to understand everything. Just get familiar with the terminology
 **The layers:**
 
 1. **Presentation Layer (UI):** What the user sees and interacts with
-   - Activities, Fragments, XML layouts
+   - Activities, XML layouts
    - Buttons, text fields, images
-   - LeafGuard: MainActivity, ResultActivity, HistoryActivity
+   - LeafGuard: MainActivity, ResultActivity, HistoryActivity, DiseaseLibraryActivity, SettingsActivity
 
 2. **Business Logic Layer:** Where decisions and processing happen
-   - ViewModels, Repositories
-   - Data validation, API calls, database queries
-   - LeafGuard: ScanViewModel, ApiService, ImageProcessor
+   - Network calls, database queries, ML inference
+   - LeafGuard: ApiService (network), TFLiteClassifier (offline ML), ScanDao (database)
 
 3. **Data Layer:** Where data is stored and retrieved
    - Room database (local)
    - REST API backend (remote)
-   - LeafGuard: ScanEntity, FastAPI /predict endpoint
+   - LeafGuard: ScanRecord entity, FastAPI /predict endpoint
 
 **Why it matters:**
 - Clean separation makes code easier to maintain
@@ -160,40 +184,42 @@ You do NOT need to understand everything. Just get familiar with the terminology
 ```
 User taps "Scan" button (Presentation Layer)
     ↓
-MainActivity calls ScanViewModel.uploadImage() (Business Logic Layer)
+MainActivity captures image via Camera Intent
     ↓
-ScanViewModel calls ApiService.detectDisease() (Data Layer - Network)
+MainActivity calls ApiService.predict() or TFLiteClassifier (Business Logic Layer)
     ↓
-Result saved to Room database (Data Layer - Local)
+Result saved to Room database via ScanDao (Data Layer - Local)
     ↓
-UI updated with disease info (Presentation Layer)
+UI updated with disease info in ResultActivity (Presentation Layer)
 ```
 
-### 2. MVVM (Model-View-ViewModel) Pattern
+### 2. Direct Architecture Pattern
 
-**What it is:** A design pattern for organizing Android code.
+**What it is:** LeafGuard uses a straightforward architecture where Activities directly coordinate with services.
 
 **Components:**
 
-- **Model:** Your data structures (Disease, ScanResult classes)
-- **View:** Your UI (Activities, Fragments, XML layouts)
-- **ViewModel:** Bridge between View and Model (holds UI state, survives rotation)
+- **Model:** Your data structures (ScanRecord, PredictionResponse)
+- **View:** Your UI (Activities, XML layouts)
+- **Services:** Network (ApiService), Database (ScanDao), ML (TFLiteClassifier)
 
 **Flow in LeafGuard:**
 ```
-MainActivity (View) observes ScanViewModel (ViewModel)
+MainActivity captures image
     ↓
-ViewModel holds LiveData<ScanResult>
+MainActivity calls ApiService (cloud) or TFLiteClassifier (offline)
     ↓
-When data changes, UI automatically updates
+Result returned to MainActivity
     ↓
-View never directly accesses database or network
+MainActivity saves to Room via ScanDao
+    ↓
+MainActivity navigates to ResultActivity with extras
 ```
 
 **Benefits:**
-- Lifecycle-aware (ViewModel survives screen rotation)
-- Testable (you can test ViewModels without UI)
-- Clean separation of concerns
+- Simple and easy to understand
+- Fewer layers to debug
+- Direct control over data flow
 
 ### 3. REST API Architecture
 
@@ -238,10 +264,12 @@ Android App                    FastAPI Backend
 scans table:
 - id (primary key)
 - image_path (where image is saved)
-- disease_name (predicted disease)
+- disease (predicted disease)
 - confidence (0.0 to 1.0)
 - timestamp (when scan happened)
 ```
+
+> **Note:** The Room database column is named `disease_name` for storage, while the API returns `disease`.
 
 **Why not just files?**
 - Easier to query (find all scans from last week)
@@ -281,7 +309,7 @@ Take argmax → Disease with highest probability
 
 **What it is:** Reading structured data from XML files.
 
-**LeafGuard Use Case:** Disease library stored in assets/disease_library.xml
+**LeafGuard Use Case:** Disease library stored in assets/diseases.xml
 
 **Example XML:**
 ```xml
@@ -503,21 +531,19 @@ Libraries:
 1. User
 2. Camera
 3. MainActivity
-4. ScanViewModel
-5. ScanRepository
-6. RetrofitClient
-7. FastAPI Backend
-8. ML Model
-9. Room Database
-10. ResultActivity
+4. ApiService / TFLiteClassifier
+5. RetrofitClient
+6. FastAPI Backend
+7. ML Model
+8. Room Database (ScanDao)
+9. ResultActivity
 
 **Arrows should show:**
 - Image captured (Camera → MainActivity)
-- Image sent to ViewModel (MainActivity → ScanViewModel)
-- API call made (ScanViewModel → RetrofitClient → Backend)
-- Prediction returned (Backend → RetrofitClient → ScanViewModel)
-- Result saved locally (ScanViewModel → Room Database)
-- UI updated (ScanViewModel → ResultActivity)
+- API call made (MainActivity → RetrofitClient → Backend) OR local inference (MainActivity → TFLiteClassifier)
+- Prediction returned (Backend → RetrofitClient → MainActivity)
+- Result saved locally (MainActivity → ScanDao → Room Database)
+- UI updated (MainActivity → ResultActivity via Intent)
 
 **Expected Output:** A clear diagram with labeled arrows showing data/control flow.
 
@@ -697,10 +723,10 @@ Database Class:
 **Requirements:**
 - Shows all three layers: Presentation, Business Logic, Data
 - Includes all 6+ activities
-- Shows ViewModels and Repositories
-- Displays Room Database with tables
+- Shows ApiService and TFLiteClassifier
+- Displays Room Database with scan_history table
 - Shows Retrofit connection to Backend
-- Displays FastAPI backend with endpoints
+- Displays FastAPI backend with /predict endpoint
 - Shows TensorFlow model (cloud and local)
 - Has clear data flow arrows
 - Includes legend explaining symbols
@@ -708,12 +734,11 @@ Database Class:
 - High resolution (300 DPI minimum)
 
 **Must show:**
-- Android Application layer (activities, fragments)
-- ViewModel layer (AuthViewModel, ScanViewModel, HistoryViewModel)
-- Repository layer (data coordination)
-- Local data sources (Room, XML parser, file storage)
-- Remote data sources (Retrofit, API endpoints)
-- Backend layer (FastAPI, ML model, database)
+- Android Application layer (activities)
+- Network layer (ApiService, RetrofitClient)
+- Database layer (ScanDao, AppDatabase)
+- ML layer (TFLiteClassifier for offline)
+- Backend layer (FastAPI, ML model)
 - Data flow arrows with labels
 
 ### 3. Syllabus Mapping Document
@@ -737,7 +762,7 @@ Database Class:
 **Syllabus Topic:** Activity lifecycle management, onCreate(), onPause(), onResume()
 
 **LeafGuard Implementation:**
-- 6 activities: MainActivity, ScanActivity, ResultActivity, HistoryActivity, DiseaseLibraryActivity, SettingsActivity
+- 6 activities: MainActivity, ResultActivity, HistoryActivity, HistoryDetailActivity, DiseaseLibraryActivity, SettingsActivity
 - Each activity properly implements lifecycle methods
 - State saved/restored on configuration changes
 
@@ -1085,10 +1110,9 @@ Use this checklist to verify Week 01 completion. All items must be checked befor
 
 - [ ] **Architecture diagram exists** and is professionally drawn (digital or neat hand-drawn)
 - [ ] **Diagram shows three layers:** Presentation, Business Logic, Data
-- [ ] **All 6+ activities are labeled** (MainActivity, ScanActivity, ResultActivity, etc.)
-- [ ] **ViewModels are shown** with connections to activities
-- [ ] **Repositories are shown** as intermediaries between ViewModels and data sources
-- [ ] **Room database is shown** with at least 2 tables (scans, users)
+- [ ] **All 6 activities are labeled** (MainActivity, ResultActivity, HistoryActivity, HistoryDetailActivity, DiseaseLibraryActivity, SettingsActivity)
+- [ ] **Service classes are shown** with connections to activities
+- [ ] **Room database is shown** with scan_history table
 - [ ] **Retrofit/API connection is shown** linking to backend
 - [ ] **FastAPI backend is shown** with at least /predict endpoint
 - [ ] **ML model is shown** both in backend and as TFLite in app
@@ -1188,9 +1212,9 @@ Answer these questions to verify your Week 01 understanding. Write answers in `e
 **Question:** Explain the three-tier architecture of LeafGuard AI. For each tier, name two specific components and their responsibilities.
 
 **Expected Answer Components:**
-- Presentation Layer: Activities (MainActivity, ResultActivity), Fragments, XML layouts
+- Presentation Layer: Activities (MainActivity, ResultActivity, HistoryActivity), XML layouts
   - Responsibility: Display UI, handle user interactions
-- Business Logic Layer: ViewModels (ScanViewModel), Repositories (ScanRepository)
+- Business Logic Layer: ApiService (network), TFLiteClassifier (ML), ScanDao (database)
   - Responsibility: Process data, coordinate between UI and data sources
 - Data Layer: Room Database (local), Retrofit API Service (remote)
   - Responsibility: Store and retrieve data
@@ -1201,53 +1225,51 @@ Answer these questions to verify your Week 01 understanding. Write answers in `e
 **Expected Answer Flow:**
 1. User taps "Scan" button in MainActivity
 2. Camera intent launched, user captures image
-3. Image returned to MainActivity via onActivityResult()
-4. MainActivity passes image to ScanViewModel
-5. ViewModel calls ScanRepository.uploadImage()
-6. Repository uses RetrofitClient to make HTTP POST to /predict
-7. FastAPI backend receives image
-8. Backend preprocesses image and runs TensorFlow model
-9. Model returns prediction array
-10. Backend formats JSON response
-11. Retrofit receives JSON, parses to UploadResponse object
-12. Repository returns result to ViewModel
-13. ViewModel updates LiveData
-14. MainActivity observes LiveData change, updates UI
-15. ViewModel saves result to Room database via ScanDao
+3. Image returned to MainActivity via ActivityResultContracts
+4. MainActivity calls ApiService.predict() (cloud mode) or TFLiteClassifier (offline mode)
+5. ApiService uses RetrofitClient to make HTTP POST to /predict
+6. FastAPI backend receives image
+7. Backend preprocesses image and runs TensorFlow model
+8. Model returns prediction array
+9. Backend formats JSON response with "disease" field
+10. Retrofit receives JSON, parses to PredictionResponse object
+11. MainActivity receives result
+12. MainActivity saves result to Room database via ScanDao
+13. MainActivity navigates to ResultActivity with Intent extras
 
-### Question 3: MVVM Pattern
-**Question:** Why does LeafGuard use MVVM pattern instead of having Activities directly access the database and network? Give three specific benefits.
+### Question 3: Direct Architecture Pattern
+**Question:** Why does LeafGuard use a direct architecture pattern where Activities call services directly instead of using ViewModels? Give three specific reasons.
 
 **Expected Answers:**
-1. **Lifecycle awareness:** ViewModel survives configuration changes (screen rotation), Activity does not. This prevents data loss and duplicate network calls.
-2. **Testability:** You can unit test ViewModels without needing Android framework. You cannot easily test Activities.
-3. **Separation of concerns:** Activities only handle UI, ViewModels handle logic, Repositories handle data. This makes code easier to maintain and debug.
+1. **Simplicity:** For a course project, direct architecture is easier to understand, debug, and explain during viva.
+2. **Fewer layers:** Without ViewModels and Repositories, there are fewer abstractions to maintain and test.
+3. **Appropriate scope:** The app has straightforward data flows that don't require the complexity of MVVM.
 
 ### Question 4: Syllabus Coverage
 **Question:** List 10 CSE 2206 syllabus topics and explain which LeafGuard component demonstrates each topic.
 
 **Expected Answers (10 examples):**
-1. **Activities:** LeafGuard has 6+ activities (MainActivity, ScanActivity, ResultActivity, etc.)
+1. **Activities:** LeafGuard has 6 activities (MainActivity, ResultActivity, HistoryActivity, HistoryDetailActivity, DiseaseLibraryActivity, SettingsActivity)
 2. **Intents:** Camera intent for image capture, Gallery intent for image selection
-3. **Fragments:** DiseaseLibraryFragment for displaying disease information
-4. **RecyclerView:** HistoryActivity displays scan history list using RecyclerView
+3. **RecyclerView:** HistoryActivity displays scan history list using RecyclerView
+4. **RecyclerView:** DiseaseLibraryActivity displays diseases list
 5. **Retrofit:** ApiService interface and RetrofitClient for REST API communication
-6. **Room:** AppDatabase, ScanEntity, ScanDao for local data persistence
-7. **XML Parsing:** XmlParser reads disease_library.xml for treatment information
-8. **JSON Parsing:** Gson parses API responses into UploadResponse objects
+6. **Room:** AppDatabase, ScanRecord entity, ScanDao for local data persistence
+7. **XML Parsing:** XmlParser reads diseases.xml for treatment information
+8. **JSON Parsing:** Gson parses API responses into PredictionResponse objects
 9. **Permissions:** Runtime permissions for Camera and External Storage
-10. **AsyncTask/Coroutines:** Background API calls and database operations use Kotlin Coroutines
+10. **Coroutines:** Background API calls and database operations use Kotlin Coroutines
 
-### Question 5: Repository Pattern
-**Question:** What is the purpose of the Repository pattern in LeafGuard? Why not let ViewModel directly access Room database and Retrofit?
+### Question 5: Service Architecture
+**Question:** What is the purpose of having separate service classes (ApiService, ScanDao, TFLiteClassifier) in LeafGuard? Why not have Activities directly write SQL or HTTP calls?
 
 **Expected Answer:**
-The Repository acts as a **single source of truth** and **data abstraction layer**. Benefits:
-1. **Centralized data logic:** Repository decides whether to fetch from network or database
-2. **Caching strategy:** Repository can cache API results in Room database automatically
-3. **Switching data sources:** If you change from Retrofit to Volley, only Repository changes, not ViewModel
-4. **Offline support:** Repository can return cached data when network is unavailable
-5. **Testing:** You can mock Repository to test ViewModel without real database or network
+Separate service classes provide **abstraction** and **maintainability**. Benefits:
+1. **Centralized logic:** All network calls go through ApiService, all database calls through ScanDao
+2. **Easy switching:** If you change from Retrofit to Volley, only RetrofitClient changes
+3. **Offline support:** MainActivity can choose between ApiService (cloud) or TFLiteClassifier (offline)
+4. **Testability:** You can mock services to test Activities without real network or database
+5. **Reusability:** Multiple Activities can use the same ScanDao without duplicating code
 
 ### Question 6: Cloud vs Offline AI
 **Question:** LeafGuard has two AI modes: cloud and offline. Compare them in terms of accuracy, speed, internet dependency, and model updates.
@@ -1304,7 +1326,7 @@ POST /api/detect HTTP/1.1
 Content-Type: multipart/form-data
 
 ----boundary
-Content-Disposition: form-data; name="file"; filename="leaf.jpg"
+Content-Disposition: form-data; name="image"; filename="leaf.jpg"
 Content-Type: image/jpeg
 
 [binary image data]

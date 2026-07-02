@@ -1,5 +1,7 @@
 # Week 07: Reflection - Room Database and Scan History
 
+> **Accuracy note:** the shipped classes are `ScanRecord`, `ScanDao`, and `AppDatabase` (`leafguard.db`, table `scan_history`). Kotlin (coroutines + kapt) is primary; Java is secondary.
+
 ## Technical Understanding
 
 ### 1. Room Architecture (Write 3-4 sentences)

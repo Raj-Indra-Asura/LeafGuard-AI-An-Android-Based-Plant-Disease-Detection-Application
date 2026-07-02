@@ -7,7 +7,7 @@
 ### How to use this notebook
 
 - Follow the cells in order.
-- Use Java for Android code and Python only for backend/model tooling.
+- Kotlin is the primary track for Android code (`android-app-kotlin/`, with a complete Java twin in `android-app/`); Python is used only for backend/model tooling.
 - Save screenshots and logs as evidence for CSE 2206.
 - Keep the roadmap folder for this week open while you work.
 
@@ -21,7 +21,7 @@
 
 - `roadmap/week-08-xml-disease-library/`
 - `solutions/week-08/`
-- `android-app/app/src/main/res/`
+- `android-app-kotlin/app/src/main/assets/diseases.xml` (Java twin: `android-app/app/src/main/assets/diseases.xml`)
 
 ---
 
@@ -66,7 +66,7 @@
 
 - A consistent data format makes parsing simpler.
 
-## Notebook Cell 2 — Create a complete disease_library.xml with 10 diseases
+## Notebook Cell 2 — Create a complete diseases.xml with 10 diseases
 
 ### Explanation
 
@@ -92,7 +92,7 @@
 
 ### 🔵 Try This
 
-- Move this file into `res/xml/` or `assets/` depending on your parser approach.
+- Place this file at `app/src/main/assets/diseases.xml`. The real app reads it from **`assets/`** (not `res/`) using an `XmlPullParser`, and the file is named `diseases.xml` (not `disease_library.xml`).
 
 ### Expected Output
 
@@ -190,7 +190,7 @@ public class DiseaseRepository {
 
     public static List<DiseaseInfo> getDiseases(Context context) {
         if (cachedDiseases == null) {
-            try (InputStream inputStream = context.getResources().openRawResource(R.raw.disease_library)) {
+            try (InputStream inputStream = context.getAssets().open("diseases.xml")) {
                 cachedDiseases = new DiseaseXmlParser().parse(inputStream);
             } catch (Exception exception) {
                 cachedDiseases = new ArrayList<>();

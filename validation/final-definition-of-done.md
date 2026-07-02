@@ -8,165 +8,96 @@ This comprehensive checklist defines every single deliverable required for succe
 
 ## 1. CODE DELIVERABLES
 
-### 1.1 Android Application Code
+> This checklist lists only files that really exist in this repository (see
+> [`docs/ARCHITECTURE_GROUND_TRUTH.md`](../docs/ARCHITECTURE_GROUND_TRUTH.md)).
+> Kotlin (`android-app-kotlin/`) is the primary track; the Java twin
+> (`android-app/`) is secondary — submit the Kotlin app, and mention the Java twin.
+
+### 1.1 Android Application Code (Kotlin primary — `android-app-kotlin/`)
 - [ ] **Project Structure**
-  - [ ] Proper package organization (com.leafguard.ai)
-  - [ ] Separation of concerns (activities, fragments, adapters, models, utils)
-  - [ ] Clean architecture layers (UI, Domain, Data)
-  - [ ] Resource files organized (layouts, drawables, values)
+  - [ ] Package `com.leafguard` with `database/`, `network/`, `ml/`, `utils/` sub-packages
+  - [ ] Resource files organized (layouts, values, xml)
 
-- [ ] **Source Code Files**
-  - [ ] MainActivity.kt with navigation setup
-  - [ ] SplashActivity.kt with proper animations
-  - [ ] LoginActivity.kt with authentication logic
-  - [ ] RegisterActivity.kt with validation
-  - [ ] HomeActivity.kt with dashboard
-  - [ ] ScanActivity.kt with camera/gallery integration
-  - [ ] ResultActivity.kt with disease display
-  - [ ] HistoryActivity.kt with RecyclerView
-  - [ ] ProfileActivity.kt with user details
-  - [ ] SettingsActivity.kt with preferences
-
-- [ ] **Fragments**
-  - [ ] HomeFragment.kt
-  - [ ] ScanFragment.kt
-  - [ ] HistoryFragment.kt
-  - [ ] ProfileFragment.kt
-
-- [ ] **Adapters**
-  - [ ] HistoryAdapter.kt with ViewHolder
-  - [ ] TreatmentAdapter.kt for recommendations
-  - [ ] DiseaseInfoAdapter.kt
-
-- [ ] **Models/Data Classes**
-  - [ ] User.kt
-  - [ ] ScanResult.kt
-  - [ ] Disease.kt
-  - [ ] Treatment.kt
-  - [ ] ApiResponse.kt
-
-- [ ] **ViewModels**
-  - [ ] AuthViewModel.kt
-  - [ ] ScanViewModel.kt
-  - [ ] HistoryViewModel.kt
-  - [ ] ProfileViewModel.kt
-
-- [ ] **Repository Classes**
-  - [ ] AuthRepository.kt
-  - [ ] ScanRepository.kt
-  - [ ] HistoryRepository.kt
+- [ ] **Activities (the six real screens)**
+  - [ ] MainActivity.kt — home screen: camera/gallery capture, cloud/offline mode toggle, detection
+  - [ ] ResultActivity.kt — disease result display, share, save to history
+  - [ ] HistoryActivity.kt — RecyclerView list of saved scans
+  - [ ] HistoryDetailActivity.kt — details of one saved scan
+  - [ ] DiseaseLibraryActivity.kt — offline library parsed from assets/diseases.xml
+  - [ ] SettingsActivity.kt — backend URL + confidence threshold preferences
 
 - [ ] **Room Database**
-  - [ ] AppDatabase.kt
-  - [ ] ScanResultDao.kt
-  - [ ] UserDao.kt
-  - [ ] DatabaseMigrations.kt
-  - [ ] TypeConverters.kt
+  - [ ] ScanRecord.kt (@Entity, table `scan_history`)
+  - [ ] ScanDao.kt (suspend queries)
+  - [ ] AppDatabase.kt (database `leafguard.db`)
 
 - [ ] **Networking**
-  - [ ] RetrofitClient.kt
-  - [ ] ApiService.kt interface
-  - [ ] NetworkUtils.kt
-  - [ ] AuthInterceptor.kt
-
-- [ ] **Utilities**
-  - [ ] ImageUtils.kt (resize, compress, convert)
-  - [ ] XmlParser.kt
-  - [ ] ValidationUtils.kt
-  - [ ] DateUtils.kt
-  - [ ] PermissionUtils.kt
-  - [ ] FileUtils.kt
+  - [ ] RetrofitClient.kt (base URL http://10.0.2.2:8000/)
+  - [ ] ApiService.kt (`@Multipart @POST("predict")`, part `image`)
+  - [ ] PredictionResponse.kt (JSON field `disease` via @SerializedName)
 
 - [ ] **ML Integration**
-  - [ ] ModelHandler.kt or TFLiteHelper.kt
-  - [ ] ImagePreprocessor.kt
-  - [ ] OutputProcessor.kt
+  - [ ] TFLiteClassifier.kt (224×224 RGB 0..1, heuristic fallback)
 
-### 1.2 Layout XML Files
+- [ ] **Utilities**
+  - [ ] NotificationHelper.kt (channel `leafguard_scan_reminders`)
+
+- [ ] **Java twin (secondary, optional to submit)**
+  - [ ] `android-app/` contains the same 14 files as `.java` twins (see docs/JAVA_VS_KOTLIN.md)
+
+### 1.2 Layout XML Files (both tracks share identical copies)
 - [ ] activity_main.xml
-- [ ] activity_splash.xml
-- [ ] activity_login.xml
-- [ ] activity_register.xml
-- [ ] activity_scan.xml
 - [ ] activity_result.xml
 - [ ] activity_history.xml
-- [ ] activity_profile.xml
-- [ ] fragment_home.xml
-- [ ] fragment_scan.xml
-- [ ] fragment_history.xml
-- [ ] fragment_profile.xml
-- [ ] item_history.xml (RecyclerView item)
-- [ ] item_treatment.xml
-- [ ] dialog_loading.xml
-- [ ] dialog_error.xml
+- [ ] activity_history_detail.xml
+- [ ] activity_disease_library.xml
+- [ ] activity_settings.xml
+- [ ] item_scan_history.xml (RecyclerView item)
+- [ ] item_disease_library.xml (RecyclerView item)
 
 ### 1.3 Resource Files
 - [ ] strings.xml (all text strings)
 - [ ] colors.xml (app color palette)
-- [ ] dimens.xml (dimensions and margins)
-- [ ] styles.xml (custom styles)
 - [ ] themes.xml (app themes)
-- [ ] navigation.xml (navigation graph)
 - [ ] network_security_config.xml
+- [ ] file_provider_paths.xml (FileProvider)
 
-### 1.4 Drawable Resources
-- [ ] App icon (ic_launcher.png) - all densities (mdpi, hdpi, xdpi, xxdpi, xxxdpi)
-- [ ] Splash screen logo
-- [ ] Navigation icons
-- [ ] Button backgrounds
-- [ ] Image placeholders
-- [ ] Vector drawables for icons
-
-### 1.5 Configuration Files
-- [ ] build.gradle (Project level) - proper dependencies
-- [ ] build.gradle (App level) - version, dependencies, plugins
+### 1.4 Configuration Files
+- [ ] build.gradle (project level) — plugins
+- [ ] build.gradle (app level) — dependencies (Retrofit, Room, Gson, TFLite, test libraries)
 - [ ] settings.gradle
 - [ ] gradle.properties
-- [ ] AndroidManifest.xml - all permissions, activities declared
+- [ ] AndroidManifest.xml — all permissions and the six activities declared
 - [ ] proguard-rules.pro
-- [ ] file_paths.xml (FileProvider)
+- [ ] Gradle wrapper: gradlew (macOS/Linux) + gradlew.bat (Windows)
 
-### 1.6 Assets
-- [ ] disease_model.tflite (ML model file)
-- [ ] labels.txt (disease labels)
-- [ ] disease_info.xml
-- [ ] treatment_data.xml
-- [ ] fonts (if custom fonts used)
+### 1.5 Assets
+- [ ] model.tflite (placeholder until you convert a trained model in Week 09 — document its status)
+- [ ] labels.txt (the 10 disease labels, order matters)
+- [ ] diseases.xml (10 entries, names match labels.txt exactly)
 
-### 1.7 Backend Code (FastAPI)
-- [ ] main.py (FastAPI application)
-- [ ] models.py (Pydantic models)
-- [ ] database.py (database configuration)
-- [ ] auth.py (authentication logic)
-- [ ] disease_detection.py (ML prediction logic)
+### 1.6 Backend Code (FastAPI — `backend-api/`)
+- [ ] main.py (FastAPI application: GET /, GET /health, GET /diseases, POST /predict)
+- [ ] config.py (settings)
+- [ ] model_loader.py (mock or real predictor)
 - [ ] requirements.txt (Python dependencies)
-- [ ] Dockerfile (for deployment)
-- [ ] .env.example (environment variables template)
 
 ---
 
 ## 2. TESTING DELIVERABLES
 
-### 2.1 Test Code
-- [ ] **Unit Tests**
-  - [ ] AuthViewModelTest.kt
-  - [ ] ScanViewModelTest.kt
-  - [ ] HistoryRepositoryTest.kt
-  - [ ] ValidationUtilsTest.kt
-  - [ ] ImageUtilsTest.kt
-  - [ ] XmlParserTest.kt
-  - [ ] Minimum 70% code coverage
+### 2.1 Test Code (real files — both tracks)
+- [ ] **Unit Tests** (run on your computer: `./gradlew testDebugUnitTest`, Windows `gradlew.bat testDebugUnitTest`)
+  - [ ] PredictionResponseTest.kt (`android-app-kotlin/app/src/test/java/com/leafguard/network/`) — parses the /predict JSON, checks `disease` and `confidence`
+  - [ ] PredictionResponseTest.java — Java twin in `android-app/app/src/test/...`
+  - [ ] Both runs end with BUILD SUCCESSFUL (all green)
 
-- [ ] **Instrumentation Tests**
-  - [ ] LoginActivityTest.kt
-  - [ ] ScanActivityTest.kt
-  - [ ] HistoryFragmentTest.kt
-  - [ ] DatabaseTest.kt
+- [ ] **Instrumented UI Tests (Espresso)** (need an emulator: `./gradlew connectedDebugAndroidTest`)
+  - [ ] MainActivityTest.kt (`android-app-kotlin/app/src/androidTest/java/com/leafguard/`) — launches MainActivity, checks capture buttons are visible
+  - [ ] MainActivityTest.java — Java twin in `android-app/app/src/androidTest/...`
 
-- [ ] **UI Tests (Espresso)**
-  - [ ] NavigationTest.kt
-  - [ ] AuthFlowTest.kt
-  - [ ] ScanFlowTest.kt
+- [ ] **Manual Tests**
+  - [ ] Manual test table from `validation/test-cases-template.md` filled in
 
 ### 2.2 Test Documentation
 - [ ] Test plan document
@@ -262,7 +193,7 @@ This comprehensive checklist defines every single deliverable required for succe
     - [ ] FastAPI for backend
   - [ ] Development environment setup
   - [ ] Module-wise implementation
-    - [ ] Authentication module
+    - [ ] Settings module
     - [ ] Image capture module
     - [ ] Disease detection module
     - [ ] History management module
@@ -384,7 +315,7 @@ This comprehensive checklist defines every single deliverable required for succe
   - [ ] Disease detection
   - [ ] Treatment recommendations
   - [ ] Scan history
-  - [ ] User authentication
+  - [ ] Offline disease library (XML)
 
 - [ ] **Slide 9:** Implementation Highlights
   - [ ] ML model integration

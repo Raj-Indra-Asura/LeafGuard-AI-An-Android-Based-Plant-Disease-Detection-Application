@@ -70,7 +70,7 @@ Use `submission-checklist.md` in this folder and mark each item as complete. The
 - Release APK (signed and tested)
 - Backend deployment scripts
 - ML model files (.tflite, labels.txt)
-- disease_library.xml
+- diseases.xml
 
 ### 3. Documentation
 - Final report (PDF)

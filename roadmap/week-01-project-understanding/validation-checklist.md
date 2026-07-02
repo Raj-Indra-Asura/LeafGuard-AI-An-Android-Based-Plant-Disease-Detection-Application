@@ -12,101 +12,98 @@ Use this checklist to verify complete Week 01 completion before proceeding to We
 
 ### Project Proposal
 
-- [ ] **Proposal document exists** at `docs/proposal.md` or `docs/proposal.pdf`
-- [ ] **Minimum 8 pages** (excluding title page and references)
-- [ ] **Title page complete** with your name, roll number, course code, guide name, date
-- [ ] **Abstract is 150-200 words** and includes problem, solution, technologies, outcomes
-- [ ] **Introduction section** explains agricultural problem, smartphone trends, ML advances
-- [ ] **Problem statement** is specific to plant disease detection challenge
-- [ ] **Objectives are SMART** (Specific, Measurable, Achievable, Relevant, Time-bound)
-- [ ] **Scope section clearly defines** what IS and IS NOT included
-- [ ] **Literature review analyzes** minimum 3 existing apps or research papers
-- [ ] **Methodology explains** Agile approach, technology stack, implementation phases
-- [ ] **Timeline shows all 12 weeks** with deliverables
-- [ ] **Risk analysis** identifies minimum 5 risks with mitigation strategies
-- [ ] **References section** has minimum 10 credible sources cited properly
-- [ ] **No spelling or grammar errors** throughout document
-- [ ] **Formal academic tone** maintained (no first person, no slang)
-- [ ] **All statistics are cited** with sources
+- [ ] **Does the proposal document exist** at `docs/proposal.md` or `docs/proposal.pdf`?
+- [ ] **Is it minimum 8 pages** (excluding title page and references)?
+- [ ] **Is the title page complete** with your name, roll number, course code, guide name, date?
+- [ ] **Is the abstract 150-200 words** and does it include problem, solution, technologies, outcomes?
+- [ ] **Does the introduction section** explain agricultural problem, smartphone trends, ML advances?
+- [ ] **Is the problem statement** specific to plant disease detection challenge?
+- [ ] **Are the objectives SMART** (Specific, Measurable, Achievable, Relevant, Time-bound)?
+- [ ] **Does the scope section clearly define** what IS and IS NOT included?
+- [ ] **Does the literature review analyze** minimum 3 existing apps or research papers?
+- [ ] **Does the methodology explain** Agile approach, technology stack, implementation phases?
+- [ ] **Does the timeline show all 12 weeks** with deliverables?
+- [ ] **Does the risk analysis** identify minimum 5 risks with mitigation strategies?
+- [ ] **Does the references section** have minimum 10 credible sources cited properly?
+- [ ] **Are there no spelling or grammar errors** throughout the document?
+- [ ] **Is formal academic tone** maintained (no first person, no slang)?
+- [ ] **Are all statistics cited** with sources?
 
 ### Architecture Documentation
 
-- [ ] **Architecture diagram exists** at `diagrams/system-architecture.png`
-- [ ] **Diagram is high resolution** (300 DPI or vector format)
-- [ ] **Shows three layers clearly:** Presentation, Business Logic, Data
-- [ ] **All 6+ activities labeled:** MainActivity, ScanActivity, ResultActivity, etc.
-- [ ] **ViewModels shown** with connections to Activities
-- [ ] **Repositories shown** as intermediaries between ViewModels and data sources
-- [ ] **Room database shown** with at least 2 tables (scans, users)
-- [ ] **Retrofit/API connection shown** linking to backend
-- [ ] **FastAPI backend shown** with at least /predict endpoint
-- [ ] **ML model shown** both in backend (TensorFlow) and app (TFLite)
-- [ ] **Data flow arrows labeled** (e.g., "Image Upload", "JSON Response", "Save to DB")
-- [ ] **Legend present** explaining symbols, colors, arrow types
-- [ ] **Title, your name, and date** visible on diagram
-- [ ] **Readable when printed** on A4 paper
+- [ ] **Does the architecture diagram exist** at `diagrams/system-architecture.png`?
+- [ ] **Is the diagram high resolution** (300 DPI or vector format)?
+- [ ] **Does it show three layers clearly:** Presentation, Business Logic, Data?
+- [ ] **Are all 6 activities labeled:** MainActivity, ResultActivity, HistoryActivity, HistoryDetailActivity, DiseaseLibraryActivity, SettingsActivity?
+- [ ] **Are service classes shown** (ApiService, ScanDao, TFLiteClassifier) with connections to Activities?
+- [ ] **Is the Room database shown** with scan_history table?
+- [ ] **Is the Retrofit/API connection shown** linking to backend?
+- [ ] **Is the FastAPI backend shown** with /predict endpoint?
+- [ ] **Is the ML model shown** both in backend (TensorFlow) and app (TFLite)?
+- [ ] **Are data flow arrows labeled** (e.g., "Image Upload", "JSON Response", "Save to DB")?
+- [ ] **Is a legend present** explaining symbols, colors, arrow types?
+- [ ] **Are title, your name, and date** visible on diagram?
+- [ ] **Is it readable when printed** on A4 paper?
 
 ### Syllabus Mapping
 
-- [ ] **Syllabus mapping document exists** at `docs/syllabus-mapping.md`
-- [ ] **Minimum 15 CSE 2206 topics mapped**
-- [ ] **Activities & Intents mapped** to specific LeafGuard activities
-- [ ] **Fragments mapped** (even if minimal use)
-- [ ] **RecyclerView mapped** to history list or disease library
-- [ ] **Retrofit/Networking mapped** to API service classes
-- [ ] **Room database mapped** to scan history storage
-- [ ] **XML parsing mapped** to disease information parsing
-- [ ] **JSON parsing mapped** to API response handling
-- [ ] **Camera integration mapped** to image capture feature
-- [ ] **Runtime permissions mapped** to camera/storage permissions
-- [ ] **Each mapping includes file path** or class name
-- [ ] **Each mapping explains HOW** topic is demonstrated (not just WHERE)
-- [ ] **Table is well-formatted** and easy to read
+- [ ] **Does the syllabus mapping document exist** at `docs/syllabus-mapping.md`?
+- [ ] **Are minimum 15 CSE 2206 topics mapped**?
+- [ ] **Are Activities & Intents mapped** to specific LeafGuard activities?
+- [ ] **Is RecyclerView mapped** to history list or disease library?
+- [ ] **Is Retrofit/Networking mapped** to API service classes?
+- [ ] **Is Room database mapped** to scan history storage?
+- [ ] **Is XML parsing mapped** to disease information parsing?
+- [ ] **Is JSON parsing mapped** to API response handling?
+- [ ] **Is camera integration mapped** to image capture feature?
+- [ ] **Are runtime permissions mapped** to camera/storage permissions?
+- [ ] **Does each mapping include file path** or class name?
+- [ ] **Does each mapping explain HOW** topic is demonstrated (not just WHERE)?
+- [ ] **Is the table well-formatted** and easy to read?
 
 ### Senior Repository Analysis
 
-- [ ] **Analysis document exists** at `docs/senior-repo-analysis.md`
-- [ ] **5 repositories analyzed** with URLs provided
-- [ ] **Each repository includes basic info** (stars, last update, language)
-- [ ] **Architecture pattern identified** for each (MVVM, MVP, MVC, etc.)
-- [ ] **Folder structure documented** for each
-- [ ] **Libraries and versions listed** for each
-- [ ] **Minimum 3 strengths per repository** with specific examples
-- [ ] **Minimum 3 weaknesses per repository** with specific examples
-- [ ] **Key learnings documented** for each (what to adopt/avoid)
-- [ ] **At least one plant disease detection app analyzed**
-- [ ] **At least one MVVM example analyzed**
-- [ ] **At least one Retrofit+Room example analyzed**
-- [ ] **Analysis is specific** (cites actual files, classes, line numbers)
-- [ ] **Minimum 2000 words total** (400 per repository)
+- [ ] **Does the analysis document exist** at `docs/senior-repo-analysis.md`?
+- [ ] **Are 5 repositories analyzed** with URLs provided?
+- [ ] **Does each repository include basic info** (stars, last update, language)?
+- [ ] **Is the architecture pattern identified** for each (direct, MVVM, MVP, MVC, etc.)?
+- [ ] **Is the folder structure documented** for each?
+- [ ] **Are libraries and versions listed** for each?
+- [ ] **Are minimum 3 strengths per repository** documented with specific examples?
+- [ ] **Are minimum 3 weaknesses per repository** documented with specific examples?
+- [ ] **Are key learnings documented** for each (what to adopt/avoid)?
+- [ ] **Is at least one plant disease detection app analyzed**?
+- [ ] **Is at least one Retrofit+Room example analyzed**?
+- [ ] **Is the analysis specific** (cites actual files, classes, line numbers)?
+- [ ] **Is there minimum 2000 words total** (400 per repository)?
 
 ### Timeline & Planning
 
-- [ ] **12-week timeline exists** at `docs/12-week-timeline.md`
-- [ ] **Each week has title** describing focus area
-- [ ] **Each week has 3-5 learning objectives**
-- [ ] **Each week has 3-5 deliverables**
-- [ ] **Each week has evidence collection plan**
-- [ ] **Each week has time estimate** (8-15 hours)
-- [ ] **Milestones defined** at Weeks 4, 8, 12
-- [ ] **Week 01 is Project Understanding** (current week)
-- [ ] **Week 02 is Android Basics/UI**
-- [ ] **Week 12 is Final Submission**
-- [ ] **Timeline is realistic** (matches course semester dates)
-- [ ] **Buffer time included** for debugging and delays
-- [ ] **Contingency plans documented** for common delays
+- [ ] **Does the 12-week timeline exist** at `docs/12-week-timeline.md`?
+- [ ] **Does each week have a title** describing focus area?
+- [ ] **Does each week have 3-5 learning objectives**?
+- [ ] **Does each week have 3-5 deliverables**?
+- [ ] **Does each week have an evidence collection plan**?
+- [ ] **Does each week have a time estimate** (8-15 hours)?
+- [ ] **Are milestones defined** at Weeks 4, 8, 12?
+- [ ] **Is Week 01 Project Understanding** (current week)?
+- [ ] **Is Week 02 Android Basics/UI**?
+- [ ] **Is Week 12 Final Submission**?
+- [ ] **Is the timeline realistic** (matches course semester dates)?
+- [ ] **Is buffer time included** for debugging and delays?
+- [ ] **Are contingency plans documented** for common delays?
 
 ### Evidence Collection Framework
 
-- [ ] **Evidence collection guide exists** at `evidence/README.md`
-- [ ] **Purpose of evidence explained**
-- [ ] **Evidence types defined** (screenshots, commits, videos, docs, tests)
-- [ ] **Screenshot guidelines specified** (resolution, naming, annotations)
-- [ ] **Git commit conventions defined** (format, frequency, categories)
-- [ ] **Video guidelines specified** (length, quality, content)
-- [ ] **Weekly evidence checklist** for all 12 weeks
-- [ ] **Folder structure defined** for organizing evidence
-- [ ] **Final submission checklist** documented
+- [ ] **Does the evidence collection guide exist** at `evidence/README.md`?
+- [ ] **Is the purpose of evidence explained**?
+- [ ] **Are evidence types defined** (screenshots, commits, videos, docs, tests)?
+- [ ] **Are screenshot guidelines specified** (resolution, naming, annotations)?
+- [ ] **Are Git commit conventions defined** (format, frequency, categories)?
+- [ ] **Are video guidelines specified** (length, quality, content)?
+- [ ] **Is there a weekly evidence checklist** for all 12 weeks?
+- [ ] **Is the folder structure defined** for organizing evidence?
+- [ ] **Is the final submission checklist** documented?
 
 ---
 
@@ -114,18 +111,18 @@ Use this checklist to verify complete Week 01 completion before proceeding to We
 
 ### Diagrams
 
-- [ ] **System architecture diagram** is professionally drawn
-- [ ] **Data flow diagram** shows complete scan process
-- [ ] **All diagrams use consistent styling** (same colors, fonts, arrow styles)
-- [ ] **All diagrams are saved in multiple formats** (PNG for display, source file for editing)
-- [ ] **All diagrams are backed up** (committed to Git)
+- [ ] **Is the system architecture diagram** professionally drawn?
+- [ ] **Does the data flow diagram** show the complete scan process?
+- [ ] **Do all diagrams use consistent styling** (same colors, fonts, arrow styles)?
+- [ ] **Are all diagrams saved in multiple formats** (PNG for display, source file for editing)?
+- [ ] **Are all diagrams backed up** (committed to Git)?
 
 ### Color Scheme
 
-- [ ] **Consistent color scheme** used across all diagrams
-- [ ] **Colors are meaningful** (different colors for different layers)
-- [ ] **Colors are accessible** (not relying on color alone for meaning)
-- [ ] **High contrast** (readable in black and white if printed)
+- [ ] **Is a consistent color scheme** used across all diagrams?
+- [ ] **Are colors meaningful** (different colors for different layers)?
+- [ ] **Are colors accessible** (not relying on color alone for meaning)?
+- [ ] **Is there high contrast** (readable in black and white if printed)?
 
 ---
 
@@ -133,30 +130,30 @@ Use this checklist to verify complete Week 01 completion before proceeding to We
 
 ### Repository Setup
 
-- [ ] **Git repository initialized** (`git init` executed successfully)
-- [ ] **Folder structure created:** docs/, diagrams/, evidence/
-- [ ] **.gitignore file exists** with appropriate entries
-- [ ] **.gitignore excludes** temporary files, build artifacts, secrets
-- [ ] **README.md exists** with project overview
-- [ ] **README.md includes:** project description, tech stack, status, features, timeline
-- [ ] **All planning documents added** to Git
-- [ ] **First commit made** with meaningful message
+- [ ] **Is the Git repository initialized** (`git init` executed successfully)?
+- [ ] **Is the folder structure created:** docs/, diagrams/, evidence/?
+- [ ] **Does the .gitignore file exist** with appropriate entries?
+- [ ] **Does .gitignore exclude** temporary files, build artifacts, secrets?
+- [ ] **Does README.md exist** with project overview?
+- [ ] **Does README.md include:** project description, tech stack, status, features, timeline?
+- [ ] **Are all planning documents added** to Git?
+- [ ] **Is the first commit made** with a meaningful message?
 
 ### Git History
 
-- [ ] **At least 3 commits** in Week 01
-- [ ] **Commit messages follow format:** `Week XX: [Category] - Description`
-- [ ] **Commit messages are meaningful** (not "update" or "changes")
-- [ ] **Can view commit history** with `git log`
-- [ ] **`git status` shows clean working tree** (all files committed)
+- [ ] **Are there at least 3 commits** in Week 01?
+- [ ] **Do commit messages follow format:** `Week XX: [Category] - Description`?
+- [ ] **Are commit messages meaningful** (not "update" or "changes")?
+- [ ] **Can you view commit history** with `git log`?
+- [ ] **Does `git status` show a clean working tree** (all files committed)?
 
 ### File Organization
 
-- [ ] **All documents in docs/ folder**
-- [ ] **All diagrams in diagrams/ folder**
-- [ ] **Evidence organized in evidence/week-01/**
-- [ ] **No files in wrong locations**
-- [ ] **No unnecessary files committed** (temp files, system files)
+- [ ] **Are all documents in the docs/ folder**?
+- [ ] **Are all diagrams in the diagrams/ folder**?
+- [ ] **Is evidence organized in evidence/week-01/**?
+- [ ] **Are there no files in wrong locations**?
+- [ ] **Are there no unnecessary files committed** (temp files, system files)?
 
 ---
 
@@ -164,40 +161,39 @@ Use this checklist to verify complete Week 01 completion before proceeding to We
 
 ### Conceptual Understanding
 
-- [ ] **Can explain three-tier architecture** in own words without notes
-- [ ] **Can explain MVVM pattern** and why it's used
-- [ ] **Can describe difference** between MVVM and MVC
-- [ ] **Can list all 6+ activities** and their purposes
-- [ ] **Can describe data flow** from camera to result display
-- [ ] **Can explain Retrofit's role** in architecture
-- [ ] **Can explain Room's role** in architecture
-- [ ] **Can explain difference** between cloud AI and on-device AI modes
-- [ ] **Can list all technologies** used (Android, Retrofit, Room, FastAPI, TFLite)
-- [ ] **Can explain why MVVM is beneficial** (lifecycle, testability, separation)
+- [ ] **Can you explain three-tier architecture** in your own words without notes?
+- [ ] **Can you explain the direct architecture pattern** used in LeafGuard?
+- [ ] **Can you list all 6 activities** and their purposes?
+- [ ] **Can you describe the data flow** from camera to result display?
+- [ ] **Can you explain Retrofit's role** in the architecture?
+- [ ] **Can you explain Room's role** in the architecture?
+- [ ] **Can you explain the difference** between cloud AI and on-device AI modes?
+- [ ] **Can you list all technologies** used (Android, Retrofit, Room, FastAPI, TFLite)?
+- [ ] **Can you explain why service classes are beneficial** (reusability, testability, separation)?
 
 ### Technical Knowledge
 
-- [ ] **Understand what an Activity is** and its lifecycle
-- [ ] **Understand what an Intent is** (explicit vs implicit)
-- [ ] **Understand what RecyclerView is** and why it's used
-- [ ] **Understand what Retrofit does** (HTTP client)
-- [ ] **Understand what Room does** (database abstraction)
-- [ ] **Understand what XML parsing means**
-- [ ] **Understand what JSON parsing means**
-- [ ] **Understand what TensorFlow Lite is**
-- [ ] **Understand REST API basics** (GET, POST, endpoints, JSON)
-- [ ] **Understand Git basics** (init, add, commit, log, status)
+- [ ] **Do you understand what an Activity is** and its lifecycle?
+- [ ] **Do you understand what an Intent is** (explicit vs implicit)?
+- [ ] **Do you understand what RecyclerView is** and why it's used?
+- [ ] **Do you understand what Retrofit does** (HTTP client)?
+- [ ] **Do you understand what Room does** (database abstraction)?
+- [ ] **Do you understand what XML parsing means**?
+- [ ] **Do you understand what JSON parsing means**?
+- [ ] **Do you understand what TensorFlow Lite is**?
+- [ ] **Do you understand REST API basics** (GET, POST, endpoints, JSON)?
+- [ ] **Do you understand Git basics** (init, add, commit, log, status)?
 
 ### Project-Specific Knowledge
 
-- [ ] **Know exact number of activities** in LeafGuard (6+)
-- [ ] **Know exact number of database tables** (2: scans, users)
-- [ ] **Know backend framework** (FastAPI)
-- [ ] **Know ML framework** (TensorFlow for backend, TFLite for mobile)
-- [ ] **Know networking library** (Retrofit)
-- [ ] **Know database library** (Room)
-- [ ] **Know architecture pattern** (MVVM)
-- [ ] **Know development methodology** (Agile with 1-week sprints)
+- [ ] **Do you know the exact number of activities** in LeafGuard (6)?
+- [ ] **Do you know the database table** (scan_history)?
+- [ ] **Do you know the backend framework** (FastAPI)?
+- [ ] **Do you know the ML framework** (TensorFlow for backend, TFLite for mobile)?
+- [ ] **Do you know the networking library** (Retrofit)?
+- [ ] **Do you know the database library** (Room)?
+- [ ] **Do you know the architecture pattern** (direct Activity-to-services)?
+- [ ] **Do you know the development methodology** (Agile with 1-week sprints)?
 
 ---
 
@@ -205,33 +201,33 @@ Use this checklist to verify complete Week 01 completion before proceeding to We
 
 ### Writing Quality
 
-- [ ] **All documents are spell-checked**
-- [ ] **All documents are grammar-checked**
-- [ ] **No informal language** (cool, awesome, etc.)
-- [ ] **Formal academic tone** maintained throughout
-- [ ] **Consistent terminology** (don't switch between "app" and "application" randomly)
-- [ ] **Proper headings and subheadings**
-- [ ] **Numbered sections** where appropriate
-- [ ] **Tables are properly formatted**
-- [ ] **Lists use consistent formatting** (bullets vs numbers)
+- [ ] **Are all documents spell-checked**?
+- [ ] **Are all documents grammar-checked**?
+- [ ] **Is there no informal language** (cool, awesome, etc.)?
+- [ ] **Is formal academic tone** maintained throughout?
+- [ ] **Is terminology consistent** (don't switch between "app" and "application" randomly)?
+- [ ] **Are there proper headings and subheadings**?
+- [ ] **Are sections numbered** where appropriate?
+- [ ] **Are tables properly formatted**?
+- [ ] **Do lists use consistent formatting** (bullets vs numbers)?
 
 ### Technical Accuracy
 
-- [ ] **All technical terms used correctly** (Activity, Intent, Fragment, etc.)
-- [ ] **All library names spelled correctly** (Retrofit, TensorFlow Lite, Room)
-- [ ] **All version numbers accurate** (if specified)
-- [ ] **All file paths use correct format** (forward slashes, proper case)
-- [ ] **All code snippets have correct syntax** (if included)
-- [ ] **All statistics are accurate** (or clearly marked as estimates)
+- [ ] **Are all technical terms used correctly** (Activity, Intent, etc.)?
+- [ ] **Are all library names spelled correctly** (Retrofit, TensorFlow Lite, Room)?
+- [ ] **Are all version numbers accurate** (if specified)?
+- [ ] **Do all file paths use correct format** (forward slashes, proper case)?
+- [ ] **Do all code snippets have correct syntax** (if included)?
+- [ ] **Are all statistics accurate** (or clearly marked as estimates)?
 
 ### Completeness
 
-- [ ] **No placeholder text** (no [TODO], [FILL IN], etc.)
-- [ ] **No broken links** (all URLs tested)
-- [ ] **No missing images** (all diagram references work)
-- [ ] **No incomplete sentences**
-- [ ] **No empty sections**
-- [ ] **All required sections present** in all documents
+- [ ] **Is there no placeholder text** (no [TODO], [FILL IN], etc.)?
+- [ ] **Are there no broken links** (all URLs tested)?
+- [ ] **Are there no missing images** (all diagram references work)?
+- [ ] **Are there no incomplete sentences**?
+- [ ] **Are there no empty sections**?
+- [ ] **Are all required sections present** in all documents?
 
 ---
 
@@ -239,19 +235,19 @@ Use this checklist to verify complete Week 01 completion before proceeding to We
 
 ### Self-Review
 
-- [ ] **Re-read proposal** from start to finish
-- [ ] **Check all diagrams** are included where referenced
-- [ ] **Verify all links work**
-- [ ] **Print documents** and check readability
-- [ ] **Review commit history** for logical progression
+- [ ] **Have you re-read the proposal** from start to finish?
+- [ ] **Have you checked all diagrams** are included where referenced?
+- [ ] **Have you verified all links work**?
+- [ ] **Have you printed documents** and checked readability?
+- [ ] **Have you reviewed commit history** for logical progression?
 
 ### External Review
 
-- [ ] **Shown architecture diagram** to classmate/senior for feedback
-- [ ] **Shown proposal abstract** to someone for clarity check
-- [ ] **Asked senior** if timeline is realistic
-- [ ] **Incorporated feedback** into documents
-- [ ] **Made revisions** based on feedback
+- [ ] **Have you shown the architecture diagram** to a classmate/senior for feedback?
+- [ ] **Have you shown the proposal abstract** to someone for clarity check?
+- [ ] **Have you asked a senior** if the timeline is realistic?
+- [ ] **Have you incorporated feedback** into documents?
+- [ ] **Have you made revisions** based on feedback?
 
 ---
 

@@ -1,5 +1,7 @@
 # Week 07: Exercises - Room Database and Scan History
 
+> **Kotlin-first & accuracy note:** Build against the real `ScanRecord` / `ScanDao` (`suspend fun`) / `AppDatabase` (`leafguard.db`, table `scan_history`). Kotlin is primary (coroutines + **kapt**); Java (`ExecutorService` + `annotationProcessor`) is the secondary reference. More drills: SQL/CRUD in [`../../exercises/database/`](../../exercises/database/), Android in [`../../exercises/android-kotlin/`](../../exercises/android-kotlin/) (Kotlin) and [`../../exercises/android/`](../../exercises/android/) (Java).
+
 ## Overview
 
 These 6 exercises will build your Room database skills progressively. Start with basic entity creation, then advance to complete CRUD operations.
@@ -23,7 +25,7 @@ annotationProcessor "androidx.room:room-compiler:$room_version"
 
 2. Sync Gradle
 
-3. Create `ScanHistory.java` entity class with fields:
+3. Create `ScanRecord.java` entity class with fields:
    - `id` (int, primary key, auto-generate)
    - `disease` (String)
    - `confidence` (double)
@@ -37,13 +39,13 @@ annotationProcessor "androidx.room:room-compiler:$room_version"
 
 - Project builds successfully
 - No annotation errors
-- ScanHistory class recognized as Entity
+- ScanRecord class recognized as Entity
 
 ### Verification
 
 - [ ] Room dependencies added
 - [ ] Gradle synced successfully
-- [ ] ScanHistory.java created with @Entity annotation
+- [ ] ScanRecord.java created with @Entity annotation
 - [ ] All fields have getters and setters
 - [ ] Project compiles without errors
 
@@ -55,15 +57,15 @@ annotationProcessor "androidx.room:room-compiler:$room_version"
 
 ### Tasks
 
-1. Create `ScanHistoryDao.java` interface
+1. Create `ScanDao.java` interface
 
 2. Add @Dao annotation
 
 3. Implement these methods:
-   - `@Insert void insert(ScanHistory scan)`
-   - `@Query("SELECT * FROM scan_history") List<ScanHistory> getAll()`
-   - `@Query("SELECT * FROM scan_history WHERE id = :id") ScanHistory getById(int id)`
-   - `@Delete void delete(ScanHistory scan)`
+   - `@Insert void insert(ScanRecord scan)`
+   - `@Query("SELECT * FROM scan_history") List<ScanRecord> getAll()`
+   - `@Query("SELECT * FROM scan_history WHERE id = :id") ScanRecord getById(int id)`
+   - `@Delete void delete(ScanRecord scan)`
 
 4. Verify SQL syntax is correct
 
@@ -75,7 +77,7 @@ annotationProcessor "androidx.room:room-compiler:$room_version"
 
 ### Verification
 
-- [ ] ScanHistoryDao.java created
+- [ ] ScanDao.java created
 - [ ] @Dao annotation present
 - [ ] All four methods defined
 - [ ] SQL queries syntactically correct
@@ -92,16 +94,16 @@ annotationProcessor "androidx.room:room-compiler:$room_version"
 1. Create `AppDatabase.java` class extending RoomDatabase
 
 2. Add @Database annotation with:
-   - entities = {ScanHistory.class}
+   - entities = {ScanRecord.class}
    - version = 1
 
-3. Add abstract method: `public abstract ScanHistoryDao scanHistoryDao()`
+3. Add abstract method: `public abstract ScanDao scanDao()`
 
 4. Implement singleton getInstance() method with:
    - Static instance variable
    - Synchronized method
    - Room.databaseBuilder()
-   - Database name: "leafguard_database"
+   - Database name: "leafguard.db"
 
 ### Expected Output
 
@@ -113,7 +115,7 @@ annotationProcessor "androidx.room:room-compiler:$room_version"
 
 ```java
 AppDatabase db = AppDatabase.getInstance(context);
-ScanHistoryDao dao = db.scanHistoryDao();
+ScanDao dao = db.scanDao();
 // Should return non-null DAO
 ```
 
@@ -122,7 +124,7 @@ ScanHistoryDao dao = db.scanHistoryDao();
 - [ ] AppDatabase.java created
 - [ ] Extends RoomDatabase
 - [ ] @Database annotation with correct parameters
-- [ ] Abstract scanHistoryDao() method
+- [ ] Abstract scanDao() method
 - [ ] Singleton getInstance() implemented
 - [ ] Project builds successfully
 
@@ -140,7 +142,7 @@ ScanHistoryDao dao = db.scanHistoryDao();
 
 3. Create ExecutorService for background thread
 
-4. Insert test ScanHistory record:
+4. Insert test ScanRecord record:
    - disease: "Test Disease"
    - confidence: 0.85
    - timestamp: System.currentTimeMillis()
@@ -154,10 +156,10 @@ ScanHistoryDao dao = db.scanHistoryDao();
 ```java
 ExecutorService executor = Executors.newSingleThreadExecutor();
 executor.execute(() -> {
-    ScanHistory scan = new ScanHistory("Test Disease", 0.85, System.currentTimeMillis());
-    db.scanHistoryDao().insert(scan);
+    ScanRecord scan = new ScanRecord("Test Disease", 0.85, System.currentTimeMillis());
+    db.scanDao().insert(scan);
 
-    List<ScanHistory> all = db.scanHistoryDao().getAll();
+    List<ScanRecord> all = db.scanDao().getAll();
     int count = all.size();
 
     runOnUiThread(() -> {
@@ -177,7 +179,7 @@ executor.execute(() -> {
 
 - [ ] testDatabaseInsert() method created
 - [ ] ExecutorService used for background operation
-- [ ] ScanHistory record created and inserted
+- [ ] ScanRecord record created and inserted
 - [ ] Query returns correct count
 - [ ] Toast displays successfully
 - [ ] No main thread database access errors
@@ -197,18 +199,18 @@ executor.execute(() -> {
    - TextView for confidence
    - TextView for timestamp
 
-3. Create `HistoryListActivity.java`
+3. Create `HistoryActivity.java`
 
-4. Create `ScanHistoryAdapter.java` with ViewHolder
+4. Create `HistoryAdapter.java` with ViewHolder
 
-5. In HistoryListActivity:
+5. In HistoryActivity:
    - Query all scans from database
    - Set up RecyclerView with LinearLayoutManager
    - Set adapter with data
 
 ### Expected Output
 
-- HistoryListActivity displays list of scans
+- HistoryActivity displays list of scans
 - Each item shows disease, confidence, timestamp
 - List scrolls smoothly
 
@@ -216,8 +218,8 @@ executor.execute(() -> {
 
 - [ ] activity_history_list.xml created with RecyclerView
 - [ ] item_scan_history.xml created with 3 TextViews
-- [ ] HistoryListActivity.java created
-- [ ] ScanHistoryAdapter.java created with ViewHolder
+- [ ] HistoryActivity.java created
+- [ ] HistoryAdapter.java created with ViewHolder
 - [ ] RecyclerView displays database records
 - [ ] List scrolls without lag
 
@@ -252,7 +254,7 @@ new AlertDialog.Builder(context)
     .setMessage("This cannot be undone")
     .setPositiveButton("Delete", (dialog, which) -> {
         executor.execute(() -> {
-            db.scanHistoryDao().delete(scan);
+            db.scanDao().delete(scan);
             runOnUiThread(() -> {
                 scans.remove(position);
                 notifyItemRemoved(position);
@@ -289,12 +291,12 @@ new AlertDialog.Builder(context)
 
 ### Tasks
 
-1. Add SearchView to HistoryListActivity toolbar
+1. Add SearchView to HistoryActivity toolbar
 
 2. Create new DAO method:
 ```java
 @Query("SELECT * FROM scan_history WHERE disease LIKE '%' || :query || '%'")
-List<ScanHistory> searchByDisease(String query);
+List<ScanRecord> searchByDisease(String query);
 ```
 
 3. On search text change:
@@ -327,27 +329,27 @@ Polling the database manually is wasteful. `LiveData` gives you an observable st
 
 ```java
 @Dao
-public interface ScanHistoryDao {
+public interface ScanDao {
 
     @Insert
-    void insert(ScanHistory scanHistory);
+    void insert(ScanRecord scanHistory);
 
     @Delete
-    void delete(ScanHistory scanHistory);
+    void delete(ScanRecord scanHistory);
 
     @Query("SELECT * FROM scan_history ORDER BY timestamp DESC")
-    LiveData<List<ScanHistory>> getAllLive();
+    LiveData<List<ScanRecord>> getAllLive();
 }
 ```
 
 ### Step 2: Add an `updateData()` Method in Adapter
 
 ```java
-public class ScanHistoryAdapter extends RecyclerView.Adapter<ScanHistoryAdapter.ScanViewHolder> {
+public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ScanViewHolder> {
 
-    private final List<ScanHistory> scanList = new ArrayList<>();
+    private final List<ScanRecord> scanList = new ArrayList<>();
 
-    public void updateData(List<ScanHistory> newList) {
+    public void updateData(List<ScanRecord> newList) {
         scanList.clear();
         if (newList != null) {
             scanList.addAll(newList);
@@ -365,7 +367,7 @@ public class ScanHistoryAdapter extends RecyclerView.Adapter<ScanHistoryAdapter.
 
     @Override
     public void onBindViewHolder(@NonNull ScanViewHolder holder, int position) {
-        ScanHistory scan = scanList.get(position);
+        ScanRecord scan = scanList.get(position);
         holder.tvDisease.setText(scan.getDisease());
         holder.tvConfidence.setText(String.format(Locale.US, "%.2f%%", scan.getConfidence() * 100));
         holder.tvTimestamp.setText(String.valueOf(scan.getTimestamp()));
@@ -398,7 +400,7 @@ public class HistoryActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
     private TextView tvEmpty;
-    private ScanHistoryAdapter adapter;
+    private HistoryAdapter adapter;
     private AppDatabase database;
 
     @Override
@@ -409,13 +411,13 @@ public class HistoryActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerViewHistory);
         tvEmpty = findViewById(R.id.tvEmptyState);
 
-        adapter = new ScanHistoryAdapter();
+        adapter = new HistoryAdapter();
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
         database = AppDatabase.getInstance(getApplicationContext());
 
-        database.scanHistoryDao().getAllLive().observe(this, scanHistoryList -> {
+        database.scanDao().getAllLive().observe(this, scanHistoryList -> {
             adapter.updateData(scanHistoryList);
 
             boolean isEmpty = scanHistoryList == null || scanHistoryList.isEmpty();
@@ -434,7 +436,7 @@ public class HistoryActivity extends AppCompatActivity {
 
 ### Verification
 
-- [ ] DAO returns `LiveData<List<ScanHistory>>`
+- [ ] DAO returns `LiveData<List<ScanRecord>>`
 - [ ] Activity observes LiveData with `observe(this, ...)`
 - [ ] RecyclerView refreshes after a new scan is saved
 - [ ] Empty-state label works correctly
@@ -448,22 +450,22 @@ public class HistoryActivity extends AppCompatActivity {
 ### Step 1: Create a Long-Click Interface in the Adapter
 
 ```java
-public class ScanHistoryAdapter extends RecyclerView.Adapter<ScanHistoryAdapter.ScanViewHolder> {
+public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ScanViewHolder> {
 
     public interface OnScanLongClickListener {
-        void onScanLongClick(ScanHistory scanHistory);
+        void onScanLongClick(ScanRecord scanHistory);
     }
 
-    private final List<ScanHistory> scanList = new ArrayList<>();
+    private final List<ScanRecord> scanList = new ArrayList<>();
     private final OnScanLongClickListener longClickListener;
 
-    public ScanHistoryAdapter(OnScanLongClickListener longClickListener) {
+    public HistoryAdapter(OnScanLongClickListener longClickListener) {
         this.longClickListener = longClickListener;
     }
 
     @Override
     public void onBindViewHolder(@NonNull ScanViewHolder holder, int position) {
-        ScanHistory scan = scanList.get(position);
+        ScanRecord scan = scanList.get(position);
         holder.tvDisease.setText(scan.getDisease());
         holder.itemView.setOnLongClickListener(v -> {
             longClickListener.onScanLongClick(scan);
@@ -471,7 +473,7 @@ public class ScanHistoryAdapter extends RecyclerView.Adapter<ScanHistoryAdapter.
         });
     }
 
-    public void updateData(List<ScanHistory> newList) {
+    public void updateData(List<ScanRecord> newList) {
         scanList.clear();
         if (newList != null) {
             scanList.addAll(newList);
@@ -490,7 +492,7 @@ public class HistoryActivity extends AppCompatActivity {
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private AppDatabase database;
-    private ScanHistoryAdapter adapter;
+    private HistoryAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -499,16 +501,16 @@ public class HistoryActivity extends AppCompatActivity {
 
         database = AppDatabase.getInstance(getApplicationContext());
 
-        adapter = new ScanHistoryAdapter(this::showDeleteDialog);
+        adapter = new HistoryAdapter(this::showDeleteDialog);
 
         RecyclerView recyclerView = findViewById(R.id.recyclerViewHistory);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
 
-        database.scanHistoryDao().getAllLive().observe(this, adapter::updateData);
+        database.scanDao().getAllLive().observe(this, adapter::updateData);
     }
 
-    private void showDeleteDialog(ScanHistory scanHistory) {
+    private void showDeleteDialog(ScanRecord scanHistory) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Scan?")
                 .setMessage("Delete the scan result for " + scanHistory.getDisease() + "?")
@@ -517,9 +519,9 @@ public class HistoryActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void deleteScan(ScanHistory scanHistory) {
+    private void deleteScan(ScanRecord scanHistory) {
         executorService.execute(() -> {
-            database.scanHistoryDao().delete(scanHistory);
+            database.scanDao().delete(scanHistory);
             runOnUiThread(() ->
                     Toast.makeText(this, "Scan deleted", Toast.LENGTH_SHORT).show()
             );
@@ -559,13 +561,13 @@ public class HistoryActivity extends AppCompatActivity {
 
 ```java
 @Dao
-public interface ScanHistoryDao {
+public interface ScanDao {
 
     @Query("SELECT * FROM scan_history ORDER BY timestamp DESC")
-    LiveData<List<ScanHistory>> getAllLive();
+    LiveData<List<ScanRecord>> getAllLive();
 
     @Query("SELECT * FROM scan_history WHERE disease LIKE :searchQuery ORDER BY timestamp DESC")
-    List<ScanHistory> searchByDisease(String searchQuery);
+    List<ScanRecord> searchByDisease(String searchQuery);
 }
 ```
 
@@ -602,7 +604,7 @@ public class HistoryActivity extends AppCompatActivity {
 
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private AppDatabase database;
-    private ScanHistoryAdapter adapter;
+    private HistoryAdapter adapter;
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -631,13 +633,13 @@ public class HistoryActivity extends AppCompatActivity {
 
     private void filterHistory(String query) {
         if (query == null || query.trim().isEmpty()) {
-            database.scanHistoryDao().getAllLive().observe(this, adapter::updateData);
+            database.scanDao().getAllLive().observe(this, adapter::updateData);
             return;
         }
 
         String searchPattern = "%" + query.trim() + "%";
         executorService.execute(() -> {
-            List<ScanHistory> result = database.scanHistoryDao().searchByDisease(searchPattern);
+            List<ScanRecord> result = database.scanDao().searchByDisease(searchPattern);
             runOnUiThread(() -> adapter.updateData(result));
         });
     }
@@ -672,10 +674,10 @@ CSV files are easy to:
 
 ```java
 @Dao
-public interface ScanHistoryDao {
+public interface ScanDao {
 
     @Query("SELECT * FROM scan_history ORDER BY timestamp DESC")
-    List<ScanHistory> getAllForExport();
+    List<ScanRecord> getAllForExport();
 }
 ```
 
@@ -686,7 +688,7 @@ private final ExecutorService executorService = Executors.newSingleThreadExecuto
 
 private void exportHistoryToCsv() {
     executorService.execute(() -> {
-        List<ScanHistory> scanHistoryList = database.scanHistoryDao().getAllForExport();
+        List<ScanRecord> scanHistoryList = database.scanDao().getAllForExport();
 
         File downloadsDir = getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
         if (downloadsDir == null) {
@@ -705,7 +707,7 @@ private void exportHistoryToCsv() {
             writer.append("id,disease,confidence,timestamp
 ");
 
-            for (ScanHistory scan : scanHistoryList) {
+            for (ScanRecord scan : scanHistoryList) {
                 writer.append(String.valueOf(scan.getId())).append(",")
                         .append(escapeCsv(scan.getDisease())).append(",")
                         .append(String.valueOf(scan.getConfidence())).append(",")
@@ -758,7 +760,7 @@ This example writes into the app-specific Downloads directory returned by `getEx
 
 ```java
 @Entity(tableName = "scan_history")
-public class ScanHistory {
+public class ScanRecord {
 
     @PrimaryKey(autoGenerate = true)
     private int id;
@@ -770,7 +772,7 @@ public class ScanHistory {
     @ColumnInfo(name = "plant_type", defaultValue = "Unknown")
     private String plantType;
 
-    public ScanHistory(String disease, double confidence, long timestamp, String plantType) {
+    public ScanRecord(String disease, double confidence, long timestamp, String plantType) {
         this.disease = disease;
         this.confidence = confidence;
         this.timestamp = timestamp;
@@ -790,9 +792,9 @@ public class ScanHistory {
 ### Step 2: Increase Database Version
 
 ```java
-@Database(entities = {ScanHistory.class}, version = 2, exportSchema = true)
+@Database(entities = {ScanRecord.class}, version = 2, exportSchema = true)
 public abstract class AppDatabase extends RoomDatabase {
-    public abstract ScanHistoryDao scanHistoryDao();
+    public abstract ScanDao scanDao();
 }
 ```
 
@@ -819,7 +821,7 @@ public static AppDatabase getInstance(Context context) {
                 instance = Room.databaseBuilder(
                                 context.getApplicationContext(),
                                 AppDatabase.class,
-                                "leafguard_database"
+                                "leafguard.db"
                         )
                         .addMigrations(MIGRATION_1_2)
                         .build();
@@ -859,10 +861,10 @@ It gives you:
 
 ```java
 @RunWith(AndroidJUnit4.class)
-public class ScanHistoryDaoTest {
+public class ScanDaoTest {
 
     private AppDatabase database;
-    private ScanHistoryDao scanHistoryDao;
+    private ScanDao scanDao;
 
     @Before
     public void createDatabase() {
@@ -870,7 +872,7 @@ public class ScanHistoryDaoTest {
         database = Room.inMemoryDatabaseBuilder(context, AppDatabase.class)
                 .allowMainThreadQueries()
                 .build();
-        scanHistoryDao = database.scanHistoryDao();
+        scanDao = database.scanDao();
     }
 
     @After
@@ -879,16 +881,16 @@ public class ScanHistoryDaoTest {
     }
 
     @Test
-    public void insertAndReadBackScanHistory() {
-        ScanHistory scanHistory = new ScanHistory(
+    public void insertAndReadBackScanRecord() {
+        ScanRecord scanHistory = new ScanRecord(
                 "Late Blight",
                 0.94,
                 System.currentTimeMillis(),
                 "Tomato"
         );
 
-        scanHistoryDao.insert(scanHistory);
-        List<ScanHistory> allRows = scanHistoryDao.getAll();
+        scanDao.insert(scanHistory);
+        List<ScanRecord> allRows = scanDao.getAll();
 
         assertNotNull(allRows);
         assertEquals(1, allRows.size());
@@ -898,10 +900,10 @@ public class ScanHistoryDaoTest {
 
     @Test
     public void searchByDisease_returnsMatchingRowsOnly() {
-        scanHistoryDao.insert(new ScanHistory("Late Blight", 0.91, 1000L, "Tomato"));
-        scanHistoryDao.insert(new ScanHistory("Powdery Mildew", 0.82, 2000L, "Cucumber"));
+        scanDao.insert(new ScanRecord("Late Blight", 0.91, 1000L, "Tomato"));
+        scanDao.insert(new ScanRecord("Powdery Mildew", 0.82, 2000L, "Cucumber"));
 
-        List<ScanHistory> result = scanHistoryDao.searchByDisease("%Blight%");
+        List<ScanRecord> result = scanDao.searchByDisease("%Blight%");
 
         assertEquals(1, result.size());
         assertEquals("Late Blight", result.get(0).getDisease());

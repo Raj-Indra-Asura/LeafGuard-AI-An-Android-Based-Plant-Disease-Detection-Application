@@ -1,5 +1,33 @@
 # Week 05: Android Networking with Retrofit
 
+## What you'll learn & why
+
+This week connects your Android app to the FastAPI backend over the network using Retrofit. You will send the leaf photo as a multipart upload, then receive a JSON diagnosis with the disease name, confidence, symptoms, treatment, and prevention. This matters because LeafGuard AI becomes a real client-server app instead of only a local camera screen. You will also practice showing loading states and useful errors so the app feels reliable even when the network fails.
+
+## New words this week
+
+- **backend**: The server-side part of LeafGuard AI that receives the image, runs the model, and returns the diagnosis. In this project, the backend is the FastAPI app from Week 04.
+- **API (Application Programming Interface)**: A clear set of rules for how the Android app talks to the backend. The `/predict` API endpoint accepts an image and returns prediction data.
+- **HTTP POST**: HyperText Transfer Protocol (HTTP) method used to send data to a server. We use POST because an image must go in the request body.
+- **multipart** (`multipart/form-data`): A request format for sending files and form fields together. LeafGuard sends the photo in a multipart part named `image`.
+- **JSON**: JavaScript Object Notation, a lightweight text format for structured data. The backend returns JSON such as `{ "disease": "Tomato Late Blight", "confidence": 0.87 }`.
+- **Retrofit `Call` + `enqueue`**: Retrofit is a library that calls the backend for you; `enqueue` runs the call in the background and calls you back when the reply arrives.
+- **data class**: A Kotlin class that just holds data, such as the disease name and confidence returned by the backend.
+- **object singleton**: A Kotlin `object` is a single shared instance, useful for one shared `RetrofitClient`.
+- **`lifecycleScope.launch` / coroutine**: A coroutine does slow work, like a network call, without freezing the screen.
+
+See the full [glossary](../../GLOSSARY.md) for more terms.
+
+## Related materials
+
+- Exercises (primary Kotlin): [../../exercises/android-kotlin/](../../exercises/android-kotlin/)
+- Exercises (secondary Java): [../../exercises/android/](../../exercises/android/)
+- Solutions: [../../solutions/week-05/](../../solutions/week-05/)
+- Notebooks: [../../notebooks/week-05/](../../notebooks/week-05/)
+- Glossary: [../../GLOSSARY.md](../../GLOSSARY.md)
+
+---
+
 ## Weekly Objective
 
 By the end of Week 05, you will:
@@ -32,7 +60,7 @@ By the end of Week 05, you will:
 Week 05 is the **critical integration point** where your Android app transforms from a local-only application into a **network-enabled mobile application**. This week demonstrates:
 
 - **HTTP Networking:** Making POST requests with multipart data (core syllabus requirement)
-- **JSON Parsing:** Converting server responses into Java objects
+- **JSON Parsing:** Converting server responses into Kotlin data classes (with Java reference classes as a secondary track)
 - **Asynchronous Programming:** Handling network callbacks on background threads
 - **Error Handling:** Managing network failures gracefully
 - **User Experience:** Showing progress indicators and error messages
@@ -56,7 +84,7 @@ CSE 2206 syllabus explicitly requires:
 - "Explain how your Android app communicates with the backend"
 - "What happens if the user has no internet connection?"
 - "Why can't you make network calls on the main thread?"
-- "How does Retrofit convert JSON to Java objects?"
+- "How does Retrofit convert JSON to Kotlin data classes or Java objects?"
 
 ---
 
@@ -105,7 +133,7 @@ CSE 2206 syllabus explicitly requires:
 | Syllabus Topic | LeafGuard AI Implementation | This Week |
 |----------------|----------------------------|-----------|
 | Network Programming | HTTP POST image upload | ✅ Core focus |
-| JSON Parsing | Gson converts JSON to Java objects | ✅ Core focus |
+| JSON Parsing | Gson converts JSON to Kotlin data classes / Java objects | ✅ Core focus |
 | Asynchronous Operations | Retrofit callbacks on background thread | ✅ Core focus |
 | Error Handling | Try-catch, onFailure callbacks | ✅ Core focus |
 | Third-Party Libraries | Retrofit, Gson, OkHttp integration | ✅ Core focus |
@@ -231,8 +259,18 @@ Android App                     FastAPI Backend
 
 #### 1. API Service Interface
 
-Defines HTTP methods using annotations:
+Defines HTTP methods using annotations. Kotlin is the primary track for the real app.
 
+**Kotlin (primary):**
+```kotlin
+interface ApiService {
+    @Multipart
+    @POST("predict")
+    fun uploadImage(@Part image: MultipartBody.Part): Call<PredictionResponse>
+}
+```
+
+**Java (secondary reference):**
 ```java
 public interface ApiService {
     @Multipart
@@ -249,11 +287,30 @@ public interface ApiService {
 
 #### 2. Retrofit Client Singleton
 
-Configures Retrofit instance once for entire app:
+Configures Retrofit instance once for entire app. The Android emulator reaches your computer at `http://10.0.2.2:8000/`; use your computer's LAN (Local Area Network) IP only for a physical phone on the same Wi-Fi.
 
+**Kotlin (primary):**
+```kotlin
+object RetrofitClient {
+    private const val BASE_URL = "http://10.0.2.2:8000/"
+
+    private val retrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    val apiService: ApiService by lazy {
+        retrofit.create(ApiService::class.java)
+    }
+}
+```
+
+**Java (secondary reference):**
 ```java
 public class RetrofitClient {
-    private static final String BASE_URL = "http://192.168.1.10:8000/";
+    private static final String BASE_URL = "http://10.0.2.2:8000/";
     private static Retrofit retrofit = null;
 
     public static Retrofit getClient() {
@@ -272,23 +329,53 @@ public class RetrofitClient {
 
 #### 3. Data Models
 
-Java classes matching JSON structure:
+Kotlin data class matching the JSON structure:
 
+**Kotlin (primary):**
+```kotlin
+data class PredictionResponse(
+    @SerializedName("disease") val disease: String,
+    val confidence: Double,
+    val symptoms: String,
+    val treatment: String,
+    val prevention: String
+)
+```
+
+**Java (secondary reference):**
 ```java
 public class PredictionResponse {
     private String disease;
     private double confidence;
     private String symptoms;
     private String treatment;
+    private String prevention;
 
     // Getters and setters
 }
 ```
 
-Gson automatically maps JSON keys to class fields.
+Gson automatically maps JSON keys to Kotlin or Java fields.
 
 #### 4. Asynchronous Callbacks
 
+**Kotlin (primary):**
+```kotlin
+call.enqueue(object : Callback<PredictionResponse> {
+    override fun onResponse(
+        call: Call<PredictionResponse>,
+        response: Response<PredictionResponse>
+    ) {
+        // Handle success
+    }
+
+    override fun onFailure(call: Call<PredictionResponse>, t: Throwable) {
+        // Handle error
+    }
+})
+```
+
+**Java (secondary reference):**
 ```java
 call.enqueue(new Callback<PredictionResponse>() {
     @Override
@@ -303,7 +390,7 @@ call.enqueue(new Callback<PredictionResponse>() {
 });
 ```
 
-**Key Point:** Callbacks run on background thread automatically. UI updates must be on main thread (using `runOnUiThread()` if needed, but Retrofit handles this for you).
+**Key Point:** `enqueue()` runs the request asynchronously. Retrofit delivers callbacks safely for UI updates in the normal Android setup.
 
 ---
 
@@ -320,7 +407,7 @@ call.enqueue(new Callback<PredictionResponse>() {
 - Add Retrofit, Gson, OkHttp dependencies to `build.gradle`
 - Create `ApiService` interface with basic structure
 - Create `RetrofitClient` singleton class
-- Configure BASE_URL with your laptop's local IP
+- Configure BASE_URL with `http://10.0.2.2:8000/` for the emulator (LAN IP only for a physical phone)
 
 **Evening (Testing - 30 minutes):**
 - Sync Gradle and fix any dependency conflicts
@@ -461,9 +548,18 @@ call.enqueue(new Callback<PredictionResponse>() {
 
 **Solution:** Define BASE_URL once in RetrofitClient, reference it everywhere:
 
+**Kotlin (primary):**
+```kotlin
+object RetrofitClient {
+    private const val BASE_URL = "http://10.0.2.2:8000/" // Emulator → your computer
+    // Use this everywhere
+}
+```
+
+**Java (secondary reference):**
 ```java
 public class RetrofitClient {
-    private static final String BASE_URL = "http://192.168.1.10:8000/";
+    private static final String BASE_URL = "http://10.0.2.2:8000/"; // Emulator → your computer
     // Use this everywhere
 }
 ```
@@ -474,6 +570,16 @@ public class RetrofitClient {
 
 **Solution:** Always use `enqueue()` (asynchronous), never `execute()` (synchronous):
 
+**Kotlin (primary):**
+```kotlin
+// ✅ Correct - asynchronous
+call.enqueue(object : Callback<PredictionResponse> { /* ... */ })
+
+// ❌ Wrong - synchronous
+call.execute() // Don't do this!
+```
+
+**Java (secondary reference):**
 ```java
 // ✅ Correct - asynchronous
 call.enqueue(new Callback<PredictionResponse>() { ... });
@@ -482,12 +588,23 @@ call.enqueue(new Callback<PredictionResponse>() { ... });
 call.execute(); // Don't do this!
 ```
 
+This is normal — if you see `NetworkOnMainThreadException`, move the network call off the main thread by using `enqueue()` or a coroutine.
+
 ### 3. ❌ Not Handling Null Responses
 
 **Problem:** App crashes when backend returns empty response
 
 **Solution:** Always check if response body is null:
 
+**Kotlin (primary):**
+```kotlin
+val prediction = response.body()
+if (response.isSuccessful && prediction != null) {
+    // Safe to use prediction
+}
+```
+
+**Java (secondary reference):**
 ```java
 if (response.isSuccessful() && response.body() != null) {
     PredictionResponse prediction = response.body();
@@ -505,16 +622,18 @@ if (response.isSuccessful() && response.body() != null) {
 <uses-permission android:name="android.permission.INTERNET"/>
 ```
 
-### 5. ❌ Using `http://` for localhost
+### 5. ❌ Using the Wrong URL (Uniform Resource Locator)
 
-**Problem:** Typing `http://localhost:8000` doesn't work from phone
+**Problem:** Typing `http://localhost:8000` inside the Android emulator points to the emulator itself, not your computer.
 
-**Solution:** Use your laptop's actual local IP:
+**Solution:** Use the emulator address first: `http://10.0.2.2:8000/`. From your computer browser, use `http://localhost:8000`. For a physical phone on the same Wi-Fi, use your computer's LAN (Local Area Network) IP address such as `http://192.168.1.10:8000/`.
+
+This is normal — if you see “connection refused,” the backend may not be running, or the app may be using the wrong `10.0.2.2`/LAN URL.
 
 ```
-Windows: ipconfig
-macOS/Linux: ifconfig or ip addr
-Look for 192.168.x.x address
+Computer/browser: http://localhost:8000/docs
+Android emulator: http://10.0.2.2:8000/docs
+Physical phone: http://YOUR_LAN_IP:8000/docs
 ```
 
 ### 6. ❌ Not Configuring Network Security for HTTP
@@ -534,10 +653,13 @@ And create `res/xml/network_security_config.xml`:
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">192.168.1.10</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <!-- For a physical phone, add your computer's LAN IP here too. -->
     </domain-config>
 </network-security-config>
 ```
+
+This is normal — if you see `CLEARTEXT communication not permitted`, add this config or set `android:usesCleartextTraffic="true"` for local development only.
 
 ### 7. ❌ Not Showing Loading State
 
@@ -644,7 +766,7 @@ If your networking isn't working, check these in order:
 INFO:     Uvicorn running on http://0.0.0.0:8000
 ```
 
-Test in browser: `http://YOUR_IP:8000/docs`
+Test on your computer: `http://localhost:8000/docs`. Test from the Android emulator: `http://10.0.2.2:8000/docs`.
 
 ### 2. ✅ Phone and Laptop on Same Wi-Fi
 
@@ -654,13 +776,27 @@ Test in browser: `http://YOUR_IP:8000/docs`
 
 ### 3. ✅ Correct IP Address in RetrofitClient
 
+**Kotlin (primary):**
+```kotlin
+// ❌ Wrong inside the emulator
+private const val BASE_URL = "http://localhost:8000/"
+private const val BASE_URL = "http://127.0.0.1:8000/"
+
+// ✅ Correct for Android emulator
+private const val BASE_URL = "http://10.0.2.2:8000/"
+
+// ✅ Secondary note: physical phone on same Wi-Fi
+private const val BASE_URL = "http://YOUR_LAN_IP:8000/"
+```
+
+**Java (secondary reference):**
 ```java
-// ❌ Wrong
+// ❌ Wrong inside the emulator
 private static final String BASE_URL = "http://localhost:8000/";
 private static final String BASE_URL = "http://127.0.0.1:8000/";
 
-// ✅ Correct
-private static final String BASE_URL = "http://192.168.1.10:8000/";
+// ✅ Correct for Android emulator
+private static final String BASE_URL = "http://10.0.2.2:8000/";
 ```
 
 ### 4. ✅ INTERNET Permission in Manifest
@@ -687,7 +823,7 @@ After adding dependencies, click "Sync Now" and wait for success.
 
 ### 8. ✅ JSON Structure Matches
 
-FastAPI response:
+FastAPI JSON response:
 ```json
 {
   "disease": "Tomato Late Blight",
@@ -697,7 +833,7 @@ FastAPI response:
 }
 ```
 
-Java class:
+Kotlin data class or Java secondary class:
 ```java
 private String disease;
 private double confidence;

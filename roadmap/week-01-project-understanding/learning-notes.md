@@ -123,59 +123,48 @@ A smartphone-based plant disease detection system that brings expert-level diagn
 **Components in LeafGuard:**
 
 1. **Activities (Screens):**
-   - `MainActivity.java` - Home screen with scan button
-   - `ScanActivity.java` - Image capture/selection interface
-   - `ResultActivity.java` - Display disease prediction
-   - `HistoryActivity.java` - List of past scans
-   - `DiseaseLibraryActivity.java` - Browse disease information
-   - `SettingsActivity.java` - App preferences
+   - `MainActivity.kt` - Home screen with scan button + image capture
+   - `ResultActivity.kt` - Display disease prediction
+   - `HistoryActivity.kt` - List of past scans
+   - `HistoryDetailActivity.kt` - Single scan details view
+   - `DiseaseLibraryActivity.kt` - Browse disease information
+   - `SettingsActivity.kt` - App preferences
 
-2. **Fragments (Modular UI):**
-   - `HomeFragment.java` - Recent scans on home
-   - `LibraryFragment.java` - Disease list
-   - `ProfileFragment.java` - User preferences
-
-3. **XML Layouts:**
+2. **XML Layouts:**
    - `activity_main.xml` - Main screen layout
    - `activity_result.xml` - Result display layout
+   - `activity_history.xml` - History list layout
    - `item_scan_history.xml` - Single history item layout
-   - `fragment_library.xml` - Library fragment layout
 
-4. **Adapters (RecyclerView):**
-   - `HistoryAdapter.java` - Displays list of scans
-   - `DiseaseAdapter.java` - Displays list of diseases
+3. **Adapters (RecyclerView):**
+   - `HistoryAdapter.kt` - Displays list of scans
+   - `DiseaseAdapter.kt` - Displays list of diseases
 
 **Data Flow IN:** User interactions (button clicks, image selection)
 **Data Flow OUT:** Display commands to UI components
 
 **Example: MainActivity Flow**
-```java
-// MainActivity.java (Presentation Layer)
-public class MainActivity extends AppCompatActivity {
-    private Button scanButton;
-    private ScanViewModel scanViewModel; // Connection to Business Logic
+```kotlin
+// MainActivity.kt (Presentation Layer)
+class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main); // Load XML layout
-
-        // Initialize ViewModel (Business Logic)
-        scanViewModel = new ViewModelProvider(this).get(ScanViewModel.class);
-
-        // Observe data changes from ViewModel
-        scanViewModel.getRecentScans().observe(this, scans -> {
-            // Update UI when data changes
-            updateRecentScansList(scans);
-        });
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityMainBinding.inflate(layoutInflater) // Load XML layout
+        setContentView(binding.root)
 
         // Handle user interaction
-        scanButton = findViewById(R.id.btn_scan);
-        scanButton.setOnClickListener(v -> {
-            // User clicked scan button
-            Intent intent = new Intent(this, ScanActivity.class);
-            startActivity(intent); // Navigate to ScanActivity
-        });
+        binding.btnScan.setOnClickListener {
+            // User clicked scan button - launch camera directly
+            openCamera()
+        }
+        
+        binding.btnHistory.setOnClickListener {
+            // Navigate to HistoryActivity
+            val intent = Intent(this, HistoryActivity::class.java)
+            startActivity(intent)
+        }
     }
 }
 ```
@@ -188,88 +177,70 @@ public class MainActivity extends AppCompatActivity {
 
 ### Tier 2: Business Logic Layer (Domain Layer)
 
-**Responsibility:** Application logic, data processing, business rules.
+**Responsibility:** Application logic, data processing, network/database services.
 
 **Components in LeafGuard:**
 
-1. **ViewModels:**
-   - `ScanViewModel.java` - Manages scan-related operations
-   - `HistoryViewModel.java` - Manages history data
-   - `AuthViewModel.java` - Manages authentication (if added)
+1. **Network Services:**
+   - `ApiService.kt` - Retrofit interface for API calls
+   - `RetrofitClient.kt` - HTTP client configuration
+   - `PredictionResponse.kt` - API response model
 
-2. **Repositories:**
-   - `ScanRepository.java` - Coordinates scan data sources
-   - `DiseaseRepository.java` - Manages disease information
+2. **ML Services:**
+   - `TFLiteClassifier.kt` - Offline model inference
 
-3. **UseCases (Optional):**
-   - `UploadImageUseCase.java` - Encapsulates image upload logic
-   - `SaveScanUseCase.java` - Encapsulates saving scan result
+3. **Utility Classes:**
+   - `NotificationHelper.kt` - Push notification management
+   - `XmlParser.kt` - Parse diseases.xml file
 
-4. **Utility Classes:**
-   - `ImageProcessor.java` - Resize, compress, rotate images
-   - `ValidationUtils.java` - Validate user input
-   - `DateFormatter.java` - Format timestamps
+**Data Flow IN:** Requests from Activities
+**Data Flow OUT:** Processed data back to Activities, network/database operations
 
-**Data Flow IN:** Requests from Presentation Layer
-**Data Flow OUT:** Processed data back to Presentation Layer, requests to Data Layer
+**Example: MainActivity calling ApiService**
+```kotlin
+// MainActivity.kt - Direct API call (no ViewModel layer)
+class MainActivity : AppCompatActivity() {
+    private lateinit var apiService: ApiService
 
-**Example: ScanViewModel**
-```java
-// ScanViewModel.java (Business Logic Layer)
-public class ScanViewModel extends ViewModel {
-    private final ScanRepository repository; // Connection to Data Layer
-    private final MutableLiveData<ScanResult> scanResult = new MutableLiveData<>();
-
-    public ScanViewModel(ScanRepository repository) {
-        this.repository = repository;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Initialize Retrofit service
+        apiService = RetrofitClient.instance.create(ApiService::class.java)
     }
 
-    // Called by Activity when user selects image
-    public void uploadImage(String imagePath) {
-        // Business logic: Validate image
-        if (!isValidImage(imagePath)) {
-            scanResult.setValue(ScanResult.error("Invalid image"));
-            return;
-        }
+    // Called when user selects image
+    private fun uploadImage(imageUri: Uri) {
+        lifecycleScope.launch {
+            try {
+                // Prepare multipart request
+                val file = File(imageUri.path!!)
+                val requestBody = file.asRequestBody("image/*".toMediaTypeOrNull())
+                val imagePart = MultipartBody.Part.createFormData("image", file.name, requestBody)
 
-        // Business logic: Compress image before upload
-        String compressedPath = ImageProcessor.compress(imagePath);
+                // Make API call
+                val response = apiService.predict(imagePart)
 
-        // Delegate data operation to Repository
-        repository.detectDisease(compressedPath, new Callback<DiseaseResult>() {
-            @Override
-            public void onSuccess(DiseaseResult result) {
-                // Business logic: Check confidence threshold
-                if (result.getConfidence() < 0.5) {
-                    result.setWarning("Low confidence prediction");
+                if (response.isSuccessful) {
+                    val result = response.body()
+                    // Navigate to ResultActivity with result
+                    val intent = Intent(this@MainActivity, ResultActivity::class.java)
+                    intent.putExtra("disease", result?.disease)
+                    intent.putExtra("confidence", result?.confidence)
+                    startActivity(intent)
                 }
-
-                // Business logic: Save to database
-                repository.saveScanLocally(result);
-
-                // Update UI via LiveData
-                scanResult.setValue(ScanResult.success(result));
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
-
-            @Override
-            public void onError(Exception e) {
-                scanResult.setValue(ScanResult.error(e.getMessage()));
-            }
-        });
-    }
-
-    // Expose LiveData for Activity to observe
-    public LiveData<ScanResult> getScanResult() {
-        return scanResult;
+        }
     }
 }
 ```
 
 **Key Principles:**
-- ViewModels survive configuration changes (screen rotation)
-- ViewModels should NOT hold references to Activities/Views
-- ViewModels coordinate between Repositories and UI
-- ViewModels contain business logic, not data access logic
+- Activities directly call service layer (no ViewModel intermediary)
+- Network calls use Kotlin coroutines for async operations
+- Results are passed via Intent extras or saved to database
+- Simple architecture suitable for this project's scope
 
 ### Tier 3: Data Layer
 
@@ -278,95 +249,70 @@ public class ScanViewModel extends ViewModel {
 **Components in LeafGuard:**
 
 1. **Local Data Sources:**
-   - `AppDatabase.java` - Room database definition
+   - `AppDatabase.kt` - Room database definition
    - `ScanDao.java` - Database access methods
    - `ScanEntity.java` - Database table schema
-   - `XmlParser.java` - Parse disease XML files
-   - `FileManager.java` - Save/load images from storage
+   - `ScanRecord.kt` - Room entity for scan history
+   - `ScanDao.kt` - Room DAO for database operations
+   - `XmlParser.kt` - Parse diseases.xml file
 
 2. **Remote Data Sources:**
-   - `ApiService.java` - Retrofit interface defining API endpoints
-   - `RetrofitClient.java` - Retrofit singleton configuration
-   - `UploadResponse.java` - API response data class
+   - `ApiService.kt` - Retrofit interface defining API endpoints
+   - `RetrofitClient.kt` - Retrofit singleton configuration
+   - `PredictionResponse.kt` - API response data class
 
 3. **Data Models:**
-   - `Disease.java` - Disease information model
-   - `ScanResult.java` - Scan result model
-   - `User.java` - User information model (if authentication added)
+   - `Disease.kt` - Disease information model
 
-**Data Flow IN:** Requests from Business Logic Layer
+**Data Flow IN:** Requests from Activities
 **Data Flow OUT:** Raw data (database records, API responses)
 
-**Example: ScanRepository**
-```java
-// ScanRepository.java (Data Layer)
-public class ScanRepository {
-    private final ScanDao scanDao; // Local data source
-    private final ApiService apiService; // Remote data source
+**Example: ApiService and Database Access**
+```kotlin
+// ApiService.kt - Retrofit interface
+interface ApiService {
+    @Multipart
+    @POST("/predict")
+    suspend fun predict(
+        @Part image: MultipartBody.Part
+    ): Response<PredictionResponse>
+}
 
-    public ScanRepository(ScanDao scanDao, ApiService apiService) {
-        this.scanDao = scanDao;
-        this.apiService = apiService;
-    }
+// PredictionResponse.kt - API response model
+data class PredictionResponse(
+    @SerializedName("disease") val disease: String,
+    @SerializedName("confidence") val confidence: Float
+)
 
-    // Coordinates network call (remote) and database save (local)
-    public void detectDisease(String imagePath, Callback<DiseaseResult> callback) {
-        // Prepare image for upload
-        File imageFile = new File(imagePath);
-        RequestBody requestBody = RequestBody.create(MediaType.parse("image/*"), imageFile);
-        MultipartBody.Part imagePart = MultipartBody.Part.createFormData("file", imageFile.getName(), requestBody);
+// ScanRecord.kt - Room entity
+@Entity(tableName = "scan_history")
+data class ScanRecord(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @ColumnInfo(name = "disease_name") val diseaseName: String,
+    @ColumnInfo(name = "confidence") val confidence: Float,
+    @ColumnInfo(name = "image_path") val imagePath: String,
+    @ColumnInfo(name = "timestamp") val timestamp: Long
+)
 
-        // Make network call using Retrofit
-        apiService.uploadImage(imagePart).enqueue(new retrofit2.Callback<UploadResponse>() {
-            @Override
-            public void onResponse(Call<UploadResponse> call, Response<UploadResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    UploadResponse apiResponse = response.body();
+// ScanDao.kt - Room DAO
+@Dao
+interface ScanDao {
+    @Query("SELECT * FROM scan_history ORDER BY timestamp DESC")
+    suspend fun getAllScans(): List<ScanRecord>
 
-                    // Convert API response to domain model
-                    DiseaseResult result = new DiseaseResult(
-                        apiResponse.getDisease(),
-                        apiResponse.getConfidence(),
-                        apiResponse.getSymptoms(),
-                        apiResponse.getTreatment()
-                    );
+    @Insert
+    suspend fun insert(scan: ScanRecord)
 
-                    callback.onSuccess(result);
-                } else {
-                    callback.onError(new Exception("API call failed"));
-                }
-            }
-
-            @Override
-            public void onFailure(Call<UploadResponse> call, Throwable t) {
-                callback.onError(new Exception(t));
-            }
-        });
-    }
-
-    // Save scan result to local database
-    public void saveScanLocally(DiseaseResult result) {
-        // Convert domain model to database entity
-        ScanEntity entity = new ScanEntity();
-        entity.setDiseaseName(result.getDiseaseName());
-        entity.setConfidence(result.getConfidence());
-        entity.setTimestamp(System.currentTimeMillis());
-
-        // Insert into database
-        new Thread(() -> scanDao.insert(entity)).start();
-    }
-
-    // Get all scans from local database
-    public LiveData<List<ScanEntity>> getAllScans() {
-        return scanDao.getAllScans();
-    }
+    @Delete
+    suspend fun delete(scan: ScanRecord)
 }
 ```
 
 **Key Principles:**
-- Repositories are single source of truth
-- Repositories decide: network or cache?
-- Repositories convert between data models and domain models
+- Activities call service layer directly (no Repository intermediary in this app)
+- Room handles local SQLite storage
+- Retrofit handles network communication
+- Coroutines manage async operations
 - Repositories handle data synchronization
 
 ### Why Three Tiers for LeafGuard?
@@ -388,58 +334,60 @@ public class MainActivity extends AppCompatActivity {
 If you switch from Retrofit to Volley, you must change EVERY Activity that makes network calls.
 
 With tiers:
-```java
-// MainActivity uses ViewModel
-public class MainActivity extends AppCompatActivity {
-    private ScanViewModel viewModel;
+```kotlin
+// MainActivity uses service layer directly
+class MainActivity : AppCompatActivity() {
+    private lateinit var apiService: ApiService
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        viewModel.uploadImage(imagePath);
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        apiService = RetrofitClient.instance.create(ApiService::class.java)
+        // Activity calls service directly
     }
 }
 ```
 
-If you switch from Retrofit to Volley, you ONLY change `ApiService` and `RetrofitClient` in the Data Layer. Activities and ViewModels are unaffected.
+If you switch from Retrofit to Volley, you ONLY change `ApiService` and `RetrofitClient` in the Service Layer. Activities just need different method calls.
 
 ---
 
-## MVVM Pattern Explained
+## Direct Architecture Pattern Explained
 
-### What is MVVM?
+### What is the Direct Pattern?
 
-**MVVM = Model + View + ViewModel**
+**LeafGuard uses a simpler, direct Activity-to-Service architecture.**
 
-**Purpose:** Separate UI (View) from business logic (ViewModel) and data (Model).
+**Purpose:** Activities directly call service layer (ApiService, ScanDao, TFLiteClassifier) without ViewModel intermediary.
 
-### Components Breakdown
+### Why Not MVVM for This Project?
 
-#### 1. Model
+1. **Simpler for learning** - Fewer abstractions to understand
+2. **Appropriate scope** - Single-user, single-flow app
+3. **Course focus** - CSE 2206 emphasizes Android fundamentals, not advanced architecture
+4. **Faster development** - Less boilerplate code
 
-**What it is:** Your data structures and data sources.
+### LeafGuard Architecture Components
+
+#### 1. Model (Data Classes)
+
+**What it is:** Your data structures.
 
 **In LeafGuard:**
-- `Disease.java` - Represents a plant disease
-- `ScanResult.java` - Represents a scan result
-- `ScanEntity.java` - Database entity
-- `Room Database` - Data source
-- `Retrofit API` - Data source
+- `ScanRecord.kt` - Database entity for scan history
+- `PredictionResponse.kt` - API response data class
+- `Disease.kt` - Disease information from XML
 
 **Example:**
-```java
-// Disease.java (Model)
-public class Disease {
-    private String name;
-    private String scientificName;
-    private String symptoms;
-    private String treatment;
-    private String prevention;
-
-    // Getters and setters
-    public String getName() { return name; }
-    public void setName(String name) { this.name = name; }
-    // ... more getters/setters
-}
+```kotlin
+// ScanRecord.kt (Model - Room Entity)
+@Entity(tableName = "scan_history")
+data class ScanRecord(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @ColumnInfo(name = "disease_name") val diseaseName: String,
+    @ColumnInfo(name = "confidence") val confidence: Float,
+    @ColumnInfo(name = "image_path") val imagePath: String,
+    @ColumnInfo(name = "timestamp") val timestamp: Long
+)
 ```
 
 **Responsibilities:**
@@ -448,47 +396,47 @@ public class Disease {
 - No UI code
 - No business logic
 
-#### 2. View
+#### 2. View (Activities)
 
-**What it is:** Your UI components (Activities, Fragments, XML layouts).
+**What it is:** Your UI components (Activities and XML layouts).
 
 **In LeafGuard:**
-- `MainActivity.java` - Observes ViewModel data
-- `activity_main.xml` - Defines UI layout
-- `ResultActivity.java` - Displays result from ViewModel
+- `MainActivity.kt` - Handles capture and API calls directly
+- `ResultActivity.kt` - Displays result passed via Intent
+- `HistoryActivity.kt` - Loads history from database directly
 
 **Example:**
-```java
-// MainActivity.java (View)
-public class MainActivity extends AppCompatActivity {
-    private ScanViewModel viewModel;
-    private TextView statusText;
+```kotlin
+// MainActivity.kt (View - handles everything)
+class MainActivity : AppCompatActivity() {
+    private lateinit var apiService: ApiService
+    private lateinit var database: AppDatabase
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
 
-        statusText = findViewById(R.id.tv_status);
-
-        // Get ViewModel
-        viewModel = new ViewModelProvider(this).get(ScanViewModel.class);
-
-        // Observe data from ViewModel
-        viewModel.getScanResult().observe(this, result -> {
-            // Update UI when data changes
-            if (result.isSuccess()) {
-                statusText.setText("Disease: " + result.getData().getDiseaseName());
-            } else {
-                statusText.setText("Error: " + result.getErrorMessage());
-            }
-        });
+        // Initialize services
+        apiService = RetrofitClient.instance.create(ApiService::class.java)
+        database = AppDatabase.getInstance(this)
 
         // User clicks scan button
-        findViewById(R.id.btn_scan).setOnClickListener(v -> {
-            // Tell ViewModel to start scan
-            viewModel.uploadImage("/path/to/image.jpg");
-        });
+        binding.btnScan.setOnClickListener {
+            openCamera() // Launch camera intent
+        }
+    }
+    
+    // Camera result callback
+    private fun handleCapturedImage(imageUri: Uri) {
+        lifecycleScope.launch {
+            val result = apiService.predict(createImagePart(imageUri))
+            if (result.isSuccessful) {
+                // Navigate to ResultActivity with data
+                val intent = Intent(this@MainActivity, ResultActivity::class.java)
+                intent.putExtra("disease", result.body()?.disease)
+                startActivity(intent)
+            }
+        }
     }
 }
 ```
@@ -496,84 +444,42 @@ public class MainActivity extends AppCompatActivity {
 **Responsibilities:**
 - Display UI
 - Handle user interactions (clicks, swipes)
-- Observe ViewModel data
-- Update UI when data changes
-- NO business logic
-- NO data access
+- Call service layer directly
+- Update UI when data arrives
+- Contains flow logic
 
-#### 3. ViewModel
+#### 3. Service Layer
 
-**What it is:** Bridge between View and Model, holds UI state.
+**What it is:** Network and database access classes.
 
 **In LeafGuard:**
-- `ScanViewModel.java` - Manages scan operations
-- `HistoryViewModel.java` - Manages history data
+- `ApiService.kt` - Retrofit interface
+- `ScanDao.kt` - Room DAO
+- `TFLiteClassifier.kt` - ML model wrapper
 
 **Example:**
-```java
-// ScanViewModel.java (ViewModel)
-public class ScanViewModel extends ViewModel {
-    private final ScanRepository repository;
+```kotlin
+// ApiService.kt (Service - network)
+interface ApiService {
+    @Multipart
+    @POST("/predict")
+    suspend fun predict(
+        @Part image: MultipartBody.Part
+    ): Response<PredictionResponse>
+}
 
-    // LiveData holds UI state
-    private MutableLiveData<Resource<DiseaseResult>> scanResult = new MutableLiveData<>();
+// ScanDao.kt (Service - database)
+@Dao
+interface ScanDao {
+    @Query("SELECT * FROM scan_history ORDER BY timestamp DESC")
+    suspend fun getAllScans(): List<ScanRecord>
 
-    public ScanViewModel(ScanRepository repository) {
-        this.repository = repository;
-    }
-
-    // Called by View (Activity) when user wants to scan
-    public void uploadImage(String imagePath) {
-        // Set loading state
-        scanResult.setValue(Resource.loading(null));
-
-        // Business logic: Validate input
-        if (imagePath == null || imagePath.isEmpty()) {
-            scanResult.setValue(Resource.error("Invalid image path", null));
-            return;
-        }
-
-        // Delegate to Repository (Model layer)
-        repository.detectDisease(imagePath, new Callback<DiseaseResult>() {
-            @Override
-            public void onSuccess(DiseaseResult result) {
-                // Update LiveData - View automatically receives update
-                scanResult.setValue(Resource.success(result));
-
-                // Business logic: Save to database
-                repository.saveScanLocally(result);
-            }
-
-            @Override
-            public void onError(Exception e) {
-                scanResult.setValue(Resource.error(e.getMessage(), null));
-            }
-        });
-    }
-
-    // View observes this LiveData
-    public LiveData<Resource<DiseaseResult>> getScanResult() {
-        return scanResult;
-    }
-
-    // Clean up when ViewModel is destroyed
-    @Override
-    protected void onCleared() {
-        super.onCleared();
-        // Cancel any ongoing operations
-    }
+    @Insert
+    suspend fun insert(scan: ScanRecord)
 }
 ```
 
-**Responsibilities:**
-- Hold UI state (LiveData)
-- Handle business logic
-- Coordinate data operations via Repository
-- Survive configuration changes (rotation)
-- NO reference to View (Activity/Fragment)
-- NO Android framework dependencies (except androidx.lifecycle)
-
-### MVVM Data Flow in LeafGuard
+### Direct Architecture Data Flow in LeafGuard
 
 **User scans a leaf - complete flow:**
 
@@ -582,191 +488,53 @@ public class ScanViewModel extends ViewModel {
    User taps "Scan" button
    ↓
 
-2. VIEW (MainActivity)
+2. ACTIVITY (MainActivity)
    Button click listener triggered
-   Calls: viewModel.uploadImage(imagePath)
+   Launches camera via ActivityResultContracts.TakePicture
    ↓
 
-3. VIEWMODEL (ScanViewModel)
-   Validates image path (business logic)
-   Sets LiveData to "loading" state
-   Calls: repository.detectDisease(imagePath, callback)
+3. CAMERA RESULT
+   Image captured to FileProvider URI
+   MainActivity receives result in callback
    ↓
 
-4. MODEL - REPOSITORY (ScanRepository)
-   Decides: Use network or cache?
-   Creates Retrofit API call
-   Calls: apiService.uploadImage(imagePart)
+4. ACTIVITY (MainActivity)
+   Creates multipart request from image
+   Calls: apiService.predict(imagePart)
    ↓
 
-5. MODEL - API SERVICE (Retrofit)
-   Makes HTTP POST to FastAPI backend
+5. SERVICE (ApiService via Retrofit)
+   Makes HTTP POST to backend /predict
    Sends: Multipart image data
-   Receives: JSON response
+   Receives: JSON response {"disease": "...", "confidence": ...}
    ↓
 
-6. MODEL - REPOSITORY (callback)
-   Receives API response
-   Converts to domain model (DiseaseResult)
-   Saves to Room database
-   Calls: callback.onSuccess(result)
+6. ACTIVITY (MainActivity)
+   Receives response from coroutine
+   Saves result to database via ScanDao
+   Creates Intent with result data
+   Starts ResultActivity
    ↓
 
-7. VIEWMODEL (callback)
-   Receives result from Repository
-   Updates LiveData with success state
-   scanResult.setValue(Resource.success(result))
-   ↓
-
-8. VIEW (MainActivity - Observer)
-   Observes LiveData change
-   Updates UI automatically
-   Shows disease name, confidence, treatment
+7. ACTIVITY (ResultActivity)
+   Receives data from Intent extras
+   Displays disease name, confidence, treatment
 ```
 
-### Benefits of MVVM in LeafGuard
+### Trade-offs of Direct Architecture
 
-#### 1. Survives Configuration Changes
+#### Advantages
+- **Simpler code** - Easier to follow and debug
+- **Less files** - No ViewModel or Repository classes
+- **Faster to implement** - Good for course projects
+- **Direct data flow** - Clear cause and effect
 
-**Problem without MVVM:**
-```java
-// Bad: Network call in Activity
-public class MainActivity extends AppCompatActivity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+#### Disadvantages
+- **No screen rotation handling** - Network calls may restart (mitigated with coroutine)
+- **Testing harder** - Cannot unit test without Android framework
+- **Tight coupling** - Activities depend on services directly
 
-        // User initiates scan
-        makeNetworkCall();
-    }
-
-    void makeNetworkCall() {
-        // Network call takes 3 seconds
-        RetrofitClient.getApiService().upload(image).enqueue(new Callback() {
-            @Override
-            public void onResponse(Response response) {
-                // Update UI
-                textView.setText(response.getDisease());
-            }
-        });
-    }
-}
-
-// User rotates screen after 2 seconds (during network call)
-// Activity is destroyed and recreated
-// Network call completes but Activity is destroyed
-// CRASH: Cannot update destroyed Activity's TextView
-```
-
-**Solution with MVVM:**
-```java
-// Good: Network call in ViewModel
-public class ScanViewModel extends ViewModel {
-    public void uploadImage(String path) {
-        repository.detectDisease(path, result -> {
-            scanResult.setValue(result); // ViewModel survives rotation
-        });
-    }
-}
-
-public class MainActivity extends AppCompatActivity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // ViewModel is retained across configuration changes
-        ScanViewModel viewModel = new ViewModelProvider(this).get(ScanViewModel.class);
-
-        // Observe result - re-observes after rotation
-        viewModel.getScanResult().observe(this, result -> {
-            textView.setText(result.getDisease());
-        });
-
-        // Start scan only on first creation
-        if (savedInstanceState == null) {
-            viewModel.uploadImage(imagePath);
-        }
-    }
-}
-
-// User rotates screen
-// Activity is destroyed and recreated
-// ViewModel survives (not destroyed)
-// New Activity observes same ViewModel
-// UI receives result from ViewModel
-// No crash, no duplicate network call
-```
-
-#### 2. Testability
-
-**Without MVVM:**
-Cannot test business logic without starting an Android Activity (requires Android framework, emulator).
-
-**With MVVM:**
-```java
-// Unit test for ViewModel - runs on JVM, no Android needed
-@Test
-public void uploadImage_validImage_returnsSuccess() {
-    // Mock repository
-    ScanRepository mockRepo = mock(ScanRepository.class);
-    when(mockRepo.detectDisease(anyString(), any())).thenAnswer(invocation -> {
-        Callback callback = invocation.getArgument(1);
-        callback.onSuccess(new DiseaseResult("Tomato Blight", 0.95));
-        return null;
-    });
-
-    // Create ViewModel with mock repository
-    ScanViewModel viewModel = new ScanViewModel(mockRepo);
-
-    // Trigger upload
-    viewModel.uploadImage("/path/to/image.jpg");
-
-    // Verify result
-    Resource<DiseaseResult> result = viewModel.getScanResult().getValue();
-    assertNotNull(result);
-    assertEquals("Tomato Blight", result.getData().getDiseaseName());
-    assertEquals(0.95, result.getData().getConfidence(), 0.01);
-}
-```
-
-#### 3. Separation of Concerns
-
-**Without MVVM:**
-```java
-// Activity does everything - BAD
-public class MainActivity extends AppCompatActivity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        // UI code
-        setContentView(R.layout.activity_main);
-
-        // Business logic
-        if (validateImage(path)) {
-            // Network code
-            makeApiCall();
-        }
-
-        // Database code
-        saveToDatabase();
-    }
-}
-```
-
-**With MVVM:**
-```java
-// Each class has one responsibility - GOOD
-public class MainActivity extends AppCompatActivity {
-    // Only UI code
-}
-
-public class ScanViewModel extends ViewModel {
-    // Only business logic
-}
-
-public class ScanRepository {
-    // Only data access
-}
-```
+**For LeafGuard's scope, the direct pattern is appropriate.**
 
 ---
 
@@ -778,29 +546,29 @@ public class ScanRepository {
 
 **LeafGuard Activities:**
 
-1. **MainActivity** - Home/Dashboard
-   - Purpose: Entry point, recent scans, navigation
+1. **MainActivity** - Home/Dashboard + Image Capture
+   - Purpose: Entry point, scan button, camera/gallery access
    - Layout: `activity_main.xml`
-   - Key UI: Scan button, Recent scans RecyclerView
-   - Navigation: Can go to ScanActivity, HistoryActivity, LibraryActivity
+   - Key UI: Scan button, Cloud/Offline toggle, navigation buttons
+   - Navigation: ResultActivity, HistoryActivity, DiseaseLibraryActivity, SettingsActivity
 
-2. **ScanActivity** - Image Capture/Selection
-   - Purpose: Capture or select leaf image
-   - Layout: `activity_scan.xml`
-   - Key UI: Camera preview, Gallery button, Analyze button
-   - Navigation: Opens camera intent, returns to MainActivity with result
-
-3. **ResultActivity** - Display Prediction
+2. **ResultActivity** - Display Prediction
    - Purpose: Show disease prediction and treatment
    - Layout: `activity_result.xml`
    - Key UI: Disease name, confidence %, symptoms, treatment
-   - Navigation: Can go to HistoryActivity, restart scan
+   - Navigation: Back to MainActivity, view in History
 
-4. **HistoryActivity** - Past Scans List
+3. **HistoryActivity** - Past Scans List
    - Purpose: Display all previous scans
    - Layout: `activity_history.xml` with RecyclerView
    - Key UI: List of scans with date, disease, confidence
    - Navigation: Click item → HistoryDetailActivity
+
+4. **HistoryDetailActivity** - Single Scan Details
+   - Purpose: Display detailed view of a past scan
+   - Layout: `activity_history_detail.xml`
+   - Key UI: Full image, disease info, timestamp, delete option
+   - Navigation: Back to HistoryActivity
 
 5. **DiseaseLibraryActivity** - Disease Encyclopedia
    - Purpose: Browse all diseases with information
@@ -815,50 +583,44 @@ public class ScanRepository {
    - Navigation: Back to MainActivity
 
 **Activity Lifecycle in LeafGuard:**
-```java
-public class ScanActivity extends AppCompatActivity {
+```kotlin
+class MainActivity : AppCompatActivity() {
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         // Called when activity is first created
-        // Initialize views, ViewModels, listeners
-        setContentView(R.layout.activity_scan);
-        setupViewModel();
-        checkCameraPermission();
+        // Initialize views, services, listeners
+        setContentView(R.layout.activity_main)
+        setupServices()
+        checkCameraPermission()
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
+    override fun onStart() {
+        super.onStart()
         // Called when activity becomes visible to user
-        // Start camera preview
+        // Good place to refresh data
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    override fun onResume() {
+        super.onResume()
         // Called when activity starts interacting with user
         // Register sensors, start animations
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
+    override fun onPause() {
+        super.onPause()
         // Called when activity is partially obscured
-        // Pause camera preview, save state
+        // Save state, pause operations
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
+    override fun onStop() {
+        super.onStop()
         // Called when activity is no longer visible
-        // Release camera resources
+        // Release resources
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    override fun onDestroy() {
+        super.onDestroy()
         // Called before activity is destroyed
         // Final cleanup
     }
@@ -872,67 +634,49 @@ public class ScanActivity extends AppCompatActivity {
 **Types used in LeafGuard:**
 
 1. **Explicit Intents** (Navigate between app screens)
-```java
-// From MainActivity to ScanActivity
-Intent intent = new Intent(MainActivity.this, ScanActivity.class);
-intent.putExtra("mode", "camera"); // Pass data
-startActivity(intent);
+```kotlin
+// From MainActivity to ResultActivity
+val intent = Intent(this, ResultActivity::class.java)
+intent.putExtra("disease", "Tomato Blight") // Pass data
+intent.putExtra("confidence", 0.95f)
+startActivity(intent)
 
-// In ScanActivity, receive data
-String mode = getIntent().getStringExtra("mode");
+// In ResultActivity, receive data
+val disease = intent.getStringExtra("disease")
+val confidence = intent.getFloatExtra("confidence", 0f)
 ```
 
 2. **Implicit Intents** (Request action from system)
-```java
-// Open camera
-Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-startActivityForResult(cameraIntent, REQUEST_CAMERA);
+```kotlin
+// Modern approach: ActivityResultContracts (recommended)
 
-// Pick image from gallery
-Intent galleryIntent = new Intent(Intent.ACTION_PICK);
-galleryIntent.setType("image/*");
-startActivityForResult(galleryIntent, REQUEST_GALLERY);
-
-// Receive result
-@Override
-protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-    if (requestCode == REQUEST_CAMERA && resultCode == RESULT_OK) {
-        Bitmap photo = (Bitmap) data.getExtras().get("data");
-        // Process photo
+// Camera capture
+private val cameraLauncher = registerForActivityResult(
+    ActivityResultContracts.TakePicture()
+) { success ->
+    if (success) {
+        // Image saved to imageUri
+        processImage(imageUri)
     }
 }
-```
 
-### Fragments
+// Gallery pick
+private val galleryLauncher = registerForActivityResult(
+    ActivityResultContracts.GetContent()
+) { uri ->
+    uri?.let { processImage(it) }
+}
 
-**Definition:** Modular section of activity's UI.
+// Usage
+fun openCamera() {
+    imageUri = createImageFileUri() // FileProvider URI
+    cameraLauncher.launch(imageUri)
+}
 
-**Why use Fragments in LeafGuard?**
-- Reusable UI components
-- Better tablet support
-- Easier navigation with Navigation Component
-
-**LeafGuard Fragments:**
-
-1. **HomeFragment** - Recent scans section
-```java
-public class HomeFragment extends Fragment {
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_home, container, false);
-        RecyclerView recyclerView = view.findViewById(R.id.rv_recent_scans);
-        // Setup RecyclerView with adapter
-        return view;
-    }
+fun openGallery() {
+    galleryLauncher.launch("image/*")
 }
 ```
-
-2. **LibraryFragment** - Disease list
-3. **ProfileFragment** - User settings
-
-**Fragment vs Activity:**
-- Activity: Full screen
-- Fragment: Part of screen, can have multiple per activity
 
 ### RecyclerView
 
@@ -941,40 +685,36 @@ public class HomeFragment extends Fragment {
 **LeafGuard Use Cases:**
 
 1. **History List:**
-```java
-// HistoryAdapter.java
-public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
+```kotlin
+// HistoryAdapter.kt
+class HistoryAdapter(
+    private val scans: List<ScanRecord>,
+    private val onClick: (ScanRecord) -> Unit
+) : RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
 
-    private List<ScanEntity> scans;
-
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-            .inflate(R.layout.item_scan_history, parent, false);
-        return new ViewHolder(view);
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_scan_history, parent, false)
+        return ViewHolder(view)
     }
 
-    @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        ScanEntity scan = scans.get(position);
-        holder.diseaseText.setText(scan.getDiseaseName());
-        holder.confidenceText.setText(String.format("%.1f%%", scan.getConfidence() * 100));
-        holder.dateText.setText(formatDate(scan.getTimestamp()));
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val scan = scans[position]
+        holder.bind(scan)
+        holder.itemView.setOnClickListener { onClick(scan) }
     }
 
-    @Override
-    public int getItemCount() {
-        return scans != null ? scans.size() : 0;
-    }
+    override fun getItemCount(): Int = scans.size
 
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView diseaseText, confidenceText, dateText;
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        private val diseaseText: TextView = view.findViewById(R.id.tv_disease)
+        private val confidenceText: TextView = view.findViewById(R.id.tv_confidence)
+        private val dateText: TextView = view.findViewById(R.id.tv_date)
 
-        ViewHolder(View view) {
-            super(view);
-            diseaseText = view.findViewById(R.id.tv_disease);
-            confidenceText = view.findViewById(R.id.tv_confidence);
-            dateText = view.findViewById(R.id.tv_date);
+        fun bind(scan: ScanRecord) {
+            diseaseText.text = scan.diseaseName
+            confidenceText.text = String.format("%.1f%%", scan.confidence * 100)
+            dateText.text = formatDate(scan.timestamp)
         }
     }
 }
@@ -996,140 +736,112 @@ Similar pattern for displaying all diseases.
 ### Retrofit Overview
 
 **What is Retrofit?**
-Type-safe HTTP client for Android. Converts HTTP API into Java interface.
+Type-safe HTTP client for Android. Converts HTTP API into Kotlin interface.
 
 **Why use Retrofit in LeafGuard?**
 - Easy to use (annotations-based)
 - Automatic JSON parsing
 - Built-in error handling
-- Supports synchronous and asynchronous calls
+- Coroutine support (suspend functions)
 - Well-maintained by Square
 
 ### LeafGuard API Design
 
-**Base URL:** `http://192.168.1.5:8000` (local development) or `https://api.leafguard.com` (production)
+**Base URL:** `http://10.0.2.2:8000/` (Android emulator to localhost) or production URL
 
 **Endpoints:**
 
 1. **/predict** - Disease detection
    - Method: POST
-   - Body: Multipart form-data with image file
-   - Response: JSON with disease, confidence, symptoms, treatment
-
-2. **/disease/{name}** - Get disease details
-   - Method: GET
-   - Path parameter: disease name
-   - Response: JSON with full disease information
+   - Body: Multipart form-data with image (field name: "image")
+   - Response: JSON with disease name and confidence
 
 ### Retrofit Implementation in LeafGuard
 
 **Step 1: Define API Interface**
-```java
-// ApiService.java
-public interface ApiService {
-
+```kotlin
+// ApiService.kt
+interface ApiService {
     @Multipart
-    @POST("predict")
-    Call<UploadResponse> uploadImage(@Part MultipartBody.Part image);
-
-    @GET("disease/{name}")
-    Call<DiseaseInfo> getDiseaseInfo(@Path("name") String diseaseName);
+    @POST("/predict")
+    suspend fun predict(
+        @Part image: MultipartBody.Part
+    ): Response<PredictionResponse>
 }
+
+// PredictionResponse.kt
+data class PredictionResponse(
+    @SerializedName("disease") val disease: String,
+    @SerializedName("confidence") val confidence: Float
+)
 ```
 
 **Step 2: Create Retrofit Client**
-```java
-// RetrofitClient.java
-public class RetrofitClient {
-    private static final String BASE_URL = "http://192.168.1.5:8000/";
-    private static Retrofit retrofit;
+```kotlin
+// RetrofitClient.kt
+object RetrofitClient {
+    private const val BASE_URL = "http://10.0.2.2:8000/"
+    
+    val instance: Retrofit by lazy {
+        // Create OkHttp client with timeouts
+        val client = OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .build()
 
-    public static Retrofit getClient() {
-        if (retrofit == null) {
-            // Create OkHttp client with timeouts
-            OkHttpClient client = new OkHttpClient.Builder()
-                .connectTimeout(30, TimeUnit.SECONDS)
-                .readTimeout(60, TimeUnit.SECONDS)
-                .writeTimeout(60, TimeUnit.SECONDS)
-                .addInterceptor(new LoggingInterceptor()) // Log requests/responses
-                .build();
-
-            // Create Retrofit instance
-            retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .client(client)
-                .addConverterFactory(GsonConverterFactory.create()) // JSON parsing
-                .build();
-        }
-        return retrofit;
-    }
-
-    public static ApiService getApiService() {
-        return getClient().create(ApiService.class);
+        // Create Retrofit instance
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create()) // JSON parsing
+            .build()
     }
 }
 ```
 
-**Step 3: Define Response Models**
-```java
-// UploadResponse.java
-public class UploadResponse {
-    private boolean success;
+**Step 3: Make API Call in Activity**
+```kotlin
+// MainActivity.kt - making the API call
+class MainActivity : AppCompatActivity() {
+    private lateinit var apiService: ApiService
 
-    @SerializedName("disease")
-    private String diseaseName;
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Initialize API service
+        apiService = RetrofitClient.instance.create(ApiService::class.java)
+    }
 
-    private float confidence;
-    private String symptoms;
-    private String treatment;
-    private String prevention;
+    private fun uploadImage(imageFile: File) {
+        lifecycleScope.launch {
+            try {
+                // Prepare multipart request - field name is "image"
+                val requestBody = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
+                val imagePart = MultipartBody.Part.createFormData(
+                    "image",  // API expects "image" field name
+                    imageFile.name,
+                    requestBody
+                )
 
-    // Getters and setters
-    public String getDiseaseName() { return diseaseName; }
-    // ...
-}
-```
+                // Make API call (suspend function, runs in background)
+                val response = apiService.predict(imagePart)
 
-**Step 4: Make API Call in Repository**
-```java
-// ScanRepository.java
-public void detectDisease(String imagePath, Callback<DiseaseResult> callback) {
-    // Prepare image file
-    File imageFile = new File(imagePath);
-    RequestBody requestBody = RequestBody.create(MediaType.parse("image/*"), imageFile);
-    MultipartBody.Part imagePart = MultipartBody.Part.createFormData("file", imageFile.getName(), requestBody);
-
-    // Make API call
-    ApiService apiService = RetrofitClient.getApiService();
-    Call<UploadResponse> call = apiService.uploadImage(imagePart);
-
-    call.enqueue(new retrofit2.Callback<UploadResponse>() {
-        @Override
-        public void onResponse(Call<UploadResponse> call, Response<UploadResponse> response) {
-            if (response.isSuccessful() && response.body() != null) {
-                UploadResponse apiResponse = response.body();
-
-                // Convert to domain model
-                DiseaseResult result = new DiseaseResult(
-                    apiResponse.getDiseaseName(),
-                    apiResponse.getConfidence(),
-                    apiResponse.getSymptoms(),
-                    apiResponse.getTreatment(),
-                    apiResponse.getPrevention()
-                );
-
-                callback.onSuccess(result);
-            } else {
-                callback.onError(new Exception("API Error: " + response.code()));
+                if (response.isSuccessful && response.body() != null) {
+                    val result = response.body()!!
+                    
+                    // Navigate to result screen
+                    val intent = Intent(this@MainActivity, ResultActivity::class.java)
+                    intent.putExtra("disease", result.disease)
+                    intent.putExtra("confidence", result.confidence)
+                    startActivity(intent)
+                } else {
+                    Toast.makeText(this@MainActivity, "API Error: ${response.code()}", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@MainActivity, "Network Error: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
-
-        @Override
-        public void onFailure(Call<UploadResponse> call, Throwable t) {
-            callback.onError(new Exception("Network Error: " + t.getMessage()));
-        }
-    });
-}
+    }
 ```
 
 ### Error Handling
@@ -1515,28 +1227,40 @@ public class TFLiteInference {
         return byteBuffer;
     }
 
-    public void close() {
-        if (tflite != null) {
-            tflite.close();
-        }
+    fun close() {
+        tflite?.close()
     }
 }
 ```
 
-**Step 4: Use in ViewModel**
-```java
-// ScanViewModel.java
-public class ScanViewModel extends ViewModel {
-    private TFLiteInference tfliteInference;
+**Step 4: Use in MainActivity**
+```kotlin
+// MainActivity.kt - offline classification
+class MainActivity : AppCompatActivity() {
+    private lateinit var tfliteClassifier: TFLiteClassifier
 
-    public void classifyOffline(Bitmap bitmap) {
-        // Run on background thread
-        new Thread(() -> {
-            DiseaseResult result = tfliteInference.classify(bitmap);
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        tfliteClassifier = TFLiteClassifier(this)
+    }
 
-            // Update UI on main thread
-            scanResult.postValue(Resource.success(result));
-        }).start();
+    private fun classifyOffline(bitmap: Bitmap) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val result = tfliteClassifier.classify(bitmap)
+            
+            withContext(Dispatchers.Main) {
+                // Navigate to ResultActivity with offline result
+                val intent = Intent(this@MainActivity, ResultActivity::class.java)
+                intent.putExtra("disease", result.diseaseName)
+                intent.putExtra("confidence", result.confidence)
+                startActivity(intent)
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        tfliteClassifier.close()
     }
 }
 ```
@@ -1557,7 +1281,7 @@ public class ScanViewModel extends ViewModel {
 
 ### Disease Library XML Structure
 
-**File:** `app/src/main/assets/disease_library.xml`
+**File:** `app/src/main/assets/diseases.xml`
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -1632,7 +1356,7 @@ public class XmlParser {
 
         try {
             // Open XML file from assets
-            InputStream inputStream = context.getAssets().open("disease_library.xml");
+            InputStream inputStream = context.getAssets().open("diseases.xml");
 
             // Create parser
             XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
@@ -1903,13 +1627,13 @@ MIT License
 ### Week 01 Key Takeaways
 
 1. **LeafGuard AI is a hybrid cloud-offline plant disease detection app**
-2. **Three-tier architecture:** Presentation → Business Logic → Data
-3. **MVVM pattern:** Separates UI, logic, and data for maintainability
-4. **6+ Activities:** MainActivity, ScanActivity, ResultActivity, HistoryActivity, etc.
-5. **Networking:** Retrofit for REST API communication with FastAPI backend
-6. **Database:** Room for local scan history storage
-7. **ML Integration:** Cloud AI (TensorFlow on server) and Offline AI (TFLite on device)
-8. **XML Parsing:** Disease library information stored in XML
+2. **Two-tier architecture:** Presentation Layer (Activities) → Service/Data Layer
+3. **Direct pattern:** Activities call services directly (ApiService, ScanDao, TFLiteClassifier)
+4. **6 Activities:** MainActivity, ResultActivity, HistoryActivity, HistoryDetailActivity, DiseaseLibraryActivity, SettingsActivity
+5. **Networking:** Retrofit for REST API communication with FastAPI backend (POST /predict)
+6. **Database:** Room for local scan history storage (ScanRecord entity)
+7. **ML Integration:** Cloud AI (backend) and Offline AI (TFLite on device)
+8. **XML Parsing:** Disease information stored in diseases.xml
 
 ### Preparation for Week 02
 

@@ -601,7 +601,7 @@ Do not dump huge code; explain the pipeline.
 
 #### 2.5.4 XML disease library methodology
 
-Explain that disease information was stored in `disease_library.xml` inside the app assets and parsed using `XmlPullParser` in Java.
+Explain that disease information was stored in `diseases.xml` inside the app assets and parsed using `XmlPullParser` in Java.
 Mention nested tags for symptoms, treatment, and prevention.
 
 #### 2.5.5 Repository pattern
@@ -737,7 +737,7 @@ You can explicitly say:
 
 ### Sample implementation paragraph
 
-> The XML disease library feature was implemented using three cooperating classes. `DiseaseXmlParser` reads the `disease_library.xml` file from the assets folder using `XmlPullParser` and converts each `<disease>` element into a Java object. `DiseaseRepository` loads the XML data in a background thread, caches the parsed records in memory, and provides both list access and label-based lookup. `DiseaseLibraryActivity` uses a RecyclerView adapter to display the cached records, while `ResultActivity` performs a label lookup after prediction to display symptoms, treatment guidance, and prevention tips.
+> The XML disease library feature was implemented using three cooperating classes. `DiseaseXmlParser` reads the `diseases.xml` file from the assets folder using `XmlPullParser` and converts each `<disease>` element into a Java object. `DiseaseRepository` loads the XML data in a background thread, caches the parsed records in memory, and provides both list access and label-based lookup. `DiseaseLibraryActivity` uses a RecyclerView adapter to display the cached records, while `ResultActivity` performs a label lookup after prediction to display symptoms, treatment guidance, and prevention tips.
 
 ---
 

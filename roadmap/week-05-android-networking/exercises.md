@@ -1,5 +1,15 @@
 # Week 05: Exercises - Android Networking with Retrofit
 
+## Related materials
+
+- Exercises (primary Kotlin): [../../exercises/android-kotlin/](../../exercises/android-kotlin/)
+- Exercises (secondary Java): [../../exercises/android/](../../exercises/android/)
+- Solutions: [../../solutions/week-05/](../../solutions/week-05/)
+- Notebooks: [../../notebooks/week-05/](../../notebooks/week-05/)
+- Glossary: [../../GLOSSARY.md](../../GLOSSARY.md)
+
+---
+
 ## Overview
 
 These 6 exercises will build your confidence with Retrofit, Gson, and Android networking **before** you integrate them into your main LeafGuard AI app. Each exercise is self-contained and focuses on a specific networking concept.
@@ -390,6 +400,16 @@ Create a simple app that uploads an image file.
 
 #### 2. Create Upload API Interface
 
+**Kotlin (primary):**
+```kotlin
+interface UploadApi {
+    @Multipart
+    @POST("predict") // Or use "post" for httpbin.org
+    fun uploadImage(@Part image: MultipartBody.Part): Call<UploadResponse>
+}
+```
+
+**Java (secondary reference):**
 ```java
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -407,6 +427,17 @@ public interface UploadApi {
 
 #### 3. Create Response Model
 
+**Kotlin (primary):**
+```kotlin
+data class UploadResponse(
+    val message: String?,
+    val filename: String?,
+    @SerializedName("disease") val disease: String?,
+    val confidence: Double?
+)
+```
+
+**Java (secondary reference):**
 ```java
 public class UploadResponse {
     private String message;
@@ -453,12 +484,42 @@ MultipartBody.Part imagePart = MultipartBody.Part.createFormData(
 
 #### 5. Upload Image
 
+**Kotlin (primary):**
+```kotlin
+uploadButton.setOnClickListener {
+    progressBar.visibility = View.VISIBLE
+    uploadButton.isEnabled = false
+
+    val api = RetrofitClient.getClient().create(UploadApi::class.java)
+    val call = api.uploadImage(imagePart)
+
+    call.enqueue(object : Callback<UploadResponse> {
+        override fun onResponse(call: Call<UploadResponse>, response: Response<UploadResponse>) {
+            progressBar.visibility = View.GONE
+            uploadButton.isEnabled = true
+            if (response.isSuccessful && response.body() != null) {
+                Toast.makeText(this@MainActivity, "Upload successful!", Toast.LENGTH_LONG).show()
+            } else {
+                Toast.makeText(this@MainActivity, "Upload failed: ${response.code()}", Toast.LENGTH_LONG).show()
+            }
+        }
+
+        override fun onFailure(call: Call<UploadResponse>, t: Throwable) {
+            progressBar.visibility = View.GONE
+            uploadButton.isEnabled = true
+            Toast.makeText(this@MainActivity, "Error: ${t.message}", Toast.LENGTH_LONG).show()
+        }
+    })
+}
+```
+
+**Java (secondary reference):**
 ```java
 uploadButton.setOnClickListener(v -> {
     progressBar.setVisibility(View.VISIBLE);
     uploadButton.setEnabled(false);
 
-    // Update BASE_URL to your FastAPI IP or use "https://httpbin.org/"
+    // Emulator: use http://10.0.2.2:8000/; physical phone: use your computer LAN IP; or use "https://httpbin.org/"
     UploadApi api = RetrofitClient.getClient().create(UploadApi.class);
     Call<UploadResponse> call = api.uploadImage(imagePart);
 
@@ -572,6 +633,37 @@ Build a mini app that:
 
 #### 2. Complete MainActivity Code
 
+**Kotlin (primary core network call):**
+```kotlin
+private fun uploadAndPredict() {
+    progressBar.visibility = View.VISIBLE
+    detectButton.isEnabled = false
+    resultTextView.text = "Analyzing image..."
+
+    val api = RetrofitClient.getClient().create(UploadApi::class.java)
+    val call = api.uploadImage(imagePart)
+    call.enqueue(object : Callback<PredictionResponse> {
+        override fun onResponse(call: Call<PredictionResponse>, response: Response<PredictionResponse>) {
+            progressBar.visibility = View.GONE
+            detectButton.isEnabled = true
+            val prediction = response.body()
+            resultTextView.text = if (response.isSuccessful && prediction != null) {
+                "Disease: ${prediction.disease}\nConfidence: ${prediction.confidence * 100}%\nSymptoms: ${prediction.symptoms}"
+            } else {
+                "Error: ${response.code()}"
+            }
+        }
+
+        override fun onFailure(call: Call<PredictionResponse>, t: Throwable) {
+            progressBar.visibility = View.GONE
+            detectButton.isEnabled = true
+            resultTextView.text = "Error: ${t.message}"
+        }
+    })
+}
+```
+
+**Java (secondary reference):**
 ```java
 public class MainActivity extends AppCompatActivity {
     private ImageView imageView;
@@ -681,7 +773,7 @@ public class MainActivity extends AppCompatActivity {
 - Complete request-response flow
 - UI state management throughout process
 - Error handling at every step
-- This is essentially LeafGuard AI networking!
+- This is essentially LeafGuard AI networking! Expected result: you should see the disease name and confidence appear in the result TextView.
 
 ---
 
@@ -695,12 +787,38 @@ Add OkHttp logging interceptor to see full network traffic.
 
 ### Implementation
 
+**Kotlin (primary):**
+```kotlin
+object RetrofitClient {
+    private const val BASE_URL = "http://10.0.2.2:8000/"
+
+    private val retrofit: Retrofit by lazy {
+        val interceptor = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
+        val client = OkHttpClient.Builder()
+            .addInterceptor(interceptor)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .build()
+
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+}
+```
+
+**Java (secondary reference):**
 ```java
 import okhttp3.OkHttpClient;
 import okhttp3.logging.HttpLoggingInterceptor;
 
 public class RetrofitClient {
-    private static final String BASE_URL = "http://192.168.1.10:8000/";
+    private static final String BASE_URL = "http://10.0.2.2:8000/";
     private static Retrofit retrofit = null;
 
     public static Retrofit getClient() {
@@ -732,11 +850,11 @@ public class RetrofitClient {
 ### Expected Output in Logcat
 
 ```
-D/OkHttp: --> POST http://192.168.1.10:8000/predict
+D/OkHttp: --> POST http://10.0.2.2:8000/predict
 D/OkHttp: Content-Type: multipart/form-data; boundary=...
 D/OkHttp: Content-Length: 52341
 D/OkHttp: --> END POST
-D/OkHttp: <-- 200 OK http://192.168.1.10:8000/predict (1523ms)
+D/OkHttp: <-- 200 OK http://10.0.2.2:8000/predict (1523ms)
 D/OkHttp: Content-Type: application/json
 D/OkHttp: {"disease":"Tomato Late Blight","confidence":0.87,...}
 D/OkHttp: <-- END HTTP

@@ -1,5 +1,11 @@
 # LeafGuard AI - 12-Week Progress Tracker
 
+## How to Use This Tracker (Beginner Note)
+
+New here? This file is your weekly checklist. Each week, tick `[x]` the boxes as you finish them and write the date in the `[____]` brackets. Work top to bottom — the weeks are in order. You do **not** need to finish everything in one sitting; update it a little each day. It doubles as evidence of steady progress for your instructor.
+
+**Track:** These checkboxes assume the **Kotlin (primary/recommended) track** in `android-app-kotlin/`. If you chose the **Java** track, do the identical steps in `android-app/` instead — the file/class names are the same. A "track" is just the language you build in; if unsure, choose Kotlin.
+
 ## Instructions
 
 - Check ✓ each item as you complete it
@@ -52,11 +58,11 @@
 ## Week 02: Android Basics and UI Skeleton [Start Date: ____ / End Date: ____]
 
 ### Setup
-- [ ] Install Android Studio [____]
-- [ ] Install Java JDK 11+ [____]
+- [ ] Install Android Studio (done in pre-Week-01 setup) [____]
+- [ ] Confirm Java JDK is available (bundled with Android Studio) [____]
 - [ ] Install Android SDK and tools [____]
-- [ ] Create Android emulator (AVD) [____]
-- [ ] Create new Android project in android-app/ [____]
+- [ ] Create an Android emulator (AVD — a virtual phone) [____]
+- [ ] Create/open the Android project in android-app-kotlin/ (primary); android-app/ for Java [____]
 
 ### Exercises
 - [ ] Exercise 1: Create empty Activity [____]
@@ -80,7 +86,7 @@
 - [ ] App builds without errors [____]
 - [ ] All 4+ screens created [____]
 - [ ] Navigation works between screens [____]
-- [ ] No hardcoded strings in Java code [____]
+- [ ] No hardcoded strings in code (Kotlin/Java) [____]
 - [ ] App runs on emulator [____]
 
 ### Documentation
@@ -193,7 +199,7 @@
 - [ ] Add @POST /predict method [____]
 - [ ] Create RetrofitClient singleton [____]
 - [ ] Configure base URL (http://LOCAL_IP:8000) [____]
-- [ ] Create UploadResponse data class [____]
+- [ ] Create PredictionResponse data class [____]
 - [ ] Implement image upload in MainActivity [____]
 - [ ] Show ProgressBar during upload [____]
 - [ ] Parse JSON response [____]
@@ -273,7 +279,7 @@
 
 ### Build Task
 - [ ] Add Room dependencies to build.gradle [____]
-- [ ] Create ScanEntity with fields [____]
+- [ ] Create the Room @Entity `ScanRecord` with fields (table `scan_history`) [____]
 - [ ] Create ScanDao with @Insert, @Query, @Delete [____]
 - [ ] Create AppDatabase class [____]
 - [ ] Save scan after prediction [____]
@@ -305,7 +311,7 @@
 
 ### Exercises
 - [ ] Exercise 1: Design XML structure [____]
-- [ ] Exercise 2: Create disease_library.xml [____]
+- [ ] Exercise 2: Create diseases.xml [____]
 - [ ] Exercise 3: Use XmlPullParser [____]
 - [ ] Exercise 4: Parse disease nodes [____]
 - [ ] Exercise 5: Create Disease model [____]
@@ -313,7 +319,7 @@
 
 ### Build Task
 - [ ] Create assets/ folder [____]
-- [ ] Create disease_library.xml [____]
+- [ ] Create diseases.xml [____]
 - [ ] Add 6+ disease entries with details [____]
 - [ ] Create XmlParser utility class [____]
 - [ ] Implement parsing logic [____]
@@ -354,7 +360,7 @@
 - [ ] Convert model to .tflite format [____]
 - [ ] Copy .tflite and labels.txt to assets/ [____]
 - [ ] Add TensorFlow Lite dependency [____]
-- [ ] Create TFLiteInference class [____]
+- [ ] Create the TFLiteClassifier class [____]
 - [ ] Load model with Interpreter [____]
 - [ ] Implement image preprocessing [____]
 - [ ] Run interpreter.run() [____]

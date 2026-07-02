@@ -1,5 +1,7 @@
 # Week 08: Reflection — XML Disease Library
 
+> **Accuracy note:** the shipped file is `assets/diseases.xml` (parsed in `DiseaseLibraryActivity` with `XmlPullParser`), 10 entries, tags `<name>`/`<plant>`/`<symptoms>`/`<treatment>`/`<prevention>`, `<name>` matching `labels.txt`. Kotlin primary, Java secondary.
+
 > Fill in each section honestly. This reflection helps you consolidate
 > understanding and prepares you for viva questions on Week 08 topics.
 

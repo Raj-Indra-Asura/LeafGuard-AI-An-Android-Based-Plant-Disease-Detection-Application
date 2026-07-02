@@ -153,36 +153,29 @@ A professional-quality diagram showing all components of LeafGuard AI and how th
 **Must include ALL of these:**
 
 #### Presentation Layer (Top)
-- MainActivity
-- ScanActivity
+- MainActivity (home + image capture)
 - ResultActivity
 - HistoryActivity
+- HistoryDetailActivity
 - DiseaseLibraryActivity
 - SettingsActivity
-- Fragments (if using)
 - RecyclerView Adapters
 
-#### Business Logic Layer (Middle-Upper)
-- ScanViewModel
-- HistoryViewModel
-- AuthViewModel (if adding authentication)
-- LiveData/StateFlow indicators
-- Business logic annotations
+#### Service Layer (Middle)
+- ApiService (network interface)
+- ScanDao (database operations)
+- TFLiteClassifier (offline ML)
+- RetrofitClient (HTTP client)
+- AppDatabase (Room database)
 
-#### Repository Layer (Middle)
-- ScanRepository
-- DiseaseRepository
-- Coordination logic notes
-
-#### Data Layer (Middle-Lower, split into two sides)
+#### Data Layer (split into two sides)
 
 **Local Data (Left):**
 - Room Database
-  - ScanEntity
-  - UserEntity
-  - DAOs
+  - ScanRecord entity
+  - scan_history table
 - XML Parser
-  - disease_library.xml
+  - diseases.xml
 - File Storage
   - Saved images
 
@@ -193,7 +186,6 @@ A professional-quality diagram showing all components of LeafGuard AI and how th
   - Gson converter
 - API Endpoints
   - POST /predict
-  - GET /disease/{name}
 
 #### Backend Layer (Bottom)
 - FastAPI Application
@@ -296,85 +288,79 @@ A comprehensive table mapping every CSE 2206 syllabus topic to specific LeafGuar
 
 1. **Activities**
    - Component: 6 activities
-   - File: `MainActivity.java`, `ScanActivity.java`, etc.
+   - File: `MainActivity.kt`, `ResultActivity.kt`, `HistoryActivity.kt`, etc.
    - Implementation: Activity lifecycle methods (onCreate, onPause, onResume)
    - Evidence: Activity files, lifecycle logging in logcat
 
 2. **Intents**
    - Component: Explicit intents (navigation), Implicit intents (camera, gallery)
-   - File: `MainActivity.java` line 45-60
-   - Implementation: `Intent intent = new Intent(MainActivity.this, ScanActivity.class);`
+   - File: `MainActivity.kt` line 45-60
+   - Implementation: `val intent = Intent(this, ResultActivity::class.java)`
    - Evidence: Code snippets showing intent creation and startActivity()
 
-3. **Fragments**
-   - Component: HomeFragment, LibraryFragment
-   - File: `fragments/HomeFragment.java`
-   - Implementation: Fragment lifecycle, FragmentTransaction
-   - Evidence: Fragment files, XML layouts
-
-4. **RecyclerView**
+3. **RecyclerView**
    - Component: History list, Disease library list
-   - File: `adapters/HistoryAdapter.java`, `HistoryActivity.java`
+   - File: `adapters/HistoryAdapter.kt`, `HistoryActivity.kt`
    - Implementation: Adapter pattern, ViewHolder, onBindViewHolder
    - Evidence: Adapter class, RecyclerView in XML layout
 
-5. **Retrofit (Networking)**
+4. **Retrofit (Networking)**
    - Component: API service for disease detection
-   - File: `network/ApiService.java`, `network/RetrofitClient.java`
-   - Implementation: @POST, @Multipart, Call<Response> with callbacks
-   - Evidence: Interface definition, network call in Repository
+   - File: `network/ApiService.kt`, `network/RetrofitClient.kt`
+   - Implementation: @POST, @Multipart, suspend fun for coroutines
+   - Evidence: Interface definition, network call in MainActivity
 
-6. **Room Database**
+5. **Room Database**
    - Component: Scan history storage
-   - File: `database/AppDatabase.java`, `database/ScanEntity.java`, `database/ScanDao.java`
+   - File: `database/AppDatabase.kt`, `database/ScanRecord.kt`, `database/ScanDao.kt`
    - Implementation: @Entity, @Dao, @Database annotations, SQLite backend
-   - Evidence: Entity classes, DAO interfaces, database queries
+   - Evidence: Entity class, DAO interface, database queries
 
-7. **XML Parsing**
+6. **XML Parsing**
    - Component: Disease information library
-   - File: `utils/XmlParser.java`, `assets/disease_library.xml`
+   - File: `utils/XmlParser.kt`, `assets/diseases.xml`
    - Implementation: XmlPullParser reading XML nodes
    - Evidence: XML file, parsing code, Disease objects created
 
-8. **JSON Parsing**
+7. **JSON Parsing**
    - Component: API response handling
-   - File: `models/UploadResponse.java`, Gson in Retrofit
+   - File: `network/PredictionResponse.kt`, Gson in Retrofit
    - Implementation: @SerializedName annotations, automatic parsing
    - Evidence: Response model class, Gson converter setup
 
-9. **Runtime Permissions**
+8. **Runtime Permissions**
    - Component: Camera and storage access
-   - File: `MainActivity.java` line 100-130
-   - Implementation: ActivityCompat.requestPermissions, onRequestPermissionsResult
+   - File: `MainActivity.kt` permission handling
+   - Implementation: ActivityResultContracts.RequestPermission
    - Evidence: Permission request code, AndroidManifest.xml declarations
 
-10. **Camera Integration**
+9. **Camera Integration**
     - Component: Leaf image capture
-    - File: `ScanActivity.java`
-    - Implementation: Camera2 API or CameraX, image capture callback
-    - Evidence: Camera preview code, captured image handling
+    - File: `MainActivity.kt`
+    - Implementation: ActivityResultContracts.TakePicture with FileProvider
+    - Evidence: Camera intent handling, captured image URI handling
 
-11. **Asynchronous Operations**
+10. **Asynchronous Operations**
     - Component: Background network and database operations
-    - File: Throughout ViewModels and Repositories
-    - Implementation: Kotlin Coroutines or AsyncTask
-    - Evidence: Async calls in ViewModel, background threads for DB
+    - File: Throughout Activities using coroutines
+    - Implementation: Kotlin Coroutines (lifecycleScope.launch)
+    - Evidence: Suspend functions for network and database calls
 
-12. **Notifications**
+11. **Notifications**
     - Component: Scan reminder notifications
-    - File: `utils/NotificationHelper.java`
+    - File: `utils/NotificationHelper.kt`
     - Implementation: NotificationManager, NotificationChannel
     - Evidence: Notification creation code, notification showing on device
 
-13. **Shared Preferences**
+12. **Shared Preferences**
     - Component: User settings storage
-    - File: `SettingsActivity.java`
-    - Implementation: SharedPreferences.Editor, commit()
+    - File: `SettingsActivity.kt`
+    - Implementation: SharedPreferences.Editor, apply()
     - Evidence: Settings reading/writing code
 
-14. **Material Design**
+13. **Material Design**
     - Component: UI components (buttons, cards, FAB)
-    - File: `res/layout/activity_main.xml`, `res/values/styles.xml`
+    - File: `res/layout/activity_main.xml`, `res/values/themes.xml`
     - Implementation: MaterialComponents theme, Material widgets
     - Evidence: XML layouts using Material components
 
@@ -468,13 +454,13 @@ For EACH of the 5 repositories, document:
 Be specific. Don't just say "good code" - explain what's good and show an example.
 
 **Example:**
-"✅ **Clean separation of concerns:** Each ViewModel has exactly one corresponding Activity/Fragment. For example, `ScanViewModel` is only used by `ScanActivity`, making dependencies clear and testable."
+"✅ **Clean separation of concerns:** Activities focus on UI while service classes handle data operations. For example, `ApiService` handles all network calls, keeping `MainActivity` focused on UI logic."
 
 #### Weaknesses (Minimum 3, with examples)
 Be specific about what could be improved.
 
 **Example:**
-"❌ **Large Activity classes:** `MainActivity.java` has 950 lines including networking, UI logic, and business logic. Should be refactored using ViewModel and Repository pattern."
+"❌ **Large Activity classes:** `MainActivity.kt` has 950 lines including networking, UI logic, and business logic. Consider refactoring to separate concerns into service/helper classes."
 
 #### Key Learnings for LeafGuard (3-5 points)
 What will you adopt, avoid, or adapt?
@@ -493,8 +479,8 @@ What will you adopt, avoid, or adapt?
    - Pick one with 100+ stars
    - Focus on: ML integration, image processing
 
-2. **MVVM + Retrofit + Room example**
-   - Search: "android mvvm kotlin room retrofit"
+2. **Kotlin + Retrofit + Room example**
+   - Search: "android kotlin room retrofit coroutines"
    - Pick one with 500+ stars
    - Focus on: Architecture, data flow
 
@@ -504,9 +490,9 @@ What will you adopt, avoid, or adapt?
    - Focus on: TFLite integration, model loading
 
 4. **Camera integration example**
-   - Search: "android camerax example"
+   - Search: "android camerax example" or "android takepicture intent"
    - Pick one with 300+ stars
-   - Focus on: Camera2 API or CameraX usage
+   - Focus on: Camera intent or CameraX usage
 
 5. **Complete CRUD app**
    - Search: "android room database example crud"

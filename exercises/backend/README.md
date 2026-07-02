@@ -538,7 +538,7 @@ class LeafGuardUser(HttpUser):
         with open("test_images/sample.jpg", "rb") as f:
             self.client.post(
                 "/detect",
-                files={"file": f}
+                files={"image": f}
             )
 
     @task(1)

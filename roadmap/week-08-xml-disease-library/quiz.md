@@ -1,5 +1,7 @@
 # Week 08 Quiz - XML Disease Library
 
+> **Accuracy note:** the shipped library is `assets/diseases.xml` (filename `diseases.xml`), parsed by `DiseaseLibraryActivity` with `XmlPullParser`; it has 10 `<disease>` entries using `<name>`, `<plant>`, `<symptoms>`, `<treatment>`, `<prevention>`, and each `<name>` matches `assets/labels.txt` exactly. Kotlin is primary; Java is secondary.
+
 ## How to Use This Quiz
 
 This quiz checks both **conceptual understanding** and **practical Java/XML implementation skills** for Week 08.
@@ -298,7 +300,7 @@ D. A login screen
 
 **Question Type:** Short answer
 
-**Answer:** `getAssets().open("disease_library.xml")`
+**Answer:** `getAssets().open("diseases.xml")`
 
 **Explanation:** This returns an InputStream that can be passed to the parser.
 
@@ -434,7 +436,7 @@ After completing the quiz, answer these three questions in your notebook or prog
 
 1. Which type of question felt hardest: XML design, parser code, caching, or UI integration?
 2. Which answers did you get wrong because of small syntax details?
-3. Can you now explain the full flow from `assets/disease_library.xml` to `ResultActivity` without reading notes?
+3. Can you now explain the full flow from `assets/diseases.xml` to `ResultActivity` without reading notes?
 
 
 <!-- NAV_FOOTER_START -->

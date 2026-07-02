@@ -22,30 +22,28 @@ Draw a flowchart (hand-drawn or digital) showing the complete data flow for this
 1. User (actor)
 2. MainActivity
 3. Camera Intent
-4. ScanActivity
-5. ScanViewModel
-6. ScanRepository
-7. RetrofitClient
-8. FastAPI Backend
-9. TensorFlow Model
-10. Room Database
-11. ResultActivity
+4. ApiService (for cloud mode)
+5. TFLiteClassifier (for offline mode)
+6. RetrofitClient
+7. FastAPI Backend
+8. TensorFlow Model
+9. Room Database (ScanDao)
+10. ResultActivity
 
 **Must show these data flows:**
-- Image captured (Camera → ScanActivity)
-- Image path passed (ScanActivity → ViewModel)
-- API request (ViewModel → Repository → Retrofit → Backend)
+- Image captured (Camera → MainActivity)
+- API request (MainActivity → ApiService → Retrofit → Backend)
 - ML inference (Backend → TensorFlow Model)
-- Prediction returned (Backend → Retrofit → Repository → ViewModel)
-- Result saved (ViewModel → Room Database)
-- UI updated (ViewModel → ResultActivity)
+- Prediction returned (Backend → Retrofit → MainActivity)
+- Result saved (MainActivity → ScanDao → Room Database)
+- UI navigation (MainActivity → ResultActivity via Intent)
 
 ### Expected Output
 
 **Format:** PNG or PDF image file named `data-flow-diagram.png`
 
 **Quality checklist:**
-- [ ] All 11 components are shown
+- [ ] All 10 components are shown
 - [ ] Arrows are labeled with data being passed
 - [ ] Flow direction is clear (left-to-right or top-to-bottom)
 - [ ] Legend explains symbols used
@@ -54,9 +52,9 @@ Draw a flowchart (hand-drawn or digital) showing the complete data flow for this
 **Example arrow labels:**
 - "Bitmap image"
 - "HTTP POST /predict"
-- "JSON response"
-- "ScanEntity object"
-- "LiveData update"
+- "JSON response with disease field"
+- "ScanRecord object"
+- "Intent extras"
 
 ### Verification
 
@@ -78,25 +76,25 @@ Create a comprehensive mapping table connecting syllabus topics to implementatio
 
 | # | Syllabus Topic | LeafGuard Component | File/Class Name | Specific Feature | How It Demonstrates Understanding |
 |---|----------------|---------------------|-----------------|------------------|-----------------------------------|
-| 1 | Activities | 6 activities | MainActivity.java, ScanActivity.java, etc. | Screen navigation | Implements onCreate(), onPause(), handles lifecycle |
+| 1 | Activities | 6 activities | MainActivity.kt, ResultActivity.kt, etc. | Screen navigation | Implements onCreate(), onPause(), handles lifecycle |
 | 2 | ... | ... | ... | ... | ... |
 
 **Must cover minimum 15 topics:**
 1. Activities
 2. Intents (Explicit and Implicit)
-3. Fragments
-4. RecyclerView
-5. Retrofit (HTTP client)
-6. Room Database
-7. XML Parsing
-8. JSON Parsing
-9. Runtime Permissions
-10. Camera Integration
-11. AsyncTask / Coroutines
-12. Notifications
-13. Shared Preferences
-14. Material Design
-15. MVVM Architecture
+3. RecyclerView
+4. Retrofit (HTTP client)
+5. Room Database
+6. XML Parsing
+7. JSON Parsing
+8. Runtime Permissions
+9. Camera Integration
+10. Coroutines
+11. Notifications
+12. Shared Preferences
+13. Material Design
+14. TensorFlow Lite
+15. Service Classes (ApiService, ScanDao)
 
 **For each topic, specify:**
 - Exact file path where it appears
@@ -132,29 +130,23 @@ Draw a complete architecture diagram using Draw.io, Lucidchart, or pen-and-paper
 **Must include these layers (top to bottom):**
 
 1. **Presentation Layer:**
-   - All 6 activities in boxes
-   - Fragments (if using)
+   - All 6 activities in boxes (MainActivity, ResultActivity, HistoryActivity, HistoryDetailActivity, DiseaseLibraryActivity, SettingsActivity)
    - Adapters for RecyclerViews
 
-2. **ViewModel Layer:**
-   - ScanViewModel
-   - HistoryViewModel
-   - Other ViewModels
-   - LiveData connections
+2. **Service Layer:**
+   - ApiService (network calls)
+   - ScanDao (database operations)
+   - TFLiteClassifier (offline ML)
+   - Connections to Activities
 
-3. **Repository Layer:**
-   - ScanRepository
-   - DiseaseRepository
-   - Coordination logic
-
-4. **Data Layer (split into Local and Remote):**
-   - Local: Room Database, XML Parser, File Storage
+3. **Data Layer (split into Local and Remote):**
+   - Local: Room Database (AppDatabase), XML Parser, File Storage
    - Remote: Retrofit Client, API Endpoints
 
-5. **Backend Layer:**
-   - FastAPI application
+4. **Backend Layer:**
+   - FastAPI application (main.py)
    - TensorFlow Model
-   - PostgreSQL Database (optional)
+   - /predict endpoint
 
 **Arrows must show:**
 - Data flow direction (solid arrows)
@@ -762,10 +754,10 @@ Plan all 12 weeks with specific deliverables, evidence collection points, and re
 ### Deliverables
 1. Android Studio project created ("LeafGuard")
 2. 6 activities created with basic layouts:
-   - MainActivity (home screen)
-   - ScanActivity (image capture)
+   - MainActivity (home screen + image capture)
    - ResultActivity (display result)
    - HistoryActivity (scan list)
+   - HistoryDetailActivity (single scan details)
    - DiseaseLibraryActivity (disease browser)
    - SettingsActivity (preferences)
 3. Navigation between activities working

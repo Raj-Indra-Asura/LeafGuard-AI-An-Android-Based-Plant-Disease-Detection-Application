@@ -1,5 +1,21 @@
 # Week 05: Quiz - Android Networking with Retrofit
 
+## Kotlin-first note
+
+Kotlin is the primary track for LeafGuard AI. Java snippets in this quiz are secondary reference examples to help you compare syntax.
+
+---
+
+## Related materials
+
+- Exercises (primary Kotlin): [../../exercises/android-kotlin/](../../exercises/android-kotlin/)
+- Exercises (secondary Java): [../../exercises/android/](../../exercises/android/)
+- Solutions: [../../solutions/week-05/](../../solutions/week-05/)
+- Notebooks: [../../notebooks/week-05/](../../notebooks/week-05/)
+- Glossary: [../../GLOSSARY.md](../../GLOSSARY.md)
+
+---
+
 ## Instructions
 
 - **Total Questions:** 30 (15 conceptual + 15 practical)
@@ -208,7 +224,7 @@ Your answer: _____
 **What is wrong with this BASE_URL?**
 
 ```java
-private static final String BASE_URL = "http://192.168.1.10:8000";
+private static final String BASE_URL = "http://10.0.2.2:8000";
 ```
 
 A) Should use HTTPS
@@ -467,7 +483,7 @@ Why is this beneficial: _______________________________________________
 26. B
 27. F - Should hide ProgressBar (setVisibility(View.GONE))
 28. C
-29. 1) localhost won't work from phone (use actual IP), 2) Missing Gson converter, 3) Not singleton (method not static), 4) No null check for singleton
+29. 1) `localhost` will not reach your computer from the emulator (use `10.0.2.2`; physical phones use the computer LAN IP), 2) Missing Gson converter, 3) Not singleton (method not static), 4) No null check for singleton
 30. B - Singleton pattern reuses the same instance, saving resources
 
 ---

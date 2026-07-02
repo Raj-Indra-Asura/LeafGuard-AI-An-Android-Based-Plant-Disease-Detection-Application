@@ -33,18 +33,19 @@ This guide provides detailed instructions on how to draw the LeafGuard AI system
 ├───────────────────────────────────────────────────────────────┤
 │                                                                │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐           │
-│  │   Login     │  │    Home     │  │    Scan     │           │
+│  │    Main     │  │   Result    │  │   History   │           │
 │  │  Activity   │  │  Activity   │  │  Activity   │           │
 │  └─────────────┘  └─────────────┘  └─────────────┘           │
 │                                                                │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐           │
-│  │   Result    │  │   History   │  │   Profile   │           │
+│  │HistoryDetail│  │DiseaseLibrary│ │  Settings   │           │
 │  │  Activity   │  │  Activity   │  │  Activity   │           │
 │  └─────────────┘  └─────────────┘  └─────────────┘           │
 │                                                                │
 │  ┌─────────────────────────────────────────────┐              │
-│  │           Fragments & Adapters              │              │
-│  │  (HomeFragment, ScanFragment, HistoryAdapter)│              │
+│  │        RecyclerView Adapters                │              │
+│  │  (inner classes of HistoryActivity &        │              │
+│  │   DiseaseLibraryActivity)                   │              │
 │  └─────────────────────────────────────────────┘              │
 └───────────────────────────────────────────────────────────────┘
 ```
@@ -54,67 +55,70 @@ This guide provides detailed instructions on how to draw the LeafGuard AI system
 2. Add header with title "ANDROID APPLICATION"
 3. Inside, draw 6 smaller rectangles for activities
 4. Arrange in 2 rows of 3
-5. Label each: Login, Home, Scan, Result, History, Profile
-6. Add one more rectangle at bottom for Fragments
+5. Label each: MainActivity, ResultActivity, HistoryActivity, HistoryDetailActivity, DiseaseLibraryActivity, SettingsActivity
+6. Add one more rectangle at bottom for the RecyclerView adapters (inner classes)
 7. Use light blue color for all activity boxes
 8. Use dark blue for header
 
-#### Step 3: Draw the ViewModel Layer (Middle-Upper)
+> **Note:** LeafGuard AI has exactly these 6 Activities and uses no Fragments. The list adapters are inner classes of `HistoryActivity` and `DiseaseLibraryActivity`. `MainActivity` handles camera/gallery capture **and** detection directly.
+
+#### Step 3: Draw the Activity Layer (Middle-Upper)
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
-│                    VIEWMODEL LAYER                             │
-│                  (Business Logic Layer)                        │
+│                    ACTIVITY LAYER                              │
+│              (UI Controllers — no ViewModels)                  │
 ├───────────────────────────────────────────────────────────────┤
 │                                                                │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐        │
-│  │    Auth      │  │    Scan      │  │   History    │        │
-│  │  ViewModel   │  │  ViewModel   │  │  ViewModel   │        │
+│  │     Main     │  │    Result    │  │   History    │        │
+│  │   Activity   │  │   Activity   │  │   Activity   │        │
 │  └──────────────┘  └──────────────┘  └──────────────┘        │
 │                                                                │
-│  ┌────────────────────────────────────────────────┐           │
-│  │           LiveData / StateFlow                 │           │
-│  │    (UI State & Data Observation)               │           │
-│  └────────────────────────────────────────────────┘           │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐        │
+│  │HistoryDetail │  │DiseaseLibrary│  │   Settings   │        │
+│  │   Activity   │  │   Activity   │  │   Activity   │        │
+│  └──────────────┘  └──────────────┘  └──────────────┘        │
 └───────────────────────────────────────────────────────────────┘
 ```
 
 **Drawing Instructions:**
 1. Draw rectangle below Android layer with small gap
-2. Add header "VIEWMODEL LAYER"
-3. Draw 3 smaller rectangles for ViewModels
-4. Label: AuthViewModel, ScanViewModel, HistoryViewModel
-5. Add rectangle at bottom for LiveData
-6. Use light green color for ViewModel boxes
-7. Add downward arrows from Activities to corresponding ViewModels
+2. Add header "ACTIVITY LAYER"
+3. Draw 6 smaller rectangles for the 6 Activities
+4. Label: MainActivity, ResultActivity, HistoryActivity, HistoryDetailActivity, DiseaseLibraryActivity, SettingsActivity
+5. Note that logic lives directly in the Activities (no ViewModel/LiveData layer)
+6. Use light green color for the Activity boxes
+7. Add downward arrows from Activities to the Data layer
 
-#### Step 4: Draw the Repository Layer (Middle)
+#### Step 4: Draw the Data Layer (Middle)
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
-│                    REPOSITORY LAYER                            │
-│                  (Data Abstraction Layer)                      │
+│                       DATA LAYER                               │
+│                  (Persistence & Network)                       │
 ├───────────────────────────────────────────────────────────────┤
 │                                                                │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐        │
-│  │    Auth      │  │    Scan      │  │   History    │        │
-│  │  Repository  │  │  Repository  │  │  Repository  │        │
+│  │  Room        │  │  Retrofit    │  │  TFLite      │        │
+│  │  ScanDao /   │  │RetrofitClient│  │ Classifier   │        │
+│  │  AppDatabase │  │ / ApiService │  │  (offline)   │        │
 │  └──────────────┘  └──────────────┘  └──────────────┘        │
 │                                                                │
 │         ↓                    ↓                     ↓           │
-│   Coordinates          Coordinates           Coordinates       │
-│   Data Sources        Data Sources         Data Sources       │
+│  scan_history table    POST /predict         model.tflite      │
+│  (leafguard.db)      (multipart `image`)     (on-device ML)    │
 └───────────────────────────────────────────────────────────────┘
 ```
 
 **Drawing Instructions:**
-1. Draw rectangle below ViewModel layer
-2. Add header "REPOSITORY LAYER"
-3. Draw 3 rectangles for repositories
-4. Label: AuthRepository, ScanRepository, HistoryRepository
+1. Draw rectangle below Activity layer
+2. Add header "DATA LAYER"
+3. Draw 3 rectangles for the data components
+4. Label: Room (ScanDao/AppDatabase), Retrofit (RetrofitClient/ApiService), TFLiteClassifier
 5. Use light yellow color
-6. Add arrows from ViewModels to Repositories
-7. Add small note about coordinating data sources
+6. Add arrows from Activities to the Data layer
+7. Add a small note that Room persists to `leafguard.db` and Retrofit calls `POST /predict`
 
 #### Step 5: Draw Data Sources (Split into Local and Remote)
 
@@ -166,10 +170,10 @@ This guide provides detailed instructions on how to draw the LeafGuard AI system
 │                                  │
 │  ┌────────────────────────────┐  │
 │  │    API ENDPOINTS           │  │
-│  │  • POST /auth/login        │  │
-│  │  • POST /auth/register     │  │
-│  │  • POST /detect            │  │
-│  │  • GET /disease/{name}     │  │
+│  │  • GET  /                  │  │
+│  │  • GET  /health            │  │
+│  │  • GET  /diseases          │  │
+│  │  • POST /predict           │  │
 │  └────────────────────────────┘  │
 └──────────────────────────────────┘
 ```
@@ -191,13 +195,12 @@ This guide provides detailed instructions on how to draw the LeafGuard AI system
 ├───────────────────────────────────────────────────────────────┤
 │                                                                │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐        │
-│  │  Auth API    │  │  Detection   │  │  Disease     │        │
+│  │  Root/Health │  │  Detection   │  │  Disease     │        │
 │  │  Endpoints   │  │  API         │  │  Info API    │        │
 │  └──────────────┘  └──────────────┘  └──────────────┘        │
 │           ↓                ↓                   ↓              │
 │  ┌──────────────────────────────────────────────────┐         │
 │  │        BUSINESS LOGIC & ML MODEL                 │         │
-│  │  • User Authentication                           │         │
 │  │  • TensorFlow Model Loading                      │         │
 │  │  • Image Preprocessing                           │         │
 │  │  • Disease Classification                        │         │
@@ -205,10 +208,9 @@ This guide provides detailed instructions on how to draw the LeafGuard AI system
 │  └──────────────────────────────────────────────────┘         │
 │           ↓                                                   │
 │  ┌──────────────────────────────────────────────────┐         │
-│  │         POSTGRESQL DATABASE                      │         │
-│  │  • User Table                                    │         │
-│  │  • Disease Info Table                            │         │
-│  │  • Usage Logs Table                              │         │
+│  │      IN-MEMORY / STATIC DISEASE DATA             │         │
+│  │  • Disease metadata served by /diseases          │         │
+│  │  (no server-side relational database)            │         │
 │  └──────────────────────────────────────────────────┘         │
 └───────────────────────────────────────────────────────────────┘
 ```
@@ -265,18 +267,18 @@ This guide provides detailed instructions on how to draw the LeafGuard AI system
 
 **Add the following arrows with labels:**
 
-1. **Camera → Scan Activity:** "Image Captured"
-2. **Scan Activity → ScanViewModel:** "Image File"
-3. **ScanViewModel → ScanRepository:** "Upload Request"
-4. **ScanRepository → Retrofit:** "Multipart Upload"
-5. **Retrofit → Backend API:** "HTTPS POST /detect"
+1. **Camera → MainActivity:** "Image Captured"
+2. **MainActivity → TFLiteClassifier:** "Bitmap (offline inference)"
+3. **MainActivity → RetrofitClient:** "Multipart Upload (part `image`)"
+4. **RetrofitClient → ApiService:** "Multipart Request"
+5. **ApiService → Backend API:** "HTTPS POST /predict"
 6. **Backend → ML Model:** "Image Tensor"
 7. **ML Model → Backend:** "Predictions Array"
-8. **Backend → Retrofit:** "JSON Response"
-9. **Retrofit → Repository:** "Disease Result"
-10. **Repository → ViewModel:** "Processed Data"
-11. **ViewModel → UI:** "Update LiveData"
-12. **ViewModel → Room Database:** "Save Scan Result"
+8. **Backend → RetrofitClient:** "JSON Response (field `disease`)"
+9. **RetrofitClient → MainActivity:** "PredictionResponse"
+10. **MainActivity → ResultActivity:** "Disease Result (Intent extras)"
+11. **ResultActivity → UI:** "Display disease & confidence"
+12. **ResultActivity → ScanDao/AppDatabase:** "Save Scan (scan_history)"
 
 **Arrow Styling:**
 - Use solid arrows (→) for data flow
@@ -359,7 +361,7 @@ Show the detailed flow of data during disease detection process.
 │  Client    │    │  Backend   │    │  (TFLite)  │    │            │
 └─────┬──────┘    └─────┬──────┘    └─────┬──────┘    └─────┬──────┘
       │                  │                  │                  │
-      │ 6. POST /detect  │                  │                  │
+      │ 6. POST /predict  │                  │                  │
       │──────────────────>                  │                  │
       │                  │                  │                  │
       │                  │ 7. Preprocess    │                  │
@@ -401,45 +403,37 @@ Show relationships between major components of the application.
                     ┌─────────────────────────┐
                     │                         │
                     │    MainActivity         │
-                    │                         │
+                    │  (capture + detect)     │
                     └────────┬────────────────┘
                              │
-                ┌────────────┼────────────┐
-                │            │            │
-        ┌───────▼───────┐   │   ┌────────▼────────┐
-        │               │   │   │                 │
-        │ HomeFragment  │   │   │  ScanFragment   │
-        │               │   │   │                 │
-        └───────────────┘   │   └────────┬────────┘
-                            │            │
-                    ┌───────▼───────┐    │
-                    │               │    │
-                    │HistoryFragment│    │
-                    │               │    │
-                    └───────────────┘    │
-                                         │
-                            ┌────────────▼────────────┐
-                            │                         │
-                            │    ScanViewModel        │
-                            │  <<ViewModel>>          │
-                            └────────┬────────────────┘
-                                     │
-                            ┌────────▼────────────┐
-                            │                     │
-                            │  ScanRepository     │
-                            │  <<Repository>>     │
-                            └────┬──────────┬─────┘
-                                 │          │
-                    ┌────────────▼───┐   ┌─▼──────────────┐
-                    │                │   │                │
-                    │  RoomDatabase  │   │ RetrofitClient │
-                    │  <<Local>>     │   │ <<Remote>>     │
-                    └────────────────┘   └────────────────┘
+                ┌────────────┼──────────────┐
+                │            │              │
+        ┌───────▼────────┐  │   ┌──────────▼──────────┐
+        │                │  │   │                     │
+        │ ResultActivity │  │   │  HistoryActivity →  │
+        │ (share + save) │  │   │  HistoryDetail      │
+        └───────┬────────┘  │   └──────────┬──────────┘
+                │           │              │
+                │  ┌────────▼───────────┐  │
+                │  │ DiseaseLibrary /   │  │
+                │  │ SettingsActivity   │  │
+                │  └────────────────────┘  │
+                │                          │
+            ┌───▼──────────────────────────▼───┐
+            │                                  │
+            │   Data layer (no ViewModels)     │
+            └────┬──────────────┬─────────┬────┘
+                 │              │         │
+    ┌────────────▼───┐   ┌──────▼───────┐ ┌▼───────────────┐
+    │  AppDatabase / │   │RetrofitClient│ │TFLiteClassifier│
+    │  ScanDao       │   │ /ApiService  │ │ <<On-device>>  │
+    │  <<Local>>     │   │ <<Remote>>   │ │                │
+    └────────────────┘   └──────────────┘ └────────────────┘
 ```
 
 **Drawing Instructions:**
 1. Draw boxes for each major component
-2. Use stereotypes in guillemets: <<ViewModel>>, <<Repository>>
+2. Use stereotypes in guillemets: <<Local>>, <<Remote>>, <<On-device>>
 3. Add dependency arrows (dashed with open arrowhead)
 4. Group related components
 5. Use composition (filled diamond) for strong relationships
@@ -547,9 +541,9 @@ Show relationships between major components of the application.
 │  │                                                       │ │
 │  │  ┌─────────────────────────────────────────┐         │ │
 │  │  │        API Endpoints                    │         │ │
-│  │  │  • POST /api/auth/register              │         │ │
-│  │  │  • POST /api/auth/login                 │         │ │
-│  │  │  • POST /api/detect                     │         │ │
+│  │  │  • POST /api              │         │ │
+│  │  │  • POST /api                 │         │ │
+│  │  │  • POST /predict                     │         │ │
 │  │  │  • GET  /api/disease/{name}             │         │ │
 │  │  └──────────────────┬──────────────────────┘         │ │
 │  │                     │                                 │ │

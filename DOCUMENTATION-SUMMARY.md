@@ -4,6 +4,13 @@
 
 This document summarizes all files created for the LeafGuard AI learning roadmap repository.
 
+> **July 2026 update (Kotlin-first reconstruction):** the course is now **Kotlin-first**
+> — the primary app is `android-app-kotlin/` with a complete Java twin in `android-app/`
+> — and all documents follow a beginner-first standard (every term defined before use).
+> Counts below are approximate descriptions of document scope, not audited totals; the
+> authoritative code/asset inventory is `docs/ARCHITECTURE_GROUND_TRUTH.md` and the
+> change log is `docs/RECONSTRUCTION_REPORT.md`.
+
 ---
 
 ## 1. VALIDATION DOCUMENTS (3 files)
@@ -19,13 +26,12 @@ This document summarizes all files created for the LeafGuard AI learning roadmap
 - **Use Case:** Complete testing documentation for project validation
 
 ### 1.2 `/validation/feature-completion-matrix.md`
-- **Content:** Feature-to-syllabus mapping matrix
+- **Content:** Honest checklist of the app's REAL feature set (rewritten July 2026)
 - **Features:**
-  - 30+ LeafGuard AI features mapped to 22 CSE 2206 syllabus topics
-  - Coverage percentages for each topic
-  - Progress indicators (✅, 🟡, ⬜)
-  - Action items for completion
-- **Use Case:** Demonstrating complete syllabus coverage
+  - 16 real features (capture, mode toggle, cloud/offline detection, result + share + save, history list/detail/delete, XML library, notifications, optional location, settings, tests) with beginner yes/no checks
+  - Explicit "features this app does NOT have" section (no login/registration, no nav drawer, no PUT/DELETE, no auth)
+  - Real syllabus-concept mapping table
+- **Use Case:** Verifying every real feature yourself before submission
 
 ### 1.3 `/validation/final-definition-of-done.md`
 - **Content:** Complete project deliverables checklist
