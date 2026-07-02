@@ -2,7 +2,9 @@
 
 ## Objective
 
-Transform LeafGuard's ScanActivity from a skeleton to a fully functional image input system. By completion, users can capture photos with camera or select images from gallery, with proper permission handling and image display.
+Add camera capture and gallery image selection to LeafGuard's **MainActivity**. By completion, users can capture photos with camera or select images from gallery, with proper permission handling and image preview—all within the main screen. The app uses modern Activity Result APIs (not the deprecated `startActivityForResult`).
+
+> **Note:** LeafGuard keeps camera/gallery logic in `MainActivity` so users can capture a leaf, see a preview, and run detection without extra navigation. There is no separate `ScanActivity`.
 
 ## Implementation Steps
 
@@ -38,7 +40,50 @@ Transform LeafGuard's ScanActivity from a skeleton to a fully functional image i
 
 ### Step 2: Implement Permission Handling (45 min)
 
-Add to ScanActivity.java:
+In LeafGuard, permission handling lives in **MainActivity.kt**. The app uses `registerForActivityResult` with `ActivityResultContracts.RequestMultiplePermissions()` to request CAMERA or storage permissions, then proceeds to launch the camera or gallery on success.
+
+**Kotlin (primary) — MainActivity.kt:**
+
+```kotlin
+private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
+private var pendingPermissionAction: String? = null
+
+private fun setupActivityResults() {
+    permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { result ->
+        val allGranted = result.values.all { it }
+        if (!allGranted) {
+            Toast.makeText(this, R.string.permissions_required_message, Toast.LENGTH_SHORT).show()
+            pendingPermissionAction = null
+            return@registerForActivityResult
+        }
+        when (pendingPermissionAction) {
+            ACTION_CAMERA -> launchCamera()
+            ACTION_GALLERY -> galleryLauncher.launch("image/*")
+        }
+        pendingPermissionAction = null
+    }
+    // TODO: Also register galleryLauncher and cameraLauncher here
+}
+
+private fun hasPermissions(permissions: Array<String>): Boolean {
+    return permissions.all { permission ->
+        ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+    }
+}
+
+private fun openCameraWithPermissionCheck() {
+    if (hasPermissions(arrayOf(Manifest.permission.CAMERA))) {
+        launchCamera()
+        return
+    }
+    pendingPermissionAction = ACTION_CAMERA
+    permissionLauncher.launch(arrayOf(Manifest.permission.CAMERA))
+}
+```
+
+**Java (secondary):**
 
 ```java
 private ActivityResultLauncher<String> cameraPermissionLauncher;
@@ -47,7 +92,7 @@ private ActivityResultLauncher<String> storagePermissionLauncher;
 @Override
 protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_scan);
+    setContentView(R.layout.activity_main);
 
     setupPermissionLaunchers();
     setupButtons();
@@ -92,6 +137,49 @@ private void handlePermissionDenied(String permissionName) {
 
 ### Step 3: Implement Camera Capture (60 min)
 
+LeafGuard uses `ActivityResultContracts.TakePicture()` which accepts a Uri where the camera should save the photo. The authority for `FileProvider` must be `${applicationId}.fileprovider` (i.e., `"${BuildConfig.APPLICATION_ID}.fileprovider"` in code).
+
+**Kotlin (primary):**
+
+```kotlin
+private lateinit var cameraLauncher: ActivityResultLauncher<Uri>
+private var pendingCameraUri: Uri? = null
+
+private fun setupCameraLauncher() {
+    cameraLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        val cameraUri = pendingCameraUri
+        if (success && cameraUri != null) {
+            updateSelectedImage(cameraUri)
+        } else {
+            Toast.makeText(this, R.string.camera_cancelled_message, Toast.LENGTH_SHORT).show()
+        }
+    }
+}
+
+@Throws(IOException::class)
+private fun createImageUri(): Uri {
+    val imageDirectory = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "captures")
+    if (!imageDirectory.exists() && !imageDirectory.mkdirs()) {
+        throw IOException("Could not create image directory")
+    }
+    val imageFile = File(imageDirectory, "leafguard_${System.currentTimeMillis()}.jpg")
+    return FileProvider.getUriForFile(this, "${BuildConfig.APPLICATION_ID}.fileprovider", imageFile)
+}
+
+private fun launchCamera() {
+    try {
+        pendingCameraUri = createImageUri()
+        cameraLauncher.launch(pendingCameraUri!!)
+    } catch (exception: IOException) {
+        Toast.makeText(this, getString(R.string.camera_prepare_error, exception.message), Toast.LENGTH_LONG).show()
+    }
+}
+```
+
+**Java (secondary):**
+
 ```java
 private Uri capturedImageUri;
 private ActivityResultLauncher<Uri> takePictureLauncher;
@@ -129,6 +217,43 @@ private void openCamera() {
 ```
 
 ### Step 4: Implement Gallery Picker (45 min)
+
+LeafGuard uses `ActivityResultContracts.GetContent()` launched with `"image/*"` to open the gallery. This is simpler than `PickVisualMedia` and works on all Android versions (API 19+). On Android 13+ (`TIRAMISU`) no permission is required; on older versions you need `READ_EXTERNAL_STORAGE` or `READ_MEDIA_IMAGES`.
+
+**Kotlin (primary) — uses GetContent:**
+
+```kotlin
+private lateinit var galleryLauncher: ActivityResultLauncher<String>
+
+private fun setupGalleryLauncher() {
+    galleryLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            updateSelectedImage(uri)
+        }
+    }
+}
+
+private fun openGalleryWithPermissionCheck() {
+    if (hasPermissions(requiredGalleryPermissions())) {
+        galleryLauncher.launch("image/*")
+        return
+    }
+    pendingPermissionAction = ACTION_GALLERY
+    permissionLauncher.launch(requiredGalleryPermissions())
+}
+
+private fun requiredGalleryPermissions(): Array<String> {
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        arrayOf(Manifest.permission.READ_MEDIA_IMAGES)
+    } else {
+        arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+    }
+}
+```
+
+**Java (secondary) — alternative using PickVisualMedia:**
 
 This implementation supports all Android versions from API 24 (minSdk) through current releases.
 
@@ -184,6 +309,31 @@ private void openGallery() {
 
 ### Step 5: Implement Image Display (45 min)
 
+After capturing or selecting an image, update the preview in `MainActivity`. The simplest approach is `ImageView.setImageURI(uri)`, though for large images you may want to decode a scaled `Bitmap` to save memory.
+
+**Kotlin (primary) — simple approach used in LeafGuard:**
+
+```kotlin
+private var selectedImageUri: Uri? = null
+
+private fun updateSelectedImage(imageUri: Uri?) {
+    val binding = binding ?: return
+    selectedImageUri = imageUri
+    binding.buttonDetectDisease.isEnabled = imageUri != null
+
+    if (imageUri == null) {
+        binding.imagePlantPreview.setImageResource(android.R.drawable.ic_menu_gallery)
+        binding.textImageHint.setText(R.string.image_hint_default)
+        return
+    }
+
+    binding.imagePlantPreview.setImageURI(imageUri)
+    binding.textImageHint.text = getString(R.string.image_selected_message, imageUri.lastPathSegment)
+}
+```
+
+**Java (secondary) — with scaled bitmap for memory safety:**
+
 ```java
 private Uri currentImageUri;
 
@@ -233,6 +383,20 @@ private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, i
 ```
 
 ### Step 6: Wire Up Buttons (15 min)
+
+**Kotlin (primary):**
+
+```kotlin
+private fun setupButtons() {
+    val binding = binding ?: return
+    binding.buttonOpenCamera.setOnClickListener { openCameraWithPermissionCheck() }
+    binding.buttonOpenGallery.setOnClickListener { openGalleryWithPermissionCheck() }
+    binding.buttonDetectDisease.setOnClickListener { detectDisease() }
+    // TODO: Add navigation to History, DiseaseLibrary, Settings
+}
+```
+
+**Java (secondary):**
 
 ```java
 private void setupButtons() {

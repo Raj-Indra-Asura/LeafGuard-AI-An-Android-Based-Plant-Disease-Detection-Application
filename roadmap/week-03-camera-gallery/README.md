@@ -1,5 +1,27 @@
 # Week 03: Camera Intent, Gallery Picker & Image Handling
 
+## What you'll learn & why
+
+This week you'll add image input to LeafGuard—both camera capture and gallery selection. Without images, your disease detection app has no input to analyze. You'll learn how Android's permission system protects user privacy, how to safely pass files between apps using FileProvider, and how to convert selected images into Bitmaps your model can process. All camera and gallery logic lives in **MainActivity**—the app's central hub—so users can capture a leaf photo, see a preview, and tap "Detect" without navigating to a separate screen.
+
+## New words this week
+
+| Term | Definition |
+|------|------------|
+| **Permission** | A declaration that your app must ask the user (or Android) before accessing a protected feature like the camera or storage. |
+| **Runtime permission** | A permission requested while the app runs (Android 6.0+) via a system dialog; users can grant or deny at any time. |
+| **Intent** | A messaging object used to request an action from another component or app, such as opening the camera or picking an image. |
+| **FileProvider** | An AndroidX helper that creates secure `content://` URIs so other apps (like the camera) can safely write to files your app owns. |
+| **Uri** | A Uniform Resource Identifier pointing to content; on Android a `content://` Uri references data managed by a ContentProvider. |
+| **Camera capture** | Using an intent to launch the device's camera app, receive the captured photo, and save it to a file your app controls. |
+| **Gallery picker** | A system UI allowing users to select an existing image from their device; returns a `content://` Uri you can read. |
+| **Activity Result API** | The modern replacement for `startActivityForResult`; you register a launcher with a contract and handle results in a callback. |
+| **Multipart** | An HTTP body format where each part (e.g., an image file) is sent as a separate form-data section; used by the `/predict` endpoint. |
+
+> For full definitions see the main [GLOSSARY](../../GLOSSARY.md).
+
+---
+
 ## Weekly Objective
 
 By the end of Week 03, you will:
@@ -18,7 +40,7 @@ By the end of Week 03, you will:
 - Permission dialogs shown and handled correctly
 - Captured/selected image displayed in ImageView
 - Image persisted in app storage
-- ScanActivity fully functional with real image input
+- MainActivity image-input flow fully functional with real image input
 - No crashes on permission denial or image selection cancellation
 
 ---
@@ -108,7 +130,7 @@ Almost every Android app with user content requires camera or gallery access:
 
 1. **Week 02 Completion:**
    - Activities and navigation working
-   - ScanActivity exists with camera/gallery buttons
+   - MainActivity exists with camera/gallery buttons
    - Understanding of Intent extras
    - Ability to update UI from data
 
@@ -251,7 +273,21 @@ takePictureLauncher.launch(imageUri);
 
 **Creating Image File:**
 
+```kotlin
+// Kotlin (primary)
+@Throws(IOException::class)
+private fun createImageUri(): Uri {
+    val imageDirectory = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "captures")
+    if (!imageDirectory.exists() && !imageDirectory.mkdirs()) {
+        throw IOException("Could not create image directory")
+    }
+    val imageFile = File(imageDirectory, "leafguard_${System.currentTimeMillis()}.jpg")
+    return FileProvider.getUriForFile(this, "${BuildConfig.APPLICATION_ID}.fileprovider", imageFile)
+}
+```
+
 ```java
+// Java (secondary)
 private Uri createImageFile() throws IOException {
     // Generate unique filename
     String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
@@ -261,8 +297,8 @@ private Uri createImageFile() throws IOException {
     File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
     File imageFile = new File(storageDir, imageFileName);
 
-    // Return URI
-    return FileProvider.getUriForFile(this, "com.example.leafguard.fileprovider", imageFile);
+    // Return URI using FileProvider
+    return FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".fileprovider", imageFile);
 }
 ```
 
@@ -272,7 +308,7 @@ private Uri createImageFile() throws IOException {
 ```xml
 <provider
     android:name="androidx.core.content.FileProvider"
-    android:authorities="com.example.leafguard.fileprovider"
+    android:authorities="${applicationId}.fileprovider"
     android:exported="false"
     android:grantUriPermissions="true">
     <meta-data
@@ -519,7 +555,7 @@ User-saved results → Shared Pictures (MediaStore) - optional feature
 ### Day 5: Integration and Testing
 
 **Tasks:**
-1. Integrate camera + gallery into ScanActivity
+1. Integrate camera + gallery into MainActivity
 2. Test permission flow (grant, deny, permanent deny)
 3. Test image display and persistence
 4. Test on multiple Android versions (API 24, 30, 33)

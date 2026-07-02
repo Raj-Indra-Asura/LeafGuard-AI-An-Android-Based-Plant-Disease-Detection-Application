@@ -88,9 +88,13 @@ public class ConfidenceFormatterTest {
 
 ---
 
-## Step 3: Write a Unit Test for DiseaseClassifier Result Parsing
+## Step 3: Write a Unit Test for TFLite Result Parsing
 
-Test the logic that interprets model scores rather than the whole TFLite runtime.
+Test the logic that interprets model scores (the `argmax` step inside the real
+`TFLiteClassifier` in `com.leafguard.ml`) rather than the whole TensorFlow Lite
+runtime. TFLite = TensorFlow Lite, the on-device model format. The example below is a
+small standalone helper that mirrors that argmax logic so it can be unit-tested on your
+computer with no emulator.
 
 ### Suggested Logic
 ```java
@@ -118,9 +122,18 @@ public class DiseaseResultParser {
 ---
 
 
-## Step 4: Write ViewModel Unit Tests with Mockito
+## Step 4: Practise Mockito with an illustrative ViewModel
 
-Your ViewModel is where UI state, repository calls, and result formatting usually meet. This makes it one of the most valuable layers to test in Week 11.
+> **Important — this ViewModel is illustrative, not part of LeafGuard.** LeafGuard AI
+> has **no** ViewModel class at all (see `docs/ARCHITECTURE_GROUND_TRUTH.md`). The classes
+> below (`ExampleViewModel`, `ScanRepository`) are a generic teaching example so you can
+> learn how **Mockito** (a library for making fake "mock" objects in tests) works. The
+> real unit test you actually run and hand in is
+> `PredictionResponseTest` (walked through in Step 2's sibling file
+> [`../../solutions/week-11/testing-solution.md`](../../solutions/week-11/testing-solution.md)).
+> Treat this step as optional enrichment.
+
+A ViewModel is where UI state, repository calls, and result formatting usually meet, which makes it a valuable layer to test. This example shows the technique in general terms.
 
 ### What You Should Test in a ViewModel
 
@@ -172,14 +185,14 @@ public interface ScanRepository {
 ```
 
 ```java
-public class ScanViewModel extends ViewModel {
+public class ExampleViewModel extends ViewModel {
 
     private final ScanRepository repository;
     private final MutableLiveData<Boolean> loading = new MutableLiveData<>(false);
     private final MutableLiveData<PredictionResult> predictionResult = new MutableLiveData<>();
     private final MutableLiveData<String> errorMessage = new MutableLiveData<>();
 
-    public ScanViewModel(ScanRepository repository) {
+    public ExampleViewModel(ScanRepository repository) {
         this.repository = repository;
     }
 
@@ -222,7 +235,7 @@ public class ScanViewModel extends ViewModel {
 
 ```java
 @RunWith(MockitoJUnitRunner.class)
-public class ScanViewModelTest {
+public class ExampleViewModelTest {
 
     @Rule
     public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
@@ -233,11 +246,11 @@ public class ScanViewModelTest {
     @Mock
     private Bitmap bitmap;
 
-    private ScanViewModel viewModel;
+    private ExampleViewModel viewModel;
 
     @Before
     public void setUp() {
-        viewModel = new ScanViewModel(repository);
+        viewModel = new ExampleViewModel(repository);
     }
 
     @Test
@@ -348,9 +361,17 @@ public final class LiveDataTestUtil {
 
 ---
 
-## Step 5: Write Espresso UI Tests for the Main Scan Flow
+## Step 5: Extend the real Espresso UI test for the scan flow
 
 UI tests verify that the user journey still works when buttons, permissions, and screens interact together.
+
+> **Start from the real test.** LeafGuard already ships `MainActivityTest`
+> (`android-app-kotlin/app/src/androidTest/java/com/leafguard/MainActivityTest.kt`, Java
+> twin in `android-app/`), which launches `MainActivity` and checks that
+> `buttonOpenCamera` and `buttonOpenGallery` are displayed. Run it first with
+> `./gradlew connectedDebugAndroidTest` (Windows: `gradlew.bat connectedDebugAndroidTest`)
+> and confirm **BUILD SUCCESSFUL** before adding the extra scenarios below. The example
+> class name and extra methods here are enrichment you may add to that real test.
 
 ### Goal of the Main Scan Flow Test
 
@@ -402,7 +423,7 @@ public class MainScanFlowTest {
 
     @Test
     public void launchApp_cameraButtonVisible() {
-        onView(withId(R.id.btnCamera))
+        onView(withId(R.id.buttonOpenCamera))
                 .check(matches(isDisplayed()));
     }
 
@@ -411,7 +432,7 @@ public class MainScanFlowTest {
         intending(hasAction(MediaStore.ACTION_IMAGE_CAPTURE))
                 .respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, new Intent()));
 
-        onView(withId(R.id.btnCamera)).perform(click());
+        onView(withId(R.id.buttonOpenCamera)).perform(click());
 
         intended(hasAction(MediaStore.ACTION_IMAGE_CAPTURE));
     }
@@ -421,9 +442,9 @@ public class MainScanFlowTest {
         intending(hasAction(MediaStore.ACTION_IMAGE_CAPTURE))
                 .respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, new Intent()));
 
-        onView(withId(R.id.btnCamera)).perform(click());
+        onView(withId(R.id.buttonOpenCamera)).perform(click());
 
-        onView(withId(R.id.btnAnalyze))
+        onView(withId(R.id.buttonDetectDisease))
                 .check(matches(isDisplayed()));
     }
 }
@@ -449,7 +470,7 @@ public class CameraPermissionDialogTest {
         InstrumentationRegistry.getInstrumentation().getUiAutomation()
                 .executeShellCommand("pm revoke " + context.getPackageName() + " android.permission.CAMERA");
 
-        onView(withId(R.id.btnCamera)).perform(click());
+        onView(withId(R.id.buttonOpenCamera)).perform(click());
 
         device.wait(Until.hasObject(By.textContains("camera")), 3000);
         assertTrue(device.hasObject(By.textContains("camera")));

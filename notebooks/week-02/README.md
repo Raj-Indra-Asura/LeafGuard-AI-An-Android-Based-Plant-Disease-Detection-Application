@@ -10,7 +10,7 @@
 - Run code blocks in Android Studio, Terminal, or a Python shell as indicated.
 - Keep LeafGuard AI open in Android Studio while you work.
 - Save screenshots for your evidence folder after each big milestone.
-- Use Java for Android code in this repository. Do not switch to Kotlin.
+- Kotlin is the primary track for Android code in this repository; a complete Java twin lives in `android-app/`. Pick one track and stay consistent.
 
 ### Weekly outcomes
 
@@ -205,6 +205,8 @@ public class LifecycleDemoActivity extends AppCompatActivity {
 
 - Intents are Android messages used to move from one Activity to another.
 - Even placeholder screens are useful because they let you test navigation early.
+
+> **Note about the real app:** `ScanActivity`/`GalleryActivity` below are practice placeholders for learning navigation. The shipped app has no `ScanActivity` — capture happens in `MainActivity`. The real screens are `MainActivity`, `ResultActivity`, `HistoryActivity`, `HistoryDetailActivity`, `DiseaseLibraryActivity`, and `SettingsActivity`.
 
 ### Code to Read / Run
 

@@ -17,7 +17,7 @@
  *
  * Verification:
  *   [ ] BASE_URL points to your running backend (use 10.0.2.2 for the emulator)
- *   [ ] Image uploads as multipart/form-data with part name "file"
+ *   [ ] Image uploads as multipart/form-data with part name "image"
  *   [ ] Success and failure callbacks both handled (no crash on network error)
  */
 package com.leafguard.network
@@ -40,7 +40,7 @@ object ex03_ApiClient {
         // TODO 2: declare the multipart POST call to "predict".
         @Multipart
         @POST("predict")
-        fun predict(@Part file: MultipartBody.Part): Call<PredictionResponse>
+        fun predict(@Part image: MultipartBody.Part): Call<PredictionResponse>
     }
 
     /** Build (and ideally cache) a single Retrofit instance. */
@@ -55,5 +55,6 @@ object ex03_ApiClient {
     }
 
     // TODO 4: in your Activity, wrap the image File in a MultipartBody.Part
-    //   named "file" and call predict(...).enqueue(callback).
+    //   named "image" and call predict(...).enqueue(callback).
+    //   Use MultipartBody.Part.createFormData("image", file.name, requestBody).
 }

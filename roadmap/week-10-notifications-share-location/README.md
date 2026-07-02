@@ -83,36 +83,73 @@ User taps → PendingIntent fires → MainActivity opens
 | `PendingIntent` | Wraps the Intent that runs when tapped |
 | `NotificationManagerCompat` | Posts the notification (compat wrapper) |
 
-**Minimal implementation:**
+**Minimal implementation (Kotlin — primary track):**
+
+In LeafGuard's real code this lives in `NotificationHelper` (a Kotlin `object` in
+package `com.leafguard.utils`). The channel id is `leafguard_scan_reminders` and the
+notification id is `1001`.
+
+```kotlin
+// Create the channel once (safe to call again; Android ignores duplicates)
+if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+    val channel = NotificationChannel(
+        "leafguard_scan_reminders",       // channel id
+        "Scan Reminders",                 // user-visible name
+        NotificationManager.IMPORTANCE_DEFAULT
+    )
+    channel.description = "Reminds you to scan your plants weekly"
+    val nm = context.getSystemService(NotificationManager::class.java)
+    nm?.createNotificationChannel(channel)
+}
+
+// Build and post the notification
+val intent = Intent(context, MainActivity::class.java)
+val pendingIntent = PendingIntent.getActivity(
+    context, 1001, intent,
+    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+)
+
+val builder = NotificationCompat.Builder(context, "leafguard_scan_reminders")
+    .setSmallIcon(android.R.drawable.ic_menu_camera)
+    .setContentTitle("Time to check your plants!")
+    .setContentText("Open LeafGuard AI and scan a leaf today.")
+    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+    .setContentIntent(pendingIntent)
+    .setAutoCancel(true)
+
+NotificationManagerCompat.from(context).notify(1001, builder.build())
+```
+
+**Java (secondary track):**
 ```java
-// Create channel (do this once in onCreate or Application class)
+// Create channel (do this once, e.g. in NotificationHelper)
 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
     NotificationChannel channel = new NotificationChannel(
-        "leafguard_reminders",        // channel ID
+        "leafguard_scan_reminders",   // channel id
         "Scan Reminders",             // user-visible name
         NotificationManager.IMPORTANCE_DEFAULT
     );
     channel.setDescription("Reminds you to scan your plants weekly");
-    NotificationManager nm = getSystemService(NotificationManager.class);
+    NotificationManager nm = context.getSystemService(NotificationManager.class);
     nm.createNotificationChannel(channel);
 }
 
 // Build and post a notification
 PendingIntent pi = PendingIntent.getActivity(
-    this, 0,
-    new Intent(this, ScanActivity.class),
-    PendingIntent.FLAG_IMMUTABLE
+    context, 1001,
+    new Intent(context, MainActivity.class),
+    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
 );
 
-NotificationCompat.Builder builder = new NotificationCompat.Builder(this, "leafguard_reminders")
-    .setSmallIcon(R.drawable.ic_leaf)
+NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "leafguard_scan_reminders")
+    .setSmallIcon(android.R.drawable.ic_menu_camera)
     .setContentTitle("Time to check your plants!")
     .setContentText("Open LeafGuard AI and scan a leaf today.")
     .setPriority(NotificationCompat.PRIORITY_DEFAULT)
     .setContentIntent(pi)
     .setAutoCancel(true);
 
-NotificationManagerCompat.from(this).notify(1001, builder.build());
+NotificationManagerCompat.from(context).notify(1001, builder.build());
 ```
 
 ---
@@ -138,7 +175,23 @@ Share sheet appears: WhatsApp, Gmail, Messages, Drive...
 User picks an app → that app's Activity receives the Intent
 ```
 
-**Share text result:**
+**Share text result (Kotlin — primary track).** In LeafGuard this lives in `ResultActivity` (and `HistoryDetailActivity`):
+```kotlin
+private fun shareResult(diseaseName: String, confidence: Float) {
+    val shareText = "LeafGuard AI detected: $diseaseName" +
+        " (${Math.round(confidence)}% confidence)\n" +
+        "Scanned with LeafGuard AI"
+
+    val shareIntent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(Intent.EXTRA_TEXT, shareText)
+        putExtra(Intent.EXTRA_SUBJECT, "Plant Disease Scan Result")
+    }
+    startActivity(Intent.createChooser(shareIntent, "Share result via"))
+}
+```
+
+**Java (secondary track):**
 ```java
 private void shareResult(String diseaseName, float confidence) {
     String shareText = "LeafGuard AI detected: " + diseaseName

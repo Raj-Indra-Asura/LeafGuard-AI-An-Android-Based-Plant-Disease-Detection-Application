@@ -1128,8 +1128,10 @@ Activity/Fragment (observes LiveData, updates UI)
 
 ### Adding ViewModel for LiveData
 
+> **Note (optional pattern):** The shipped LeafGuard AI app does **not** use a ViewModel — its Activities call `ScanDao` `suspend` methods directly from `lifecycleScope.launch { ... }`. The `ScanRecordViewModel` below is an *optional advanced* pattern shown for learning; it is not part of the real app.
+
 ```java
-// ScanRecordViewModel.java
+// ScanRecordViewModel.java (optional advanced — not in the shipped app)
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 import java.util.List;

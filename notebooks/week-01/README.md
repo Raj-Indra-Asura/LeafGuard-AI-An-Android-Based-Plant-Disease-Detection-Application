@@ -10,11 +10,11 @@
 - Run code blocks in Android Studio, Terminal, or a Python shell as indicated.
 - Keep LeafGuard AI open in Android Studio while you work.
 - Save screenshots for your evidence folder after each big milestone.
-- Use Java for Android code in this repository. Do not switch to Kotlin.
+- Kotlin is the primary track for Android code in this repository; a complete Java twin lives in `android-app/`. Pick one track and stay consistent.
 
 ### Weekly outcomes
 
-- Install Android Studio and create a Java project with minimum SDK 24.
+- Install Android Studio and create an Android project (Kotlin is the default track; a complete Java twin lives in `android-app/`) with minimum SDK 24.
 - Understand the LeafGuard AI three-tier architecture: Android client, FastAPI backend, and ML model.
 - Clone the repository and prepare Python tools for later backend weeks.
 - Run a starter Hello World screen and verify your environment works.
@@ -136,19 +136,19 @@ Installation checklist
 
 - Your setup is not complete until the emulator or a physical device is ready to run apps.
 
-## Notebook Cell 3 — Create your first Java Android project
+## Notebook Cell 3 — Create your first Android project
 
 ### Explanation
 
 - Creating the project yourself helps you learn where Android Studio puts code, resources, and manifests.
-- LeafGuard AI should use Java, not Kotlin, because the course repository is organized around Java examples.
+- Kotlin is the primary track for LeafGuard AI (`android-app-kotlin/`); a complete Java twin exists in `android-app/`. Choose the track you are most comfortable with — this guide shows both where it matters.
 
 ### Step-by-Step
 
 1. Choose **New Project** > **Empty Views Activity**.
 2. Set the app name to `LeafGuard AI`.
 3. Set the package name to `com.leafguard`.
-4. Set the language to `Java`.
+4. Set the language to `Kotlin` (the primary track). If you are following the Java twin instead, choose `Java`.
 5. Set minimum SDK to `API 24: Android 7.0 (Nougat)`.
 6. Enable View Binding after the project opens if it is not already enabled.
 
@@ -199,7 +199,7 @@ android {
 
 ### ⚠️ Common Mistake
 
-- Choosing Kotlin here will make later Java code examples harder to follow.
+- Mixing tracks midway is the real pitfall: pick Kotlin (primary) or Java (secondary twin) and keep every file in that one language.
 
 ### 📌 Key Point
 

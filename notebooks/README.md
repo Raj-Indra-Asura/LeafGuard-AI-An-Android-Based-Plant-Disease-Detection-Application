@@ -35,18 +35,16 @@ Interactive notebooks provide:
 ```
 notebooks/
 ├── README.md (this file)
-├── setup-guide.md (How to run notebooks)
-├── week-01/
-│   ├── 01-understanding-mobile-architecture.ipynb
-│   ├── 02-android-vs-ios-comparison.ipynb
-│   └── resources/
-├── week-02/
-│   ├── 01-android-activity-lifecycle.ipynb
-│   ├── 02-xml-layouts-deep-dive.ipynb
-│   └── resources/
-└── week-12/
-    └── ...
+├── setup-guide.md (How to install Python + Jupyter and open a notebook)
+├── week-01/  01-project-understanding-and-architecture.ipynb
+├── week-02/  01-android-ui-fundamentals.ipynb
+├── week-03/  01-camera-gallery-image-processing.ipynb
+├── ...
+└── week-12/  01-final-submission-preparation.ipynb
 ```
+
+Each `week-NN/` folder also contains a `README.md` that reads like a Markdown
+notebook (explanations + code to read) for that week.
 
 ## 🚀 Getting Started
 

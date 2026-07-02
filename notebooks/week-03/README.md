@@ -10,7 +10,7 @@
 - Run code blocks in Android Studio, Terminal, or a Python shell as indicated.
 - Keep LeafGuard AI open in Android Studio while you work.
 - Save screenshots for your evidence folder after each big milestone.
-- Use Java for Android code in this repository. Do not switch to Kotlin.
+- Kotlin is the primary track for Android code in this repository; a complete Java twin lives in `android-app/`. Pick one track and stay consistent.
 
 ### Weekly outcomes
 
@@ -123,6 +123,8 @@ Check CAMERA permission
 ### Explanation
 
 - This activity handles camera capture, gallery selection, permission requests, and preview updates.
+
+> **Note about the real app:** In the shipped LeafGuard AI project (both `android-app-kotlin/` and `android-app/`), image capture happens inside **`MainActivity`** — there is no separate `ScanActivity` class. `ScanActivity` here (and `exercises/.../ex02_ScanActivity`) is a **standalone practice screen** used to isolate the camera/gallery logic. Once you understand it, the same code lives in `MainActivity` in the real app.
 
 ### Code to Read / Run
 

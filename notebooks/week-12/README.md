@@ -7,7 +7,7 @@
 ### How to use this notebook
 
 - Follow the cells in order.
-- Use Java for Android code and Python only for backend/model tooling.
+- Kotlin is the primary track for Android code (`android-app-kotlin/`, with a complete Java twin in `android-app/`); Python is used only for backend/model tooling.
 - Save screenshots and logs as evidence for CSE 2206.
 - Keep the roadmap folder for this week open while you work.
 
