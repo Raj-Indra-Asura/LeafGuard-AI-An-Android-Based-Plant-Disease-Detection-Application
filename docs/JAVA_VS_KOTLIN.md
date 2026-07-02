@@ -1,7 +1,16 @@
-# Java ↔ Kotlin Consistency Contract
+# Kotlin ↔ Java Consistency Contract
+
+> **New to this? Start here.** *Kotlin* and *Java* are two programming languages that
+> both run on Android. Kotlin is the modern language Google recommends for new Android
+> apps — it is shorter and safer to write. Java is the older language many existing
+> apps and tutorials use. This project keeps **two complete copies of the same app**,
+> one in each language, so you can learn in Kotlin (the **primary, recommended track**,
+> in `android-app-kotlin/`) and peek at the Java version (the **secondary track**, in
+> `android-app/`) whenever you want to compare. If you are unsure which to pick,
+> **choose Kotlin**.
 
 This document is the **guarantee against drift** between the two LeafGuard AI Android
-tracks. Every Java file must have a documented Kotlin twin and vice-versa. If you add,
+tracks. Every Kotlin file must have a documented Java twin and vice-versa. If you add,
 rename, or remove a file in either track, update this table in the same commit.
 
 ## 1. App Source Files (path-to-path mapping)
@@ -26,8 +35,14 @@ Kotlin root: `android-app-kotlin/app/src/main/java/com/leafguard/`
 | 13 | `ml/TFLiteClassifier.java` | `ml/TFLiteClassifier.kt` | Identical 224 input, 0..1 RGB normalization, label parsing, argmax, heuristic fallback |
 | 14 | `utils/NotificationHelper.java` | `utils/NotificationHelper.kt` | static-utility class → `object`; same channel id + notification id 1001 |
 
-**No unmatched files on either side.** (Neither track has `GalleryActivity`/`ScanActivity`, and
-neither module currently contains `test/`/`androidTest/` sources — the Java module has none to twin.)
+**No unmatched files on either side.** (Neither track has `GalleryActivity`/`ScanActivity`.)
+
+### Test sources (Week 11)
+
+| # | Java file | Kotlin twin | Notes |
+|---|---|---|---|
+| 15 | `app/src/test/java/com/leafguard/network/PredictionResponseTest.java` | `app/src/test/java/com/leafguard/network/PredictionResponseTest.kt` | Unit test: Gson parses the `disease`/`confidence` JSON contract |
+| 16 | `app/src/androidTest/java/com/leafguard/MainActivityTest.java` | `app/src/androidTest/java/com/leafguard/MainActivityTest.kt` | Espresso UI test: launches `MainActivity`, asserts a view is displayed |
 
 ## 2. Project / Build Files
 
@@ -37,7 +52,7 @@ neither module currently contains `test/`/`androidTest/` sources — the Java mo
 | `android-app/app/build.gradle` | `android-app-kotlin/app/build.gradle` | Same dependency set + Kotlin/coroutines/KTX; Room `annotationProcessor` → `kapt`; adds `kotlinOptions { jvmTarget = "11" }` |
 | `android-app/settings.gradle` | `android-app-kotlin/settings.gradle` | Twin; `rootProject.name = "LeafGuardAI-Kotlin"` |
 | `android-app/gradle.properties` | `android-app-kotlin/gradle.properties` | Twin + `kotlin.code.style=official`, `kapt.incremental.apt=true` |
-| `android-app/gradlew`, `gradle/wrapper/*` | same paths | Identical wrapper (Gradle 8.2) |
+| `android-app/gradlew`, `android-app/gradlew.bat`, `gradle/wrapper/*` | same paths | Identical wrapper (Gradle 8.2; `gradlew` for macOS/Linux, `gradlew.bat` for Windows) |
 | `android-app/app/proguard-rules.pro` | `android-app-kotlin/app/proguard-rules.pro` | Identical copy |
 | `android-app/README.md` | `android-app-kotlin/README.md` | Kotlin-adapted mirror |
 
