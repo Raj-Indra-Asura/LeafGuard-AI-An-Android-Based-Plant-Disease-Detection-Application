@@ -8,6 +8,17 @@ This unified learning system provides seamless navigation across all course mate
 
 ---
 
+## 🍴 Choose Your Track (Read First)
+
+A **"track"** is simply *the programming language you follow the lessons in*. The same app is built twice; pick one and stay with it.
+
+- **Track A — Kotlin (Primary / Recommended)** → build in [`android-app-kotlin/`](android-app-kotlin/); practice with [`exercises/android-kotlin/`](exercises/android-kotlin/). Kotlin is Google's recommended language for new Android apps.
+- **Track B — Java (Secondary)** → build in [`android-app/`](android-app/); practice with [`exercises/android/`](exercises/android/). A behavior-identical twin kept for the traditional "Java for Android" framing.
+
+**If unsure, choose Kotlin.** Throughout this path, Kotlin files and exercises are listed first; the Java twin lives at the mirrored path.
+
+---
+
 ## 📚 Learning System Components
 
 ### Core Materials (Every Week Has These)
@@ -67,6 +78,7 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection Journal](roadmap/week-01-project-understanding/reflection.md)
 
 ### Supplementary Materials
+- 💪 [Kotlin Exercises — primary track](exercises/android-kotlin/) · [Java Exercises](exercises/android/)
 - 📓 [Interactive Notebook](notebooks/week-01/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-01/) *(Available)*
 
@@ -109,6 +121,7 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-02-android-basics-ui/reflection.md)
 
 ### Supplementary Materials
+- 💪 [Kotlin Exercises — primary track](exercises/android-kotlin/) · [Java Exercises](exercises/android/)
 - 📓 [Interactive Notebook](notebooks/week-02/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-02/) *(Available)*
 
@@ -148,6 +161,7 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-03-camera-gallery/reflection.md)
 
 ### Supplementary Materials
+- 💪 [Kotlin Exercises — primary track](exercises/android-kotlin/) · [Java Exercises](exercises/android/)
 - 📓 [Interactive Notebook](notebooks/week-03/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-03/) *(Available)*
 
@@ -187,6 +201,7 @@ This unified learning system provides seamless navigation across all course mate
 - 🤔 [Reflection](roadmap/week-04-fastapi-backend/reflection.md)
 
 ### Supplementary Materials
+- 💪 [Backend Exercises](exercises/backend/) · Android track: [Kotlin](exercises/android-kotlin/) · [Java](exercises/android/)
 - 📓 [Interactive Notebook](notebooks/week-04/) *(Available)*
 - 💡 [Solutions Guide](solutions/week-04/) *(Available)*
 

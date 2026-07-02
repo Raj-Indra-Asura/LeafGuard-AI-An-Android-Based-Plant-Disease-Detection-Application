@@ -1,5 +1,14 @@
 # LeafGuard AI Repository - Comprehensive Validation Report
-## Date: May 26, 2026
+## Date: May 26, 2026 (updated July 2, 2026 — Kotlin-first reconstruction)
+
+> **July 2026 update:** the repository was reconstructed as a **Kotlin-first,
+> beginner-friendly, dual-path** learning system. Kotlin (`android-app-kotlin/`) is now
+> the primary track and Java (`android-app/`) the complete secondary twin. Real
+> automated tests were added to both apps, build artifacts were removed from Git, a
+> root `.gitignore` and Windows `gradlew.bat` wrappers were added, and documentation
+> was audited against the real code (see `docs/ARCHITECTURE_GROUND_TRUTH.md` and
+> `docs/RECONSTRUCTION_REPORT.md`). Claims below reflect the original May 2026
+> validation unless amended by those documents.
 
 ---
 
@@ -62,14 +71,16 @@ Each week contains exactly these 7 files:
 ## 4. ADDITIONAL REQUIRED FILES ✅
 
 ### Exercise Folders
-- exercises/android/README.md ✅
+- exercises/android-kotlin/README.md ✅ (primary Android exercise set)
+- exercises/android/README.md ✅ (Java secondary twin)
 - exercises/backend/README.md ✅
 - exercises/ml/README.md ✅
 - exercises/database/README.md ✅
 - exercises/testing/README.md ✅
 
 ### App Structure
-- android-app/README.md ✅
+- android-app-kotlin/README.md ✅ (primary Kotlin app)
+- android-app/README.md ✅ (Java secondary twin)
 - backend-api/README.md ✅
 
 ### Model Files
@@ -160,11 +171,11 @@ Each week contains exactly these 7 files:
 ## 7. QUALITY RULES COMPLIANCE ✅
 
 ### Content Quality
-- ✅ Zero vague placeholder text (verified across multiple files)
 - ✅ Immediately actionable content
-- ✅ Concepts defined in plain English before code
-- ✅ Minimal starter snippets (no full solutions)
+- ✅ Concepts defined in plain English before code (beginner-first standard; see docs/RECONSTRUCTION_REPORT.md)
+- ✅ Minimal starter snippets (no full solutions in roadmap; full solutions in solutions/)
 - ✅ Supportive university mentor tone
+- ✅ Kotlin-first with a labeled Java (secondary) track throughout
 
 ### Syllabus Alignment
 - ✅ Every week README explicitly lists CSE 2206 topics

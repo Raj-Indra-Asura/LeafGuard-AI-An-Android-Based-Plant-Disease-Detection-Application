@@ -1,31 +1,27 @@
 # Sample Plant Disease Images
 
-This folder contains sample test images for testing the LeafGuard AI application. These images are used to validate both cloud (FastAPI) and offline (TensorFlow Lite) prediction modes.
+This folder contains a small set of starter test images for the LeafGuard AI app. You use them to check both detection modes: cloud mode (the photo is sent to the FastAPI backend server) and offline mode (the photo is analyzed on the phone with TensorFlow Lite).
 
-## 📁 Folder Structure
+**How to use these images to test the app (plain steps):**
+1. Copy an image to your emulator or phone (drag-and-drop onto the emulator window works).
+2. Open the LeafGuard AI app, tap **Gallery**, and pick the image.
+3. Tap **Detect Disease**. You should see a disease name and a confidence percentage on the result screen.
+
+## 📁 What is actually in this folder (right now)
 
 ```
 sample-images/
-├── README.md (this file)
+├── README.md            (this file)
+├── IMAGE_SOURCES.txt    (where the images came from + licenses)
 ├── healthy/
-│   ├── tomato_healthy_01.png
-│   ├── tomato_healthy_02.jpg
-│   ├── potato_healthy_01.jpg
-│   └── ...
+│   └── tomato_healthy_01.png
 ├── early_blight/
-│   ├── tomato_early_blight_01.png
-│   ├── tomato_early_blight_02.jpg
-│   ├── potato_early_blight_01.jpg
-│   └── ...
-├── late_blight/
-│   ├── tomato_late_blight_01.png
-│   ├── potato_late_blight_02.jpg
-│   └── ...
-└── other_diseases/
-    ├── tomato_bacterial_spot_01.jpg
-    ├── tomato_leaf_mold_01.jpg
-    └── ...
+│   └── tomato_early_blight_01.png
+└── late_blight/
+    └── tomato_late_blight_01.png
 ```
+
+Only these three starter images are committed. **You (the student) add more** — see "Where to Get Sample Images" below. If you collect images for other disease classes, create new folders yourself (for example `other_diseases/`) and list every source in `IMAGE_SOURCES.txt`. The `TEST_RESULTS.md` file described below does not exist yet either — you create it when you run your tests in Weeks 06 and 09.
 
 ## 🎯 Purpose
 

@@ -2,6 +2,43 @@
 
 > **🎯 New! Unified Learning System:** Navigate seamlessly through all course materials with our [**Interactive Learning Path**](LEARNING_PATH.md) - featuring progressive navigation, exercises, solutions, and interactive notebooks!
 
+---
+
+## 🌱 Absolute Beginner? Start Here
+
+**What is this project?** LeafGuard AI is a phone app that looks at a photo of a plant leaf and tells you which disease (if any) it has. You build it step by step over 12 weeks, and along the way you learn how real Android apps are made.
+
+**What will you build?** A complete Android app (Android is the operating system on most non-Apple phones) that takes a photo, sends it to a small server program you also write, and shows the disease name plus advice — with an offline mode, a history list, and a disease encyclopedia.
+
+**Your first 3 actions:**
+1. Do the one-time tool setup: [Pre-Week-01 Setup Checklist](#pre-week-01-setup-checklist-do-this-first) below.
+2. Read [`COURSE_OVERVIEW.md`](COURSE_OVERVIEW.md) to understand the course, then skim [`GLOSSARY.md`](GLOSSARY.md) for any unfamiliar word.
+3. Open [`roadmap/week-01-project-understanding/README.md`](roadmap/week-01-project-understanding/README.md) and begin Week 01.
+
+---
+
+## 🍴 Choose Your Track
+
+A **"track"** just means *which programming language you follow the lessons in*. This repository contains the same app built twice, so you pick one path and stick with it.
+
+- **Track A — Kotlin (Primary / Recommended)** → build in [`android-app-kotlin/`](android-app-kotlin/) and practice with [`exercises/android-kotlin/`](exercises/android-kotlin/). Kotlin is Google's recommended language for new Android apps.
+- **Track B — Java (Secondary)** → build in [`android-app/`](android-app/) and practice with [`exercises/android/`](exercises/android/). Kept as a complete, behavior-identical twin for the traditional CSE 2206 "Java for Android" framing.
+
+**If unsure, choose Kotlin.** Every week's materials list the Kotlin files first; the Java twin is always available at the mirrored path if you prefer it or your instructor requires it.
+
+---
+
+## Pre-Week-01 Setup Checklist (Do This First)
+
+**Install your tools once, before Week 01** — you do not wait until later to do this. Full step-by-step instructions with screenshots are in [`docs/environment-setup.md`](docs/environment-setup.md).
+
+- [ ] **Install Android Studio** (the program you write and run the app in) → download from **https://developer.android.com/studio**. *Success sign:* Android Studio opens and can create a new project without errors.
+- [ ] **Install Python 3** (needed for the server/backend part) → download from **https://www.python.org/downloads/**. *Success sign:* running `python --version` (or `python3 --version`) in a terminal prints a version number like `3.11.x`.
+- [ ] **Create an Android emulator** (a virtual phone on your computer) inside Android Studio. *Success sign:* the emulator boots to a home screen.
+- [ ] **Verify Git** is installed (`git --version` prints a version). *Success sign:* a version number appears.
+
+Android Studio bundles the Java JDK and Android SDK you need, so installing it covers most Android requirements in one step.
+
 ## Project Overview
 
 **LeafGuard AI** is a complete Android plant disease detection application built as a structured 12-week learning project for CSE 2206 (Mobile Application Development). This repository provides a comprehensive roadmap that guides you through building a production-quality Android app from scratch, integrating AI/ML capabilities, backend services, and satisfying every requirement of the university course syllabus.
@@ -12,7 +49,7 @@ A fully functional Android mobile application featuring:
 
 - **Android UI & Navigation**: Multi-screen app with XML layouts and navigation flow
 - **Camera & Gallery**: Image capture using camera intent and gallery picker with runtime permissions
-- **Cloud AI Mode**: Python FastAPI backend with HTTP POST multipart image upload and JSON response parsing
+- **Cloud AI Mode**: Python FastAPI backend with HTTP POST multipart image upload and JSON response parsing. *(HTTP is the protocol web browsers and apps use to talk to servers; a POST request sends data to the server; "multipart" lets you attach a file such as an image; JSON — JavaScript Object Notation — is the simple text format the server replies in. See [GLOSSARY.md](GLOSSARY.md).)*
 - **On-Device AI Mode**: TensorFlow Lite offline inference for no-internet scenarios
 - **Result Screen**: Disease name, confidence percentage, symptoms, treatment, and prevention advice
 - **Scan History**: Room/SQLite local database with Entity, DAO, list view, detail view, and delete functionality
@@ -21,18 +58,24 @@ A fully functional Android mobile application featuring:
 - **Reminder Notifications**: NotificationChannel and PendingIntent implementation
 - **Optional Location Tagging**: Attempt scan location feature with clear documentation
 - **Testing & Debugging**: Complete test case table, debugging logs, error handling
-- **APK Build & Deployment**: Production-ready APK with installation demo
+- **APK Build & Deployment**: Production-ready APK (an APK is the installable Android app file) with installation demo
 - **Complete Documentation**: Academic proposal, final report, presentation slides, demo video, viva preparation
 
 ## Tech Stack
 
-**Android (Java)**
-- Android Studio, SDK 21+, Gradle
-- XML layouts, Activities, Fragments
-- Camera2 API / Camera Intent
+This course is **Kotlin-first with a parallel Java track** — you build the app primarily in Kotlin, and a complete Java twin mirrors every file for reference.
+
+**Android (Kotlin — primary)**
+- Android Studio, SDK 24+, Gradle (Gradle is the build tool that compiles the app)
+- XML layouts, Activities (one Activity = one screen), Fragments
+- Camera Intent / Camera2 API
 - Room Database, SharedPreferences
-- Retrofit/OkHttp for networking
+- Retrofit/OkHttp for networking (Retrofit is a library for calling web servers from the app)
 - TensorFlow Lite for on-device AI
+
+**Android (Java — secondary/parallel)**
+- Same SDK, Gradle, layouts, and libraries as the Kotlin track, expressed in Java
+- Kept as a behavior-identical twin in `android-app/`
 
 **Backend (Python)**
 - FastAPI web framework
@@ -82,7 +125,8 @@ LeafGuard-AI/
 │   └── week-12-final-submission/
 │
 ├── exercises/                         # Practice exercises by topic
-│   ├── android/
+│   ├── android-kotlin/               # Kotlin Android exercises (primary track)
+│   ├── android/                      # Java Android exercises (secondary track)
 │   ├── backend/
 │   ├── ml/
 │   ├── database/
@@ -96,9 +140,9 @@ LeafGuard-AI/
 │   ├── README.md                     # Getting started with notebooks
 │   ├── week-01/ through week-12/    # Interactive learning materials
 │
-├── android-app/                       # Your Android project goes here (Java track)
-├── android-app-kotlin/                # 🆕 Parallel Kotlin track (functional twin of android-app/)
-├── backend-api/                       # Your FastAPI backend goes here
+├── android-app-kotlin/                # PRIMARY Kotlin Android app — build here first
+├── android-app/                       # Secondary Java twin (behavior-identical to the Kotlin app)
+├── backend-api/                       # Your FastAPI backend goes here (the server; one file: main.py)
 ├── model/                             # ML models and labels
 ├── sample-images/                     # Test leaf images
 │
@@ -250,14 +294,15 @@ git push origin week-XX-feature-name
    - Analyze their structure
    - Document findings in the table
 
-### Tools Installation (Week 02)
+### Tools Installation (Before Week 01)
 
-You will install development tools in Week 02:
-- Android Studio
-- Java JDK 11+
-- Android SDK and emulator
-- Python 3.8+
-- FastAPI and dependencies
+**Install your development tools as a one-time step *before* Week 01 — not in Week 02.** Follow the numbered [Pre-Week-01 Setup Checklist](#pre-week-01-setup-checklist-do-this-first) near the top of this file, and see [`docs/environment-setup.md`](docs/environment-setup.md) for full instructions.
+
+You will install:
+- Android Studio — **https://developer.android.com/studio** (bundles the Java JDK and Android SDK)
+- Android emulator (a virtual phone), created inside Android Studio
+- Python 3 — **https://www.python.org/downloads/**
+- FastAPI and dependencies (`pip install -r backend-api/requirements.txt`, done in Week 04)
 
 ## CSE 2206 Syllabus Coverage
 
@@ -268,7 +313,7 @@ This project satisfies **every single topic** in the CSE 2206 syllabus:
 | Mobile app development intro | Native Android app | 01 |
 | Platform comparison | Android vs iOS report section | 01 |
 | Dev environment setup | Android Studio + FastAPI setup | 02 |
-| Java for Android | Java code throughout | 02-12 |
+| Java for Android | Kotlin code throughout (primary), with a parallel Java twin | 02-12 |
 | Designing applications | Multi-screen UI design | 02-03 |
 | XML parsing | Disease library XML file | 08 |
 | HTTP POST/GET | Image upload to FastAPI | 05 |
@@ -284,27 +329,27 @@ This project satisfies **every single topic** in the CSE 2206 syllabus:
 
 See `SYLLABUS_MAPPING.md` for complete detailed mapping.
 
-## Dual-Track (Java & Kotlin)
+## Dual-Track (Kotlin & Java)
 
-This repository now contains **two functionally identical Android apps**:
+This repository contains **two functionally identical Android apps**:
 
 | Track | Folder | Language | Role |
 |-------|--------|----------|------|
-| Java (primary) | `android-app/` | Java + XML | CSE 2206 course-aligned track ("Java for Android development") |
-| Kotlin (parallel) | `android-app-kotlin/` | Kotlin + XML | Enrichment twin — same features, screens, database schema, API contract, and model |
+| Kotlin (primary) | `android-app-kotlin/` | Kotlin + XML | Recommended track — build here first; same features, screens, database schema, API contract, and model |
+| Java (secondary) | `android-app/` | Java + XML | Behavior-identical twin, kept for the traditional CSE 2206 "Java for Android development" framing |
 
-The Kotlin track is a faithful *translation*, not a redesign: every `.java` file has a
-`.kt` twin at the mirrored path, XML layouts/resources and assets are structurally
+The Java track is a faithful *translation* of the Kotlin app, not a redesign: every `.kt` file has a
+`.java` twin at the mirrored path, XML layouts/resources and assets are structurally
 identical, and the FastAPI backend and ML pipeline are shared by both. Kotlin exercise
-skeletons live in `exercises/android-kotlin/`, and the Android-focused notebooks
-(weeks 02, 03, 05, 07, 09, 10, 11, 12) include added "Parallel Kotlin Track" sections.
+skeletons live in `exercises/android-kotlin/` (Java in `exercises/android/`), and the Android-focused notebooks
+(weeks 02, 03, 05, 07, 09, 10, 11, 12) include "Parallel Kotlin Track" sections.
 
 - Dual-track guide: `docs/parallel-track/README.md`
 - File-by-file consistency contract: `docs/JAVA_VS_KOTLIN.md`
 - Kotlin app setup: `android-app-kotlin/README.md`
 
-The Java track and all Java-based learning materials are unchanged and remain the
-primary course deliverable.
+Kotlin is the primary course deliverable; the Java track remains fully supported for
+learners who prefer it or whose instructor requires Java.
 
 ## Learning Rules
 
@@ -386,7 +431,7 @@ This repository now includes connected starter flows for Android UI, cloud predi
 
 After cloning this repository, you must:
 
-1. Review and run the starter Android project in `android-app/` (Week 02)
+1. Review and run the starter Android project in `android-app-kotlin/` (primary) — or `android-app/` for the Java track (Week 02)
 2. Review and run the starter Python FastAPI project in `backend-api/` (Week 04)
 3. Replace the backend mock/fallback with a trained plant disease ML model (Week 06)
 4. Replace the starter TensorFlow Lite placeholder with a converted trained model (Week 09)

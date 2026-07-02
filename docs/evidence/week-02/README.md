@@ -1,46 +1,36 @@
-# Week 02 Evidence - System Design & Architecture
+# Week 02 Evidence — Android Basics & UI (the six real activities)
 
-## Week Focus
-- Creating detailed system architecture
-- Designing database schema
-- Creating UML diagrams
-- UI/UX wireframes and mockups
+> **Why collect evidence?** Screenshots and notes prove your work for the CSE 2206
+> submission and help you debug later. Save everything in this folder.
+>
+> This week's tasks: [`roadmap/week-02-android-basics-ui/README.md`](../../../roadmap/week-02-android-basics-ui/README.md)
+> (Kotlin is the primary track — take your screenshots in `android-app-kotlin/` unless
+> a step says otherwise.)
 
-## Evidence to Collect
+## Screenshots to take this week (exactly these, and why)
 
-### Documentation
-- [ ] **system-architecture-document.md** - Detailed architecture explanation
-- [ ] **database-design-document.md** - ER diagram and table schemas
-- [ ] **api-design-document.md** - API endpoints specification
+- [ ] **`main-activity-running.png`** — `MainActivity` running in the emulator (home screen with Camera/Gallery buttons) — proves the Kotlin app builds and launches.
+- [ ] **`layout-editor.png`** — Android Studio's layout editor showing `activity_main.xml` — proves you explored the UI files.
+- [ ] **`six-activities-manifest.png`** — `AndroidManifest.xml` open, showing all six activities (MainActivity, ResultActivity, HistoryActivity, HistoryDetailActivity, DiseaseLibraryActivity, SettingsActivity).
 
-### Diagrams
-- [ ] **system-architecture-diagram.png** - Complete system architecture
-- [ ] **use-case-diagram.png** - All use cases
-- [ ] **class-diagram.png** - Major classes and relationships
-- [ ] **er-diagram.png** - Database ER diagram
-- [ ] **sequence-diagrams/** - Folder with 5-7 sequence diagrams
-- [ ] **activity-diagrams/** - Folder with 3-5 activity diagrams
+## Also collect
 
-### UI/UX Design
-- [ ] **wireframes/** - Low-fidelity wireframes for all screens
-- [ ] **mockups/** - High-fidelity mockups with colors
-- [ ] **navigation-flow.png** - Screen navigation diagram
-- [ ] **design-guidelines.md** - Color scheme, fonts, spacing
+- [ ] Short notes on any error you hit and how you fixed it (`notes.md`)
+- [ ] Your git commit list for the week (`git log --oneline` output pasted into `commits.txt`)
+- [ ] The week's completed `validation-checklist.md` (tick the yes/no boxes)
 
-### Meeting Records
-- [ ] **guide-meeting-02.md** - Design review meeting minutes
-- [ ] **design-feedback.md** - Feedback on diagrams and designs
+## Folder layout & naming
 
-### Tools Used
-- [ ] Draw.io, Lucidchart, or Figma files
-- [ ] Screenshots of design tools in use
+```
+week-02/
+├── README.md      (this file)
+├── screenshots/   (the images above)
+├── notes.md
+└── commits.txt
+```
 
-## Key Deliverables
-1. ✅ Complete system architecture diagram
-2. ✅ All UML diagrams created
-3. ✅ Database schema finalized
-4. ✅ UI wireframes for all screens
-5. ✅ API design documented
+Name files `YYYYMMDD_week02_description.png` (example: `20260702_week02_main-activity-running.png`).
 
-## Next Week
-Week 03: Backend development and ML model setup
+## Next week
+
+Week 03 covers photographing a leaf: the camera intent and gallery picker inside `MainActivity`.

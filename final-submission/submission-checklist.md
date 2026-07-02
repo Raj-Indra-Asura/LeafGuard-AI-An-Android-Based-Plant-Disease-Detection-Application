@@ -25,8 +25,8 @@
 
 | # | Item | Status | Notes |
 |---|------|--------|-------|
-| 1.1.1 | Complete Android project folder with all source files | [ ] | Path: `android-app/` or `LeafGuardAI-Android/` |
-| 1.1.2 | All Java source files in `app/src/main/java/` | [ ] | Activities, fragments, utilities, adapters |
+| 1.1.1 | Complete Kotlin Android project (primary track) with all source files | [ ] | Path: `android-app-kotlin/` |
+| 1.1.2 | All Kotlin source files in `app/src/main/java/com/leafguard/` | [ ] | Six activities + database, network, ml, utils packages. (Java secondary twin in `android-app/` — optional to submit) |
 | 1.1.3 | All XML layout files in `app/src/main/res/layout/` | [ ] | activity_main.xml, activity_result.xml, etc. |
 | 1.1.4 | All resource files (strings.xml, colors.xml, styles.xml) | [ ] | In `app/src/main/res/values/` |
 | 1.1.5 | AndroidManifest.xml with all permissions declared | [ ] | CAMERA, INTERNET, STORAGE, LOCATION |
@@ -74,7 +74,7 @@
 | # | Item | Status | Notes |
 |---|------|--------|-------|
 | 2.2.1 | TensorFlow Lite model file (.tflite) | [ ] | **CRITICAL** |
-| 2.2.2 | TFLite model in Android assets folder | [ ] | Path: `app/src/main/assets/plant_disease_model.tflite` |
+| 2.2.2 | TFLite model in Android assets folder | [ ] | Path: `app/src/main/assets/model.tflite` |
 | 2.2.3 | labels.txt in Android assets folder | [ ] | Path: `app/src/main/assets/labels.txt` |
 | 2.2.4 | TFLite model tested and working in app | [ ] | **CRITICAL** - Offline mode functional |
 | 2.2.5 | Model conversion process documented | [ ] | TensorFlow → TFLite conversion notes |
@@ -89,8 +89,8 @@
 
 | # | Item | Status | Notes |
 |---|------|--------|-------|
-| 3.1.1 | disease_library.xml file created | [ ] | **CRITICAL** |
-| 3.1.2 | XML file in Android assets folder | [ ] | Path: `app/src/main/assets/disease_library.xml` |
+| 3.1.1 | diseases.xml file created | [ ] | **CRITICAL** |
+| 3.1.2 | XML file in Android assets folder | [ ] | Path: `app/src/main/assets/diseases.xml` |
 | 3.1.3 | XML contains at least 10 disease entries | [ ] | Each with: name, symptoms, treatment, prevention |
 | 3.1.4 | XML is well-formed (validated) | [ ] | No syntax errors, parseable by XmlPullParser |
 | 3.1.5 | XML parsing tested in app | [ ] | Disease library screen displays all diseases |
@@ -116,7 +116,7 @@
 
 | # | Item | Status | Notes |
 |---|------|--------|-------|
-| 4.1.1 | Release APK built successfully | [ ] | **CRITICAL** |
+| 4.1.1 | Kotlin app APK built successfully (primary) | [ ] | **CRITICAL** — build from `android-app-kotlin/`. An APK (Android Package) is the installable app file. Java-track APK from `android-app/` is optional/secondary. |
 | 4.1.2 | APK file named clearly | [ ] | E.g., `LeafGuardAI_v1.0.apk` or `app-release.apk` |
 | 4.1.3 | APK file size reasonable (<100MB preferred) | [ ] | If >100MB, document why |
 | 4.1.4 | APK tested on at least one physical device | [ ] | **CRITICAL** - Installation and functionality |
@@ -138,7 +138,7 @@
 | 5.1.1 | Root README.md in repository | [ ] | **CRITICAL** - Professional, complete |
 | 5.1.2 | README includes: Project title, description, features | [ ] | Clear overview of app |
 | 5.1.3 | README includes: Screenshots of all major screens | [ ] | At least 6-8 screenshots |
-| 5.1.4 | README includes: Technology stack with versions | [ ] | Android, Java, Retrofit, Room, TFLite, FastAPI |
+| 5.1.4 | README includes: Technology stack with versions | [ ] | Android, Kotlin (primary; Java secondary), Retrofit, Room, TFLite, FastAPI |
 | 5.1.5 | README includes: Setup instructions for Android app | [ ] | How to build and run |
 | 5.1.6 | README includes: Setup instructions for backend | [ ] | Python environment, dependencies, running |
 | 5.1.7 | README includes: Usage instructions | [ ] | How to use the app features |
@@ -317,7 +317,7 @@
 | 6.2.1 | All Android source code committed | [ ] | Complete project folder |
 | 6.2.2 | All backend source code committed | [ ] | Complete FastAPI folder |
 | 6.2.3 | Model files documented or linked | [ ] | TFLite in repo, cloud model documented |
-| 6.2.4 | disease_library.xml committed | [ ] | In Android assets |
+| 6.2.4 | diseases.xml committed | [ ] | In Android assets |
 | 6.2.5 | labels.txt committed | [ ] | In Android assets |
 | 6.2.6 | Sample test images committed | [ ] | In `sample-images/` folder |
 | 6.2.7 | Documentation files committed | [ ] | Proposal, report, slides (or links) |
@@ -465,11 +465,11 @@
 | # | Syllabus Topic | Implemented Feature(s) | Evidence Location | Status |
 |---|----------------|------------------------|-------------------|--------|
 | 9.1.1 | Mobile Platform Comparison | Android vs iOS analysis in report | Report Section 2 | [ ] |
-| 9.1.2 | Native Android Development | Entire app built in Java with Android SDK | Source code | [ ] |
+| 9.1.2 | Native Android Development | Entire app built in Kotlin (primary track) with Android SDK; complete Java twin as secondary | Source code | [ ] |
 | 9.1.3 | Android Studio and Gradle | Project structure, build.gradle files | Repository | [ ] |
 | 9.1.4 | Camera and Multimedia | Camera capture and gallery picker intents | MainActivity, Week 3 | [ ] |
-| 9.1.5 | HTTP Networking | Retrofit POST requests to FastAPI | Week 5, ApiService.java | [ ] |
-| 9.1.6 | XML Parsing | disease_library.xml with XmlPullParser | Week 8, assets/ | [ ] |
+| 9.1.5 | HTTP Networking | Retrofit POST requests to FastAPI | Week 5, ApiService.kt (Java twin: ApiService.java) | [ ] |
+| 9.1.6 | XML Parsing | diseases.xml with XmlPullParser | Week 8, assets/ | [ ] |
 | 9.1.7 | App-to-App Communication | Share intent for prediction results | Week 10, share feature | [ ] |
 | 9.1.8 | Notifications | NotificationChannel and PendingIntent | Week 10, NotificationHelper | [ ] |
 | 9.1.9 | Local Storage (SQLite/Room) | Room database for scan history | Week 7, ScanDao and AppDatabase | [ ] |
@@ -604,7 +604,7 @@
 - [ ] **Source Code**: Android + Backend on GitHub ✅
 - [ ] **APK**: LeafGuardAI_v1.0.apk tested and working ✅
 - [ ] **Models**: TFLite and labels.txt in assets ✅
-- [ ] **XML**: disease_library.xml in assets ✅
+- [ ] **XML**: diseases.xml in assets ✅
 - [ ] **Images**: Sample test images in repository ✅
 - [ ] **Report**: Final report PDF (15-25 pages, spell-checked) ✅
 - [ ] **Slides**: Presentation PDF (12-15 slides, professional) ✅
