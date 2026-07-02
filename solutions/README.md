@@ -83,31 +83,30 @@ Ways to extend or improve the solution
 
 ## 🔗 Week-by-Week Solutions
 
+> Every week has a real, written solution file. **Try the exercise yourself first**
+> (attempt the TODO skeletons in `../exercises/`), then compare. **Kotlin is the
+> primary track**; Java is a complete secondary twin, so solution code applies to
+> both `android-app-kotlin/` and `android-app/`.
+
 ### Foundation Phase
-- [Week 01 Solutions](week-01/) - Project understanding exercises *(Coming Soon)*
-- [Week 02 Solutions](week-02/) - Android basics and UI *(Coming Soon)*
-- [Week 03 Solutions](week-03/) - Camera and gallery *(Coming Soon)*
+- [Week 01](week-01/project-setup-solution.md) — Project setup, architecture, and foundation.
+- [Week 02](week-02/android-ui-solution.md) — Android UI, resources, and navigation.
+- [Week 03](week-03/camera-gallery-solution.md) — Camera, gallery, permissions, and image preview.
 
 ### Backend Integration
-- [Week 04 Solutions](week-04/) - FastAPI backend ✅
-  - [FastAPI /predict Endpoint](week-04/fastapi-predict-endpoint-solution.md)
-- [Week 05 Solutions](week-05/) - Android networking ✅
-  - [Retrofit Image Upload](week-05/retrofit-upload-solution.md)
-- [Week 06 Solutions](week-06/) - ML model integration *(Coming Soon)*
+- [Week 04](week-04/fastapi-predict-endpoint-solution.md) — FastAPI `POST /predict` endpoint (multipart `image`, JSON `disease`).
+- [Week 05](week-05/retrofit-upload-solution.md) — Retrofit image upload from Android.
+- [Week 06](week-06/ml-model-solution.md) — Real PlantVillage model integration for cloud prediction.
 
 ### Data & Offline
-- [Week 07 Solutions](week-07/) - Room database ✅
-  - [Room Database Implementation](week-07/room-database-solution.md)
-- [Week 08 Solutions](week-08/) - XML parsing *(Coming Soon)*
-- [Week 09 Solutions](week-09/) - TensorFlow Lite ✅
-  - [TFLite Classifier](week-09/tflite-classifier-solution.md)
+- [Week 07](week-07/room-database-solution.md) — Room database for scan history.
+- [Week 08](week-08/xml-disease-library-solution.md) — XML disease library, parser, repository, and RecyclerView.
+- [Week 09](week-09/tflite-classifier-solution.md) — TensorFlow Lite on-device classifier.
 
 ### Polish & Completion
-- [Week 10 Solutions](week-10/) - Notifications & share *(Coming Soon)*
-- [Week 11 Solutions](week-11/) - Testing & debugging *(Coming Soon)*
-- [Week 12 Solutions](week-12/) - Final submission *(Coming Soon)*
-
-> **Note:** Solutions for Weeks 01–03, 06, 08, 10–12 are not yet available. Focus on attempting the exercises yourself first — the `android-app/` project skeleton and `backend-api/` starter code provide working reference implementations for most topics.
+- [Week 10](week-10/notifications-share-solution.md) — Notifications, share intent, and location services.
+- [Week 11](week-11/testing-solution.md) — Unit tests, Espresso tests, DAO tests, and test report.
+- [Week 12](week-12/final-submission-solution.md) — Final submission (APK build, docs, viva prep).
 
 ## 🎯 Academic Integrity
 

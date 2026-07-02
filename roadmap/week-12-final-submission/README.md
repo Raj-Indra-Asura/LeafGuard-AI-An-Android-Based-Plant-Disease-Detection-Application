@@ -1,5 +1,35 @@
 # Week 12: Final Submission
 
+## What you'll learn & why
+
+This is the finish line. You will package LeafGuard AI into an **APK** — the single
+installable file you can hand to a teacher or drop onto any Android phone — and gather all
+the other deliverables your CSE 2206 project needs: source code, a written report, slides,
+and a demo video. You'll build the APK from the **Kotlin** app (`android-app-kotlin/`,
+the primary track), install it on an emulator or phone to confirm it runs, and double-check
+that the app uses the real assets `model.tflite` and `diseases.xml`. Getting a clean,
+installable build is what turns "code on my laptop" into "an app I can show anyone".
+
+## New words this week
+
+See the shared [glossary](../../GLOSSARY.md) for more. The key terms this week:
+
+- **APK** — Android Package: the single installable file of your app (ends in `.apk`).
+- **Debug build vs release build** — a *debug* APK is for testing; a *release* APK is
+  optimised and signed for real distribution.
+- **`assembleDebug`** — the Gradle command that builds a debug APK.
+- **adb** — Android Debug Bridge, the command-line tool that installs an APK onto a device
+  (`adb install app.apk`); you can also drag an APK onto a running emulator.
+
+> **Build it (Kotlin, primary):** in Android Studio open `android-app-kotlin/`, then
+> **Build > Build Bundle(s) / APK(s) > Build APK(s)**, or run `./gradlew assembleDebug`
+> (Windows: `gradlew.bat assembleDebug`). The Java app (`android-app/`) builds the same way
+> and is the labelled **secondary** track. Worked steps live in
+> [`../../solutions/week-12/`](../../solutions/week-12/) and
+> [`../../notebooks/week-12/`](../../notebooks/week-12/).
+
+---
+
 ## Weekly Objective
 
 Complete all final deliverables for CSE 2206 project submission.

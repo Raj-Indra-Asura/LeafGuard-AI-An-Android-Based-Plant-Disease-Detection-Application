@@ -322,7 +322,7 @@ Include:
 - Highlight key files:
   - MainActivity.java
   - ScanHistory entity
-  - disease_library.xml
+  - diseases.xml
   - RetrofitClient.java
 
 **Conclusion (30 seconds)**

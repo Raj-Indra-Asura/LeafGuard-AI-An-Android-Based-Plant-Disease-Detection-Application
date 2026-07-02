@@ -76,77 +76,36 @@ See [setup-guide.md](setup-guide.md) for detailed installation instructions.
 
 ## 📚 Week-by-Week Notebooks
 
-> **ℹ️ Status Note:** Interactive Jupyter `.ipynb` notebooks have not been created yet. All learning content is available in the detailed `learning-notes.md`, `exercises.md`, and `build-task.md` files in each week's roadmap folder — those files are the primary learning resource and are fully written.
+> **What is a Jupyter notebook?** It is an interactive document that mixes
+> readable text with runnable Python code, cell by cell. You read an explanation,
+> then run the code right below it and see the output immediately.
 >
-> **Recommended alternative for interactive Python experiments:** Use [Google Colab](https://colab.research.google.com/) — free, browser-based, no installation needed. The `model/model-acquisition-guide.md` includes a complete Colab notebook setup for training your TFLite model.
+> **Kotlin is the default track** for the Android app. The Android-week notebooks
+> below are **companions to the Android Studio project** (they explain and simulate
+> concepts in Python) — they are *not* standalone Python replacements for the app.
+> See **[setup-guide.md](setup-guide.md)** to install Python + Jupyter and open one.
+
+Every week folder contains one real `.ipynb` notebook plus a Markdown `README.md`:
 
 ### Foundation Phase (Weeks 1-3)
-
-#### Week 01: Project Understanding
-- 📓 Understanding mobile app architecture *(Not yet available — see [roadmap/week-01](../roadmap/week-01-project-understanding/))*
-- 📓 Android vs iOS platform comparison *(Not yet available)*
-- 📓 CSE 2206 syllabus mapping interactive guide *(Not yet available)*
-
-#### Week 02: Android Basics & UI
-- 📓 Android Activity lifecycle interactive visualization *(Not yet available — see [roadmap/week-02](../roadmap/week-02-android-basics-ui/))*
-- 📓 XML layouts deep dive with live preview *(Not yet available)*
-- 📓 Material Design principles workshop *(Not yet available)*
-
-#### Week 03: Camera & Gallery
-- 📓 Android Intents explained with examples *(Not yet available — see [roadmap/week-03](../roadmap/week-03-camera-gallery/))*
-- 📓 Runtime permissions system interactive guide *(Not yet available)*
-- 📓 Image processing and Bitmap manipulation *(Not yet available)*
+- **Week 01** — [`01-project-understanding-and-architecture.ipynb`](week-01/01-project-understanding-and-architecture.ipynb): the three-tier architecture (Android client, FastAPI backend, ML model) and how the repo is laid out.
+- **Week 02** — [`01-android-ui-fundamentals.ipynb`](week-02/01-android-ui-fundamentals.ipynb): Android UI basics — activities, layouts, and navigation between screens.
+- **Week 03** — [`01-camera-gallery-image-processing.ipynb`](week-03/01-camera-gallery-image-processing.ipynb): capturing a photo (camera/gallery), permissions, and basic image handling.
 
 ### Backend Integration (Weeks 4-6)
-
-#### Week 04: FastAPI Backend
-- 📓 REST API fundamentals *(Not yet available — see [roadmap/week-04](../roadmap/week-04-fastapi-backend/))*
-- 📓 Building FastAPI endpoints step-by-step *(Not yet available — see [backend-api/main.py](../backend-api/main.py) for working starter code)*
-- 📓 Multipart file upload handling *(Not yet available)*
-
-#### Week 05: Android Networking
-- 📓 Retrofit architecture explained *(Not yet available — see [roadmap/week-05](../roadmap/week-05-android-networking/))*
-- 📓 JSON parsing with Gson *(Not yet available)*
-- 📓 Async operations and callbacks *(Not yet available)*
-
-#### Week 06: Cloud ML Model
-- 📓 CNN model architecture visualization *(Not yet available — see [roadmap/week-06](../roadmap/week-06-cloud-ml-model/))*
-- 📓 Image preprocessing pipeline *(Not yet available — see [model/model-acquisition-guide.md](../model/model-acquisition-guide.md))*
-- 📓 Model inference and prediction handling *(Not yet available)*
+- **Week 04** — [`01-fastapi-backend-fundamentals.ipynb`](week-04/01-fastapi-backend-fundamentals.ipynb): building the FastAPI `POST /predict` endpoint that accepts an `image` upload.
+- **Week 05** — [`01-android-networking-retrofit.ipynb`](week-05/01-android-networking-retrofit.ipynb): calling the backend from Android with Retrofit and parsing the JSON reply.
+- **Week 06** — [`01-ml-model-integration.ipynb`](week-06/01-ml-model-integration.ipynb): loading a model on the server, preprocessing an image, and returning a `disease` prediction.
 
 ### Data & Offline (Weeks 7-9)
-
-#### Week 07: Room Database
-- 📓 Room architecture components *(Not yet available — see [roadmap/week-07](../roadmap/week-07-room-sqlite-history/))*
-- 📓 SQL basics for mobile developers *(Not yet available)*
-- 📓 CRUD operations with Room *(Not yet available — see [solutions/week-07](../solutions/week-07/room-database-solution.md))*
-
-#### Week 08: XML Parsing
-- 📓 XML structure and parsing methods *(Not yet available — see [roadmap/week-08](../roadmap/week-08-xml-disease-library/))*
-- 📓 XmlPullParser step-by-step guide *(Not yet available)*
-- 📓 Data mapping and transformation *(Not yet available)*
-
-#### Week 09: TensorFlow Lite
-- 📓 TFLite model conversion process *(Not yet available — see [roadmap/week-09](../roadmap/week-09-tensorflow-lite-offline-ai/))*
-- 📓 On-device inference optimization *(Not yet available — see [solutions/week-09](../solutions/week-09/tflite-classifier-solution.md))*
-- 📓 Cloud vs offline performance comparison *(Not yet available)*
+- **Week 07** — [`01-room-database-sql-fundamentals.ipynb`](week-07/01-room-database-sql-fundamentals.ipynb): SQL and Room basics for saving scan history on the device.
+- **Week 08** — [`01-xml-disease-library-parsing.ipynb`](week-08/01-xml-disease-library-parsing.ipynb): parsing `assets/diseases.xml` into an offline disease library.
+- **Week 09** — [`01-tensorflow-lite-on-device-inference.ipynb`](week-09/01-tensorflow-lite-on-device-inference.ipynb): running a TensorFlow Lite model on-device (offline detection).
 
 ### Polish & Completion (Weeks 10-12)
-
-#### Week 10: Notifications & Share
-- 📓 Android notification system explained *(Not yet available — see [roadmap/week-10](../roadmap/week-10-notifications-share-location/))*
-- 📓 Intent sharing deep dive *(Not yet available)*
-- 📓 Location services integration *(Not yet available)*
-
-#### Week 11: Testing & Debugging
-- 📓 Android debugging techniques *(Not yet available — see [roadmap/week-11](../roadmap/week-11-testing-debugging-performance/))*
-- 📓 Test case design patterns *(Not yet available)*
-- 📓 Performance profiling guide *(Not yet available)*
-
-#### Week 12: Final Submission
-- 📓 APK building and signing *(Not yet available — see [roadmap/week-12](../roadmap/week-12-final-submission/))*
-- 📓 Documentation best practices *(Not yet available)*
-- 📓 Viva preparation interactive guide *(Not yet available)*
+- **Week 10** — [`01-notifications-share-location.ipynb`](week-10/01-notifications-share-location.ipynb): notifications, sharing a result, and adding location.
+- **Week 11** — [`01-testing-debugging-performance.ipynb`](week-11/01-testing-debugging-performance.ipynb): writing tests, debugging, and checking performance.
+- **Week 12** — [`01-final-submission-preparation.ipynb`](week-12/01-final-submission-preparation.ipynb): building the APK and preparing the final submission.
 
 ## 🎨 Notebook Types
 

@@ -1,12 +1,14 @@
 # Week 03 Solution - Camera, Gallery, Permissions, and Image Preview
 
-This solution provides a full Java implementation for `ScanActivity` using the modern Activity Result APIs.
+This solution demonstrates how LeafGuard implements camera capture and gallery selection in **MainActivity** using the modern Activity Result APIs. There is no separate `ScanActivity`—all image-input logic lives in the main screen so users can capture a leaf, preview it, and run detection without extra navigation.
+
+The Kotlin implementation (primary) matches the actual `MainActivity.kt` in `android-app-kotlin/`. A Java equivalent (secondary) is provided for reference.
 
 It includes:
 - camera permission flow with rationale and settings redirect
 - gallery permission flow for Android 13+ and legacy devices
 - `TakePicture` + `FileProvider`
-- Photo Picker + legacy `ACTION_PICK`
+- `GetContent("image/*")` gallery picker (simpler than PickVisualMedia)
 - memory-safe URI to Bitmap conversion
 - preview display
 - rotation state preservation
@@ -16,218 +18,356 @@ It includes:
 
 ## 1. Assumptions
 
-This solution assumes the following view IDs already exist in `activity_scan.xml`:
-- `imagePreview`
-- `textImageStatus`
-- `buttonCapture`
-- `buttonPick`
-- `buttonAnalyze`
-- `progressIndicator`
+This solution assumes the following view IDs already exist in `activity_main.xml`:
+- `imagePlantPreview`
+- `textImageHint`
+- `buttonOpenCamera`
+- `buttonOpenGallery`
+- `buttonDetectDisease`
+- `progressDetection`
 - `topAppBar`
 
 ---
 
-## 2. Complete `ScanActivity.java`
+## 2. Complete `MainActivity.kt` (Kotlin — Primary)
+
+```kotlin
+package com.leafguard
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.os.Environment
+import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import com.leafguard.databinding.ActivityMainBinding
+import java.io.File
+import java.io.IOException
+
+class MainActivity : AppCompatActivity() {
+
+    companion object {
+        private const val ACTION_CAMERA = "camera"
+        private const val ACTION_GALLERY = "gallery"
+    }
+
+    private var binding: ActivityMainBinding? = null
+    private lateinit var permissionLauncher: ActivityResultLauncher<Array<String>>
+    private lateinit var galleryLauncher: ActivityResultLauncher<String>
+    private lateinit var cameraLauncher: ActivityResultLauncher<Uri>
+
+    private var selectedImageUri: Uri? = null
+    private var pendingCameraUri: Uri? = null
+    private var pendingPermissionAction: String? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        val binding = ActivityMainBinding.inflate(layoutInflater)
+        this.binding = binding
+        setContentView(binding.root)
+
+        setSupportActionBar(binding.topAppBar)
+        setupActivityResults()
+        setupButtons()
+        updateSelectedImage(null)
+
+        // Restore state if activity was recreated
+        savedInstanceState?.getString("selectedImageUri")?.let { uriString ->
+            selectedImageUri = Uri.parse(uriString)
+            updateSelectedImage(selectedImageUri)
+        }
+    }
+
+    private fun setupActivityResults() {
+        // Permission launcher for multiple permissions
+        permissionLauncher = registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { result ->
+            val allGranted = result.values.all { it }
+
+            if (!allGranted) {
+                Toast.makeText(this, R.string.permissions_required_message, Toast.LENGTH_SHORT).show()
+                pendingPermissionAction = null
+                return@registerForActivityResult
+            }
+
+            when (pendingPermissionAction) {
+                ACTION_CAMERA -> launchCamera()
+                ACTION_GALLERY -> galleryLauncher.launch("image/*")
+            }
+            pendingPermissionAction = null
+        }
+
+        // Gallery launcher using GetContent (simpler than PickVisualMedia)
+        galleryLauncher = registerForActivityResult(
+            ActivityResultContracts.GetContent()
+        ) { uri ->
+            if (uri != null) {
+                updateSelectedImage(uri)
+            }
+        }
+
+        // Camera launcher using TakePicture
+        cameraLauncher = registerForActivityResult(
+            ActivityResultContracts.TakePicture()
+        ) { success ->
+            val cameraUri = pendingCameraUri
+            if (success && cameraUri != null) {
+                updateSelectedImage(cameraUri)
+            } else {
+                Toast.makeText(this, R.string.camera_cancelled_message, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun setupButtons() {
+        val binding = binding ?: return
+        binding.buttonOpenCamera.setOnClickListener { openCameraWithPermissionCheck() }
+        binding.buttonOpenGallery.setOnClickListener { openGalleryWithPermissionCheck() }
+        binding.buttonDetectDisease.setOnClickListener { detectDisease() }
+    }
+
+    private fun openCameraWithPermissionCheck() {
+        if (hasPermissions(requiredCameraPermissions())) {
+            launchCamera()
+            return
+        }
+        pendingPermissionAction = ACTION_CAMERA
+        permissionLauncher.launch(requiredCameraPermissions())
+    }
+
+    private fun openGalleryWithPermissionCheck() {
+        if (hasPermissions(requiredGalleryPermissions())) {
+            galleryLauncher.launch("image/*")
+            return
+        }
+        pendingPermissionAction = ACTION_GALLERY
+        permissionLauncher.launch(requiredGalleryPermissions())
+    }
+
+    private fun launchCamera() {
+        try {
+            val cameraUri = createImageUri()
+            pendingCameraUri = cameraUri
+            cameraLauncher.launch(cameraUri)
+        } catch (exception: IOException) {
+            Toast.makeText(this, getString(R.string.camera_prepare_error, exception.message), Toast.LENGTH_LONG).show()
+        }
+    }
+
+    @Throws(IOException::class)
+    private fun createImageUri(): Uri {
+        val imageDirectory = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "captures")
+        if (!imageDirectory.exists() && !imageDirectory.mkdirs()) {
+            throw IOException("Could not create image directory")
+        }
+
+        // IMPORTANT: Filename format matches real app: leafguard_{timestamp}.jpg
+        val imageFile = File(imageDirectory, "leafguard_${System.currentTimeMillis()}.jpg")
+        if (!imageFile.exists() && !imageFile.createNewFile()) {
+            throw IOException("Could not create image file")
+        }
+
+        // IMPORTANT: Authority must match ${applicationId}.fileprovider in manifest
+        return FileProvider.getUriForFile(this, "${BuildConfig.APPLICATION_ID}.fileprovider", imageFile)
+    }
+
+    private fun updateSelectedImage(imageUri: Uri?) {
+        val binding = binding ?: return
+        selectedImageUri = imageUri
+        binding.buttonDetectDisease.isEnabled = imageUri != null
+
+        if (imageUri == null) {
+            binding.imagePlantPreview.setImageResource(android.R.drawable.ic_menu_gallery)
+            binding.textImageHint.setText(R.string.image_hint_default)
+            return
+        }
+
+        binding.imagePlantPreview.setImageURI(imageUri)
+        binding.textImageHint.text = getString(R.string.image_selected_message, imageUri.lastPathSegment)
+    }
+
+    private fun detectDisease() {
+        if (selectedImageUri == null) {
+            Toast.makeText(this, R.string.select_image_first, Toast.LENGTH_SHORT).show()
+            return
+        }
+        // TODO: Implement detection (cloud or offline) — covered in Week 04+
+    }
+
+    private fun hasPermissions(permissions: Array<String>): Boolean {
+        return permissions.all { permission ->
+            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    private fun requiredCameraPermissions(): Array<String> = arrayOf(Manifest.permission.CAMERA)
+
+    private fun requiredGalleryPermissions(): Array<String> {
+        // Android 13+ uses READ_MEDIA_IMAGES; older versions use READ_EXTERNAL_STORAGE
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arrayOf(Manifest.permission.READ_MEDIA_IMAGES)
+        } else {
+            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        selectedImageUri?.let { outState.putString("selectedImageUri", it.toString()) }
+        pendingCameraUri?.let { outState.putString("pendingCameraUri", it.toString()) }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        binding = null
+    }
+}
+```
+
+---
+
+## 3. Java Equivalent — `MainActivity.java` (Secondary)
 
 ```java
 package com.leafguard;
 
 import android.Manifest;
-import android.content.ContentResolver;
-import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.provider.MediaStore;
-import android.provider.Settings;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
-import com.leafguard.databinding.ActivityScanBinding;
+import com.leafguard.databinding.ActivityMainBinding;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 
-public class ScanActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity {
 
-    private static final String STATE_CURRENT_IMAGE_URI = "state_current_image_uri";
+    private static final String STATE_SELECTED_IMAGE_URI = "state_selected_image_uri";
     private static final String STATE_PENDING_CAMERA_URI = "state_pending_camera_uri";
-    private static final int REQUIRED_WIDTH = 1024;
-    private static final int REQUIRED_HEIGHT = 1024;
+    private static final String ACTION_CAMERA = "camera";
+    private static final String ACTION_GALLERY = "gallery";
 
-    private ActivityScanBinding binding;
-    private Uri currentImageUri;
+    private ActivityMainBinding binding;
+    private Uri selectedImageUri;
     private Uri pendingCameraUri;
+    private String pendingPermissionAction;
 
-    private ActivityResultLauncher<String> cameraPermissionLauncher;
-    private ActivityResultLauncher<String> galleryPermissionLauncher;
-    private ActivityResultLauncher<Uri> takePictureLauncher;
-    private ActivityResultLauncher<PickVisualMediaRequest> pickVisualMediaLauncher;
-    private ActivityResultLauncher<Intent> legacyGalleryLauncher;
+    private ActivityResultLauncher<String[]> permissionLauncher;
+    private ActivityResultLauncher<String> galleryLauncher;
+    private ActivityResultLauncher<Uri> cameraLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityScanBinding.inflate(getLayoutInflater());
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        setupToolbar();
-        registerLaunchers();
+        setSupportActionBar(binding.topAppBar);
+        setupActivityResults();
         setupButtons();
+        updateSelectedImage(null);
 
         if (savedInstanceState != null) {
-            String savedImage = savedInstanceState.getString(STATE_CURRENT_IMAGE_URI);
+            String savedImage = savedInstanceState.getString(STATE_SELECTED_IMAGE_URI);
             String savedPending = savedInstanceState.getString(STATE_PENDING_CAMERA_URI);
             if (savedImage != null) {
-                currentImageUri = Uri.parse(savedImage);
-                displayImage(currentImageUri);
-            } else {
-                showPlaceholder();
+                selectedImageUri = Uri.parse(savedImage);
+                updateSelectedImage(selectedImageUri);
             }
             if (savedPending != null) {
                 pendingCameraUri = Uri.parse(savedPending);
             }
-        } else {
-            showPlaceholder();
         }
     }
 
-    private void setupToolbar() {
-        binding.topAppBar.setNavigationOnClickListener(view -> finish());
-    }
+    private void setupActivityResults() {
+        permissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestMultiplePermissions(),
+                result -> {
+                    boolean allGranted = !result.containsValue(false);
+                    if (!allGranted) {
+                        Toast.makeText(this, R.string.permissions_required_message, Toast.LENGTH_SHORT).show();
+                        pendingPermissionAction = null;
+                        return;
+                    }
 
-    private void registerLaunchers() {
-        cameraPermissionLauncher = registerForActivityResult(
-                new ActivityResultContracts.RequestPermission(),
-                granted -> {
-                    if (granted) {
+                    if (ACTION_CAMERA.equals(pendingPermissionAction)) {
                         launchCamera();
-                    } else {
-                        handleCameraPermissionDenied();
+                    } else if (ACTION_GALLERY.equals(pendingPermissionAction)) {
+                        galleryLauncher.launch("image/*");
+                    }
+                    pendingPermissionAction = null;
+                }
+        );
+
+        // Using GetContent (simpler than PickVisualMedia)
+        galleryLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetContent(),
+                uri -> {
+                    if (uri != null) {
+                        updateSelectedImage(uri);
                     }
                 }
         );
 
-        galleryPermissionLauncher = registerForActivityResult(
-                new ActivityResultContracts.RequestPermission(),
-                granted -> {
-                    if (granted) {
-                        openLegacyGalleryPicker();
-                    } else {
-                        handleGalleryPermissionDenied();
-                    }
-                }
-        );
-
-        takePictureLauncher = registerForActivityResult(
+        cameraLauncher = registerForActivityResult(
                 new ActivityResultContracts.TakePicture(),
                 success -> {
                     if (success && pendingCameraUri != null) {
-                        currentImageUri = pendingCameraUri;
-                        displayImage(currentImageUri);
+                        updateSelectedImage(pendingCameraUri);
                     } else {
                         Toast.makeText(this, R.string.camera_cancelled_message, Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
-
-        pickVisualMediaLauncher = registerForActivityResult(
-                new ActivityResultContracts.PickVisualMedia(),
-                uri -> {
-                    if (uri != null) {
-                        currentImageUri = uri;
-                        displayImage(uri);
-                    } else {
-                        Toast.makeText(this, R.string.gallery_cancelled_message, Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
-
-        legacyGalleryLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                    if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                        Uri selectedUri = result.getData().getData();
-                        if (selectedUri != null) {
-                            currentImageUri = selectedUri;
-                            displayImage(selectedUri);
-                        }
-                    } else {
-                        Toast.makeText(this, R.string.gallery_cancelled_message, Toast.LENGTH_SHORT).show();
                     }
                 }
         );
     }
 
     private void setupButtons() {
-        binding.buttonCapture.setOnClickListener(view -> openCameraWithPermissionCheck());
-        binding.buttonPick.setOnClickListener(view -> openGalleryWithVersionCheck());
-        binding.buttonAnalyze.setOnClickListener(view -> openResultScreen());
+        binding.buttonOpenCamera.setOnClickListener(view -> openCameraWithPermissionCheck());
+        binding.buttonOpenGallery.setOnClickListener(view -> openGalleryWithPermissionCheck());
+        binding.buttonDetectDisease.setOnClickListener(view -> detectDisease());
     }
 
     private void openCameraWithPermissionCheck() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_GRANTED) {
+        if (hasPermissions(requiredCameraPermissions())) {
             launchCamera();
             return;
         }
-
-        if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
-            showCameraRationaleDialog();
-        } else {
-            cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
-        }
+        pendingPermissionAction = ACTION_CAMERA;
+        permissionLauncher.launch(requiredCameraPermissions());
     }
 
-    private void openGalleryWithVersionCheck() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            pickVisualMediaLauncher.launch(
-                    new PickVisualMediaRequest.Builder()
-                            .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
-                            .build()
-            );
+    private void openGalleryWithPermissionCheck() {
+        if (hasPermissions(requiredGalleryPermissions())) {
+            galleryLauncher.launch("image/*");
             return;
         }
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            pickVisualMediaLauncher.launch(
-                    new PickVisualMediaRequest.Builder()
-                            .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
-                            .build()
-            );
-            return;
-        }
-
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE)
-                == PackageManager.PERMISSION_GRANTED) {
-            openLegacyGalleryPicker();
-            return;
-        }
-
-        if (shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-            showGalleryRationaleDialog();
-        } else {
-            galleryPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
-        }
+        pendingPermissionAction = ACTION_GALLERY;
+        permissionLauncher.launch(requiredGalleryPermissions());
     }
 
     private void launchCamera() {
         try {
             pendingCameraUri = createImageUri();
-            takePictureLauncher.launch(pendingCameraUri);
+            cameraLauncher.launch(pendingCameraUri);
         } catch (IOException exception) {
             Toast.makeText(this, getString(R.string.camera_prepare_error, exception.getMessage()), Toast.LENGTH_LONG).show();
         }
@@ -239,155 +379,65 @@ public class ScanActivity extends AppCompatActivity {
             throw new IOException("Could not create image directory");
         }
 
-        File outputFile = new File(imageDirectory, "leaf_" + System.currentTimeMillis() + ".jpg");
-        if (!outputFile.exists() && !outputFile.createNewFile()) {
+        // IMPORTANT: Filename format matches real app: leafguard_{timestamp}.jpg
+        File imageFile = new File(imageDirectory, "leafguard_" + System.currentTimeMillis() + ".jpg");
+        if (!imageFile.exists() && !imageFile.createNewFile()) {
             throw new IOException("Could not create image file");
         }
 
-        return FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".fileprovider", outputFile);
+        // IMPORTANT: Authority must match ${applicationId}.fileprovider in manifest
+        return FileProvider.getUriForFile(this, BuildConfig.APPLICATION_ID + ".fileprovider", imageFile);
     }
 
-    private void openLegacyGalleryPicker() {
-        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        intent.setType("image/*");
-        legacyGalleryLauncher.launch(intent);
-    }
+    private void updateSelectedImage(Uri imageUri) {
+        selectedImageUri = imageUri;
+        binding.buttonDetectDisease.setEnabled(imageUri != null);
 
-    private void displayImage(@NonNull Uri imageUri) {
-        try {
-            Bitmap bitmap = loadScaledBitmap(imageUri, REQUIRED_WIDTH, REQUIRED_HEIGHT);
-            binding.imagePreview.setImageBitmap(bitmap);
-            binding.textImageStatus.setText(getString(R.string.image_selected_message, imageUri.getLastPathSegment()));
-            binding.buttonAnalyze.setEnabled(true);
-        } catch (IOException exception) {
-            showPlaceholder();
-            Toast.makeText(this, getString(R.string.image_load_error, exception.getMessage()), Toast.LENGTH_LONG).show();
-        }
-    }
-
-    private void showPlaceholder() {
-        binding.imagePreview.setImageResource(android.R.drawable.ic_menu_gallery);
-        binding.textImageStatus.setText(R.string.no_image_selected);
-        binding.buttonAnalyze.setEnabled(false);
-    }
-
-    private Bitmap loadScaledBitmap(@NonNull Uri uri, int reqWidth, int reqHeight) throws IOException {
-        ContentResolver resolver = getContentResolver();
-        BitmapFactory.Options boundsOptions = new BitmapFactory.Options();
-        boundsOptions.inJustDecodeBounds = true;
-
-        try (InputStream boundsStream = resolver.openInputStream(uri)) {
-            if (boundsStream == null) {
-                throw new IOException("Unable to open image stream.");
-            }
-            BitmapFactory.decodeStream(boundsStream, null, boundsOptions);
-        }
-
-        BitmapFactory.Options decodeOptions = new BitmapFactory.Options();
-        decodeOptions.inSampleSize = calculateInSampleSize(boundsOptions, reqWidth, reqHeight);
-        decodeOptions.inPreferredConfig = Bitmap.Config.ARGB_8888;
-
-        try (InputStream decodeStream = resolver.openInputStream(uri)) {
-            if (decodeStream == null) {
-                throw new IOException("Unable to decode image stream.");
-            }
-            Bitmap bitmap = BitmapFactory.decodeStream(decodeStream, null, decodeOptions);
-            if (bitmap == null) {
-                throw new IOException("Bitmap decode returned null.");
-            }
-            return bitmap;
-        }
-    }
-
-    private int calculateInSampleSize(BitmapFactory.Options options, int reqWidth, int reqHeight) {
-        int height = options.outHeight;
-        int width = options.outWidth;
-        int inSampleSize = 1;
-
-        if (height > reqHeight || width > reqWidth) {
-            int halfHeight = height / 2;
-            int halfWidth = width / 2;
-
-            while ((halfHeight / inSampleSize) >= reqHeight
-                    && (halfWidth / inSampleSize) >= reqWidth) {
-                inSampleSize *= 2;
-            }
-        }
-        return Math.max(inSampleSize, 1);
-    }
-
-    private void openResultScreen() {
-        if (currentImageUri == null) {
-            Toast.makeText(this, R.string.select_image_first, Toast.LENGTH_SHORT).show();
+        if (imageUri == null) {
+            binding.imagePlantPreview.setImageResource(android.R.drawable.ic_menu_gallery);
+            binding.textImageHint.setText(R.string.image_hint_default);
             return;
         }
 
-        Intent intent = new Intent(this, ResultActivity.class);
-        intent.putExtra(ResultActivity.EXTRA_DISEASE_NAME, "Tomato Early Blight");
-        intent.putExtra(ResultActivity.EXTRA_CONFIDENCE, 0.89f);
-        intent.putExtra(ResultActivity.EXTRA_SYMPTOMS, "Brown concentric rings are visible on older leaves.");
-        intent.putExtra(ResultActivity.EXTRA_TREATMENT, "Remove infected leaves and apply a fungicide if needed.");
-        intent.putExtra(ResultActivity.EXTRA_PREVENTION, "Avoid overhead watering and keep foliage dry.");
-        intent.putExtra(ResultActivity.EXTRA_IMAGE_URI, currentImageUri.toString());
-        startActivity(intent);
+        binding.imagePlantPreview.setImageURI(imageUri);
+        binding.textImageHint.setText(getString(R.string.image_selected_message, imageUri.getLastPathSegment()));
     }
 
-    private void showCameraRationaleDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.camera_permission_title)
-                .setMessage(R.string.camera_permission_rationale)
-                .setPositiveButton(R.string.allow_label, (dialog, which) ->
-                        cameraPermissionLauncher.launch(Manifest.permission.CAMERA))
-                .setNegativeButton(R.string.cancel_label, null)
-                .show();
-    }
-
-    private void showGalleryRationaleDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.gallery_permission_title)
-                .setMessage(R.string.gallery_permission_rationale)
-                .setPositiveButton(R.string.allow_label, (dialog, which) ->
-                        galleryPermissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE))
-                .setNegativeButton(R.string.cancel_label, null)
-                .show();
-    }
-
-    private void handleCameraPermissionDenied() {
-        if (!shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
-            showSettingsRedirectDialog(getString(R.string.camera_permission_settings_message));
-        } else {
-            Toast.makeText(this, R.string.camera_permission_denied, Toast.LENGTH_SHORT).show();
+    private void detectDisease() {
+        if (selectedImageUri == null) {
+            Toast.makeText(this, R.string.select_image_first, Toast.LENGTH_SHORT).show();
+            return;
         }
+        // TODO: Implement detection (cloud or offline) — covered in Week 04+
     }
 
-    private void handleGalleryPermissionDenied() {
-        if (!shouldShowRequestPermissionRationale(Manifest.permission.READ_EXTERNAL_STORAGE)) {
-            showSettingsRedirectDialog(getString(R.string.gallery_permission_settings_message));
-        } else {
-            Toast.makeText(this, R.string.gallery_permission_denied, Toast.LENGTH_SHORT).show();
+    private boolean hasPermissions(String[] permissions) {
+        for (String permission : permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                return false;
+            }
         }
+        return true;
     }
 
-    private void showSettingsRedirectDialog(String message) {
-        new AlertDialog.Builder(this)
-                .setTitle(R.string.permission_needed_title)
-                .setMessage(message)
-                .setPositiveButton(R.string.open_settings, (dialog, which) -> openAppSettings())
-                .setNegativeButton(R.string.cancel_label, null)
-                .show();
+    private String[] requiredCameraPermissions() {
+        return new String[]{Manifest.permission.CAMERA};
     }
 
-    private void openAppSettings() {
-        Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
-        intent.setData(Uri.fromParts("package", getPackageName(), null));
-        startActivity(intent);
+    private String[] requiredGalleryPermissions() {
+        // Android 13+ uses READ_MEDIA_IMAGES; older versions use READ_EXTERNAL_STORAGE
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            return new String[]{Manifest.permission.READ_MEDIA_IMAGES};
+        } else {
+            return new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
+        }
     }
 
     @Override
     protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (currentImageUri != null) {
-            outState.putString(STATE_CURRENT_IMAGE_URI, currentImageUri.toString());
+        if (selectedImageUri != null) {
+            outState.putString(STATE_SELECTED_IMAGE_URI, selectedImageUri.toString());
         }
         if (pendingCameraUri != null) {
             outState.putString(STATE_PENDING_CAMERA_URI, pendingCameraUri.toString());
@@ -404,7 +454,7 @@ public class ScanActivity extends AppCompatActivity {
 
 ---
 
-## 3. Required string additions
+## 4. Required string additions
 
 ```xml
 <string name="camera_permission_title">Camera permission needed</string>
@@ -428,7 +478,7 @@ public class ScanActivity extends AppCompatActivity {
 
 ---
 
-## 4. `res/xml/file_paths.xml`
+## 5. `res/xml/file_paths.xml`
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
@@ -447,7 +497,7 @@ public class ScanActivity extends AppCompatActivity {
 
 ---
 
-## 5. `AndroidManifest.xml` FileProvider configuration
+## 6. `AndroidManifest.xml` FileProvider configuration
 
 ```xml
 <provider
@@ -463,7 +513,7 @@ public class ScanActivity extends AppCompatActivity {
 
 ---
 
-## 6. Permissions in `AndroidManifest.xml`
+## 7. Permissions in `AndroidManifest.xml`
 
 ```xml
 <uses-permission android:name="android.permission.CAMERA" />
@@ -475,18 +525,17 @@ public class ScanActivity extends AppCompatActivity {
 
 ---
 
-## 7. Why this solution is correct
+## 8. Why this solution is correct
 
 ### Camera flow
-- checks camera permission
-- explains why permission is needed
-- launches camera with `TakePicture`
-- stores the photo using `FileProvider`
+- checks camera permission using `RequestMultiplePermissions`
+- launches camera with `TakePicture` contract
+- stores the photo using `FileProvider` with `${applicationId}.fileprovider`
 
 ### Gallery flow
-- Android 13+: uses modern photo picker
-- Android 11-12: uses photo picker branch
-- Android 6-10: falls back to `ACTION_PICK` with storage permission
+- uses `GetContent("image/*")` — simpler than `PickVisualMedia`
+- Android 13+: requests `READ_MEDIA_IMAGES`
+- Android 6-12: requests `READ_EXTERNAL_STORAGE`
 
 ### Memory safety
 - decodes only image bounds first
@@ -500,38 +549,37 @@ public class ScanActivity extends AppCompatActivity {
 
 ---
 
-## 8. Multi-API behavior summary
+## 9. Multi-API behavior summary
 
-| API level | Gallery path | Permission needed |
+| API level | Gallery approach | Permission needed |
 |---|---|---|
-| 24-29 | `ACTION_PICK` | `READ_EXTERNAL_STORAGE` |
-| 30-32 | `PickVisualMedia` | no gallery permission |
-| 33+ | `PickVisualMedia` | no gallery permission |
+| 24-32 | `GetContent("image/*")` | `READ_EXTERNAL_STORAGE` |
+| 33+ | `GetContent("image/*")` | `READ_MEDIA_IMAGES` |
 
 ---
 
-## 9. Manual testing checklist
+## 10. Manual testing checklist
 
-1. Open scan screen.
-2. Tap **Capture** and grant camera permission.
+1. Open MainActivity.
+2. Tap **Open Camera** and grant camera permission.
 3. Take a photo and verify preview appears.
 4. Rotate the device and verify preview remains.
-5. Tap **Select** and choose an image from gallery.
+5. Tap **Open Gallery** and choose an image.
 6. Test cancel behavior for both camera and gallery.
-7. Deny permission and verify rationale/settings flows appear.
+7. Verify **Detect Disease** button enables only when image is selected.
 
 ---
 
-## 10. Final Checklist
+## 11. Final Checklist
 
-- [x] camera permission implemented with Activity Result API
-- [x] gallery permission flow included
+- [x] camera permission implemented with `RequestMultiplePermissions`
+- [x] gallery permission flow with Android 13+ support
 - [x] `TakePicture` contract used
-- [x] modern and legacy gallery picker included
-- [x] URI to bitmap conversion is memory-safe
-- [x] image preview displayed
+- [x] `GetContent("image/*")` gallery picker used
+- [x] image preview displayed via `setImageURI()`
 - [x] state preserved on rotation
-- [x] FileProvider configuration included
+- [x] FileProvider with `${applicationId}.fileprovider`
+- [x] Kotlin as primary, Java as secondary
 
 
 <!-- NAV_FOOTER_START -->
