@@ -342,7 +342,7 @@ The Java track is a faithful *translation* of the Kotlin app, not a redesign: ev
 `.java` twin at the mirrored path, XML layouts/resources and assets are structurally
 identical, and the FastAPI backend and ML pipeline are shared by both. Kotlin exercise
 skeletons live in `exercises/android-kotlin/` (Java in `exercises/android/`), and the Android-focused notebooks
-(weeks 02, 03, 05, 07, 09, 10, 11, 12) include "Parallel Kotlin Track" sections.
+(weeks 02, 03, 05, 07, 08, 09, 10, 11, 12) include "Parallel Kotlin Track" sections.
 
 - Dual-track guide: `docs/parallel-track/README.md`
 - File-by-file consistency contract: `docs/JAVA_VS_KOTLIN.md`

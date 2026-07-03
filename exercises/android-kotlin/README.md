@@ -7,9 +7,10 @@ same hands-on Android development exercises for the LeafGuard AI project, with s
 skeletons written in **Kotlin** for the parallel Kotlin track
 ([`android-app-kotlin/`](../../android-app-kotlin/)).
 
-> The Java track (`exercises/android/`) remains the CSE 2206 course-aligned standard.
-> This Kotlin track is a parallel enrichment path — same pedagogy, same TODOs, same
-> verification checklists, expressed in idiomatic Kotlin.
+> This Kotlin track is the **primary** exercise set for the Kotlin-first course. The
+> Java track (`exercises/android/`) is the complete secondary twin — same pedagogy,
+> same TODOs, same verification checklists, expressed in Java — and remains the
+> single home of the full task lists (maintained once to prevent drift).
 
 ## Weekly Mapping
 

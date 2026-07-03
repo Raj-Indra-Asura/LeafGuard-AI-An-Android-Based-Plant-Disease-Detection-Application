@@ -576,16 +576,16 @@ A **"track"** is simply *the programming language you follow the lessons in*. Th
 - [exercises/testing/](exercises/testing/) - Testing practice
 
 ### Documentation Templates
-- [docs/proposal-template.md](docs/) - Project proposal template
-- [docs/final-report-template.md](docs/) - Final report structure
-- [docs/presentation-outline.md](docs/) - Presentation guide
-- [docs/viva-questions.md](docs/) - 60+ viva practice questions
+- [docs/proposal-template.md](docs/proposal-template.md) - Project proposal template
+- [docs/final-report-template.md](docs/final-report-template.md) - Final report structure
+- [docs/presentation-outline.md](docs/presentation-outline.md) - Presentation guide
+- [docs/viva-questions.md](docs/viva-questions.md) - 60+ viva practice questions
 
 ### Supplementary Directories
 - [solutions/](solutions/) - Exercise solutions *(Available)*
 - [notebooks/](notebooks/) - Jupyter notebooks *(Available)*
 - [exercises/](exercises/) - Minimal working examples by topic *(Available)*
-- [reference-sheets/](docs/) - Quick reference guides *(Coming Soon)*
+- [reference-sheets/](reference-sheets/) - Quick reference guides *(Available)*
 
 ---
 
