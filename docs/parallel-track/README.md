@@ -6,19 +6,20 @@ LeafGuard AI ships **two complete, functionally identical Android apps**:
 
 | Track | Location | Language | Status |
 |---|---|---|---|
-| **Java track** (primary) | [`android-app/`](../../android-app/) | Java + XML | Course-aligned deliverable for CSE 2206 |
-| **Kotlin track** (parallel) | [`android-app-kotlin/`](../../android-app-kotlin/) | Kotlin + XML | Enrichment twin, same behavior |
+| **Kotlin track** (primary) | [`android-app-kotlin/`](../../android-app-kotlin/) | Kotlin + XML | Primary, recommended track — build here first |
+| **Java track** (secondary) | [`android-app/`](../../android-app/) | Java + XML | Complete secondary twin, same behavior; covers the CSE 2206 "Java for Android" syllabus topic |
 
-The Kotlin track is a **translation, not a redesign** — same screens, same navigation,
-same Room schema, same Retrofit API contract, same TFLite model handling, same
-assets. Only the *language layer* differs.
+The two tracks are **translations of each other, not redesigns** — same screens, same
+navigation, same Room schema, same Retrofit API contract, same TFLite model handling,
+same assets. Only the *language layer* differs.
 
 ## Why does it exist?
 
-The CSE 2206 syllabus explicitly requires **"Java for Android development"**, so the
-Java app is and remains the primary, course-aligned track. Kotlin is, however, the
-language Google recommends for modern Android development. Building the exact same
-app in both languages:
+This repository is **Kotlin-first**: Kotlin is the language Google recommends for
+modern Android development, so the Kotlin app is the primary track. The Java twin
+remains a complete, fully supported secondary track — it satisfies the CSE 2206
+syllabus topic "Java for Android development" and serves learners who prefer Java or
+whose instructor requires it. Building the exact same app in both languages:
 
 1. proves the underlying Android concepts (Activities, Room, Retrofit, TFLite,
    permissions, notifications) are language-independent;
@@ -74,6 +75,6 @@ Kotlin modules).
 ## Related learning material
 
 - Kotlin exercise skeletons: [`exercises/android-kotlin/`](../../exercises/android-kotlin/)
-- Notebook Kotlin sections: weeks 02, 03, 05, 07, 09, 10, 11, 12 each end with a
-  "Parallel Kotlin Track" section mirroring the week's Java lesson (backend/ML
+- Notebook Kotlin sections: weeks 02, 03, 05, 07, 08, 09, 10, 11, 12 each end with a
+  "Parallel Kotlin Track" section mirroring the week's lesson (backend/ML
   weeks 04 and 06 are Python-only and intentionally untouched).

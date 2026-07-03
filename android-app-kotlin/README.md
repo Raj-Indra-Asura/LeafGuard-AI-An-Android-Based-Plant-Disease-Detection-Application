@@ -2,16 +2,18 @@
 
 ## Overview
 
-This is the **Kotlin + XML parallel track** of the LeafGuard AI Android app — an exact
-functional twin of the Java app in [`android-app/`](../android-app/). Same features, same
-screens, same behavior, same API contract, same Room database schema, same on-device
-TensorFlow Lite model. Only the language layer differs: every `.java` class has a `.kt`
-counterpart with the same name in the same `com.leafguard` package.
+This is the **primary Kotlin + XML track** of the LeafGuard AI Android app — build here
+first. An exact functional twin exists in Java in [`android-app/`](../android-app/). Same
+features, same screens, same behavior, same API contract, same Room database schema, same
+on-device TensorFlow Lite model. Only the language layer differs: every `.kt` class has a
+`.java` counterpart with the same name in the same `com.leafguard` package.
 
-> **Why two apps?** The CSE 2206 course explicitly requires "Java for Android
-> development", so [`android-app/`](../android-app/) remains the primary, course-aligned
-> track. This Kotlin track is a parallel enrichment path for learning modern Android
-> idioms by direct comparison. See [`docs/parallel-track/README.md`](../docs/parallel-track/README.md)
+> **Why two apps?** This repository is **Kotlin-first**: Kotlin is Google's recommended
+> language for new Android apps and this track is the primary course deliverable. The
+> Java twin in [`android-app/`](../android-app/) is a complete secondary track kept for
+> learners who prefer Java, whose instructor requires it, or who want to learn modern
+> Android idioms by direct Java↔Kotlin comparison. See
+> [`docs/parallel-track/README.md`](../docs/parallel-track/README.md)
 > and the file-by-file consistency contract in [`docs/JAVA_VS_KOTLIN.md`](../docs/JAVA_VS_KOTLIN.md).
 
 ## Prerequisites
