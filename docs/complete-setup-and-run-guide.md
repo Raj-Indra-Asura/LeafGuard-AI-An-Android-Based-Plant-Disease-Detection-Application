@@ -71,7 +71,7 @@ Full step-by-step install instructions with verification commands are in
 | Android SDK | API 34 installed (min device API 24 / Android 7.0) | Compile target |
 | Emulator (AVD) or physical device | Any with a camera | Running the app |
 | Git | 2.x | Cloning the repo |
-| Python | **3.10 or 3.11** (required if you want TensorFlow; any 3.10+ for mock mode) | Backend + model scripts |
+| Python | **3.10 or 3.11** if you want TensorFlow (real model support); 3.12+ works for mock mode only | Backend + model scripts |
 | pip | 23.x+ | Backend dependencies |
 
 > ⚠️ You need an **internet connection the first time you build**: Gradle downloads the
