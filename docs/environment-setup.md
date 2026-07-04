@@ -291,3 +291,5 @@ taskkill /PID <PID> /F
 ---
 
 **Once all checks pass, proceed to [Week 01](../roadmap/week-01-project-understanding/README.md).**
+To run the complete finished system right away (app + backend + model), follow
+[`complete-setup-and-run-guide.md`](complete-setup-and-run-guide.md).

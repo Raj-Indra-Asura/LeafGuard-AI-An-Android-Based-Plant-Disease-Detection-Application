@@ -15,6 +15,10 @@
 2. Read [`COURSE_OVERVIEW.md`](COURSE_OVERVIEW.md) to understand the course, then skim [`GLOSSARY.md`](GLOSSARY.md) for any unfamiliar word.
 3. Open [`roadmap/week-01-project-understanding/README.md`](roadmap/week-01-project-understanding/README.md) and begin Week 01.
 
+> **⚡ Just want to run the finished app right now?** Follow the complete end-to-end
+> setup & run guide: [`docs/complete-setup-and-run-guide.md`](docs/complete-setup-and-run-guide.md)
+> — app, backend, model, verification checklist, and release build in one document.
+
 ---
 
 ## 🍴 Choose Your Track

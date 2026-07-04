@@ -3,6 +3,16 @@
 ## Overview
 This guide provides complete instructions for setting up and running the FastAPI backend server for LeafGuard AI. The backend provides REST API endpoints for plant disease detection using a machine learning model, serving as an alternative or complement to on-device inference.
 
+> **✅ A complete working implementation already ships in this folder** (`main.py`,
+> `config.py`, `model_loader.py`, `requirements.txt`). You do **not** need to write any
+> code to run it — follow the [Quick Start](#quick-start) below. If no trained model file
+> is present (or TensorFlow is not installed), the server automatically starts in **mock
+> mode** and still answers every endpoint, so the Android app works end-to-end out of the
+> box. The "Implementation Guide" sections further down are a learning walkthrough that
+> shows *how* such a server is built — treat them as study material, not setup steps.
+> For the full app + backend walkthrough, see
+> [`docs/complete-setup-and-run-guide.md`](../docs/complete-setup-and-run-guide.md).
+
 ## Prerequisites
 
 - **Python**: Version 3.8 - 3.11 (recommended: 3.10)
@@ -22,33 +32,17 @@ python3 --version
 # Should output: Python 3.8.x or higher
 ```
 
-## Project Structure
+## Project Structure (actual files in this folder)
 
 ```
 backend-api/
-├── main.py                      # FastAPI application entry point
-├── requirements.txt             # Python dependencies
-├── .env                         # Environment variables (create this)
-├── models/
-│   ├── model_loader.py          # Load and cache ML model
-│   └── disease_classifier.py   # Model inference logic
-├── utils/
-│   ├── image_processing.py      # Image preprocessing utilities
-│   ├── response_formatter.py    # API response formatting
-│   └── validators.py            # Input validation
-├── config/
-│   ├── settings.py              # Configuration management
-│   └── labels.py                # Disease labels and metadata
-├── api/
-│   ├── routes/
-│   │   ├── health.py            # Health check endpoint
-│   │   ├── predict.py           # Prediction endpoints
-│   │   └── info.py              # Model info endpoints
-│   └── middleware/
-│       └── cors.py              # CORS configuration
-├── tests/
-│   ├── test_api.py              # API endpoint tests
-│   └── test_model.py            # Model inference tests
+├── main.py                      # FastAPI application: /, /diseases, /predict endpoints + disease knowledge base
+├── config.py                    # Configuration via environment variables / optional .env file
+├── model_loader.py              # Loads the Keras model, or falls back to a mock predictor
+├── requirements.txt             # Python dependencies (already provided)
+├── .env                         # OPTIONAL — override configuration defaults (create only if needed)
+├── models/                      # OPTIONAL — place a trained model here
+│   └── leafguard_model.keras    #   default MODEL_PATH; absent = automatic mock mode
 └── README.md                    # This file
 ```
 
@@ -92,65 +86,59 @@ pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 3. Create `requirements.txt`
+### 3. About `requirements.txt`
 
-Create this file with the following content:
+The file is **already provided** in this folder — do not create it. It pins:
 
 ```txt
-# FastAPI and Server
 fastapi==0.109.0
 uvicorn[standard]==0.27.0
 python-multipart==0.0.6
-
-# Machine Learning
-tensorflow==2.15.0
-# OR for PyTorch users:
-# torch==2.1.2
-# torchvision==0.16.2
-
-# Image Processing
-Pillow==10.2.0
-numpy==1.24.3
-
-# Utilities
+pillow==10.2.0
+numpy==1.26.3
+tensorflow==2.14.0
 python-dotenv==1.0.0
-pydantic==2.5.3
-pydantic-settings==2.1.0
-
-# Optional: GPU support (TensorFlow)
-# tensorflow-gpu==2.15.0
-
-# Development and Testing
-pytest==7.4.3
-httpx==0.26.0
 ```
 
-### 4. Download or Place ML Model
+> **Note**: `tensorflow==2.14.0` requires **Python 3.9 – 3.11**. If you are on a newer
+> Python or TensorFlow fails to install, you can skip it entirely:
+> ```bash
+> pip install fastapi "uvicorn[standard]" python-multipart pillow numpy python-dotenv
+> ```
+> The server detects the missing TensorFlow and runs in **mock mode** automatically —
+> every endpoint still works, so you can develop and demo the full app without it.
 
-Place your TensorFlow Lite model file:
+### 4. (Optional) Place a Trained ML Model
+
+The backend loads a **Keras** model (not `.tflite` — that format is for the Android app's
+on-device inference). If you have a trained model:
+
 ```bash
-# Create models directory
-mkdir -p models/saved_model
+# Create the models directory
+mkdir -p models
 
-# Copy your model file
-# Place: models/saved_model/model.tflite
-# Place: models/saved_model/labels.txt
+# Place your trained Keras model at the default path:
+#   models/leafguard_model.keras
 ```
 
-### 5. Create Environment Variables
+If the file is absent, the server logs a warning and falls back to the mock predictor.
+See [`../model/model-acquisition-guide.md`](../model/model-acquisition-guide.md) for how
+to obtain or train a model. The model's output classes must match the 10 labels in
+`main.py` (`DISEASE_INFO`) / [`../model/labels.txt`](../model/labels.txt).
 
-Create `.env` file in `backend-api/` directory:
+### 5. (Optional) Create Environment Variables
+
+All settings have working defaults (see `config.py`). To override them, create a `.env`
+file in `backend-api/`:
 
 ```bash
-# .env file
-MODEL_PATH=models/saved_model/model.tflite
-LABELS_PATH=models/saved_model/labels.txt
-HOST=0.0.0.0
-PORT=8000
-RELOAD=True
-LOG_LEVEL=info
-MAX_IMAGE_SIZE=10485760
-ALLOWED_ORIGINS=*
+# .env file — every line is optional
+MODEL_PATH=models/leafguard_model.keras   # path to the trained Keras model
+IMAGE_SIZE=224                            # input resolution expected by the model
+CONFIDENCE_THRESHOLD=0.50                 # below this, a low-confidence log line is emitted
+USE_MOCK=false                            # true = force mock predictions even if a model exists
+PORT=8000                                 # informational; pass --port to uvicorn to change it
+ALLOWED_ORIGINS=*                         # comma-separated CORS origins
 ```
 
 **Important**: Add `.env` to `.gitignore` to avoid committing sensitive data:
@@ -159,6 +147,12 @@ echo ".env" >> .gitignore
 ```
 
 ## Implementation Guide
+
+> **📚 Learning material — not setup steps.** Everything below shows how a server like
+> this is designed. The real, already-working code lives in `main.py`, `config.py`, and
+> `model_loader.py` in this folder, and its details differ slightly from these teaching
+> sketches (real endpoints: `GET /`, `GET /diseases`, `POST /predict` with form field
+> `image`).
 
 ### Minimal `main.py` Structure
 
@@ -472,19 +466,21 @@ Once the server is running:
 
 ## Testing the API
 
+The real endpoints are `GET /` (health), `GET /diseases`, and `POST /predict` with a
+multipart form field named **`image`**.
+
 ### Using cURL
 
 ```bash
-# Health check
-curl http://localhost:8000/health
+# Health check (also reports whether a real model or the mock predictor is active)
+curl http://localhost:8000/
 
-# Predict from image
+# Predict from image (note the field name: image)
 curl -X POST "http://localhost:8000/predict" \
-  -H "Content-Type: multipart/form-data" \
-  -F "file=@/path/to/plant-image.jpg"
+  -F "image=@/path/to/plant-image.jpg"
 
-# Get model info
-curl http://localhost:8000/model/info
+# List every disease in the knowledge base
+curl http://localhost:8000/diseases
 ```
 
 ### Using Python Requests
@@ -494,7 +490,7 @@ import requests
 
 # Test prediction
 url = "http://localhost:8000/predict"
-files = {"file": open("test_image.jpg", "rb")}
+files = {"image": open("test_image.jpg", "rb")}
 response = requests.post(url, files=files)
 print(response.json())
 ```
@@ -504,7 +500,7 @@ print(response.json())
 1. Create new POST request
 2. URL: `http://localhost:8000/predict`
 3. Body → form-data
-4. Key: `file` (type: File)
+4. Key: `image` (type: File)
 5. Value: Select image file
 6. Send
 
@@ -533,16 +529,16 @@ print(response.json())
    uvicorn main:app --host 0.0.0.0 --port 8000
    ```
 
-3. **Update Android app** to use your computer's IP:
-   ```java
-   // In Android app's ApiClient.java
-   private static final String BASE_URL = "http://192.168.1.105:8000/";
-   ```
+3. **Update the Android app** to use your computer's IP — no code change needed:
+   open the app's **Settings** screen and set the Backend API URL to
+   `http://192.168.1.105:8000/` (the default is `http://10.0.2.2:8000/`, which only
+   works from the emulator). The default lives in
+   `network/RetrofitClient.kt` / `RetrofitClient.java` if you want to change it permanently.
 
 4. **Test connection from phone**:
    - Open browser on phone
-   - Navigate to: `http://192.168.1.105:8000/health`
-   - Should see: `{"status":"healthy","model_loaded":true}`
+   - Navigate to: `http://192.168.1.105:8000/`
+   - Should see: `{"status":"ok","use_mock":...,"model_loaded":...}`
 
 ### Using Android Emulator
 
@@ -551,11 +547,12 @@ The Android emulator cannot access `localhost` or `127.0.0.1` directly.
 **Use special alias**: `10.0.2.2`
 
 ```java
-// In Android app
+// In Android app — this is already the default in RetrofitClient
 private static final String BASE_URL = "http://10.0.2.2:8000/";
 ```
 
-This routes to your host machine's localhost.
+This routes to your host machine's localhost. The app ships with this default, so the
+emulator + local backend combination works with zero configuration.
 
 ### Firewall Configuration
 
@@ -828,7 +825,7 @@ class PredictionResponse(BaseModel):
 
 ### Unit Tests with Pytest
 
-Create `tests/test_api.py`:
+Create `tests/test_api.py` (endpoints below match the real server in this folder):
 
 ```python
 from fastapi.testclient import TestClient
@@ -837,23 +834,23 @@ from main import app
 client = TestClient(app)
 
 def test_health_check():
-    response = client.get("/health")
-    assert response.status_code == 200
-    assert response.json()["status"] == "healthy"
-
-def test_root():
     response = client.get("/")
     assert response.status_code == 200
-    assert "LeafGuard AI API" in response.json()["message"]
+    assert response.json()["status"] == "ok"
+
+def test_diseases_list():
+    response = client.get("/diseases")
+    assert response.status_code == 200
+    assert response.json()["count"] == 10
 
 def test_predict_with_valid_image():
     with open("test_image.jpg", "rb") as f:
         response = client.post(
             "/predict",
-            files={"file": ("test.jpg", f, "image/jpeg")}
+            files={"image": ("test.jpg", f, "image/jpeg")}
         )
     assert response.status_code == 200
-    assert "prediction" in response.json()
+    assert "disease" in response.json()
 ```
 
 Run tests:

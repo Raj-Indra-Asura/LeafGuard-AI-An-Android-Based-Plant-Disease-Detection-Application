@@ -8,6 +8,7 @@
 
 ### Get Started
 - **Start learning from Week 01** → [`LEARNING_PATH.md`](LEARNING_PATH.md) → [Week 01](roadmap/week-01-project-understanding/README.md)
+- **Run the complete app end-to-end (app + backend + model)** → [`docs/complete-setup-and-run-guide.md`](docs/complete-setup-and-run-guide.md)
 - **Understand the course context** → [`COURSE_OVERVIEW.md`](COURSE_OVERVIEW.md)
 - **Learn how to learn effectively** → [`LEARNING_RULES.md`](LEARNING_RULES.md)
 - **See what I'll build** → [`README.md`](README.md) → "What You Will Build"
