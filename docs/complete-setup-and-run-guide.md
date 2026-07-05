@@ -77,6 +77,24 @@ Full step-by-step install instructions with verification commands are in
 > ⚠️ You need an **internet connection the first time you build**: Gradle downloads the
 > Android Gradle Plugin and libraries from Google Maven and Maven Central (~200 MB).
 
+> ⚠️ **JDK 17 is mandatory.** The Android Gradle Plugin refuses to run on Java 11 or
+> older (`Android Gradle plugin requires Java 17 to run. You are currently using Java 11`).
+> Verify **before** building:
+>
+> ```bash
+> java -version        # must report 17.x
+> ```
+>
+> On GitHub Codespaces / dev containers with SDKMAN, switch with:
+>
+> ```bash
+> sdk install java 17.0.11-ms   # if 17 is not installed yet
+> sdk use java 17.0.11-ms
+> export JAVA_HOME="$(dirname "$(dirname "$(readlink -f "$(which java)")")")"
+> ```
+>
+> Android Studio users can skip this — the IDE bundles JDK 17.
+
 ---
 
 ## 3. Clone the repository
@@ -128,6 +146,39 @@ cd android-app-kotlin
 # APK output: app/build/outputs/apk/debug/app-debug.apk
 adb install app/build/outputs/apk/debug/app-debug.apk
 ```
+
+#### Headless setup (Codespaces / server without Android Studio) — verified working
+
+Without Android Studio there is no bundled SDK, so `assembleDebug` fails with
+*"SDK location not found"*. Install the command-line SDK once:
+
+```bash
+# 1. Ensure JDK 17 is active (see the warning in section 2)
+java -version
+
+# 2. Download the command-line tools and install the required packages
+mkdir -p ~/android-sdk/cmdline-tools
+cd ~/android-sdk/cmdline-tools
+wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+unzip -q commandlinetools-linux-*.zip && mv cmdline-tools latest && rm commandlinetools-linux-*.zip
+
+export ANDROID_HOME=~/android-sdk
+yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses
+"$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" \
+  "platform-tools" "platforms;android-34" "build-tools;34.0.0"
+
+# 3. Point BOTH app tracks at the SDK (local.properties is gitignored — per machine)
+cd <repo-root>
+echo "sdk.dir=$HOME/android-sdk" > android-app-kotlin/local.properties
+echo "sdk.dir=$HOME/android-sdk" > android-app/local.properties
+
+# 4. Build
+cd android-app-kotlin && ./gradlew assembleDebug
+```
+
+Expect the first build to take several minutes (Gradle + AGP + dependency downloads).
+You cannot *run* an emulator inside a typical Codespace — download the built
+`app-debug.apk` and install it on a device, or use a local machine for Part A steps 3–5.
 
 ---
 
@@ -299,7 +350,10 @@ For a distributable, installable release build (Week 12 material):
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| Gradle sync fails: "SDK location not found" | `ANDROID_HOME` not set / no `local.properties` | Let Android Studio generate `local.properties`, or set `ANDROID_HOME` |
+| Build fails: "Android Gradle plugin requires Java 17 to run. You are currently using Java 11" | `JAVA_HOME` points at an old JDK (common on Codespaces) | Switch to JDK 17: `sdk use java 17.0.11-ms` (SDKMAN) or set `JAVA_HOME` to a JDK 17 install; verify with `java -version` |
+| Gradle sync fails: "SDK location not found" | `ANDROID_HOME` not set / no `local.properties` | Let Android Studio generate `local.properties`, or follow the *Headless setup* steps in Part A and write `local.properties` yourself |
+| Build fails: `resource style/Widget.Material3.OutlinedButton not found` | Wrong Material 3 style name in a layout (correct name is `Widget.Material3.Button.OutlinedButton`) | Already fixed in this repo's layouts; if you reintroduce it, use the full `…Button.OutlinedButton` name |
+| Build fails: `Unresolved reference: BuildConfig` / `cannot find symbol BuildConfig` | AGP 8 disables `BuildConfig` generation by default | Already fixed: `buildFeatures { buildConfig true }` is set in both tracks' `app/build.gradle` — keep it if you edit that block |
 | Gradle sync fails: cannot resolve `com.android.application` | No access to `dl.google.com` (offline/blocked network) | Build on a network with Google Maven access; corporate proxies must allow it |
 | App result always tomato-related, Logcat warns about "heuristic fallback" | `model.tflite` is still the text placeholder | Expected demo behavior; install a real model (Part D) |
 | Cloud mode: "Unable to reach the backend" | Backend not running, wrong URL, or firewall | Verify `curl http://localhost:8000/`; emulator must use `10.0.2.2`, phone must use the computer's LAN IP; open port 8000 |

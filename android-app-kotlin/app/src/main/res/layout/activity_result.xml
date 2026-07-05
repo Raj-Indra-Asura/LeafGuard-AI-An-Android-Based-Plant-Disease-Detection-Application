@@ -148,7 +148,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonShare"
-                style="@style/Widget.Material3.OutlinedButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
@@ -163,7 +163,7 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/buttonBackHome"
-                style="@style/Widget.Material3.TextButton"
+                style="@style/Widget.Material3.Button.TextButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"

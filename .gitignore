@@ -19,6 +19,7 @@ local.properties
 __pycache__/
 *.pyc
 .venv/
+venv/
 
 # Compiled Android app packages (built from source; don't store in Git)
 *.apk
