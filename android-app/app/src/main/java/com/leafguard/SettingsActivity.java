@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceManager;
 
 import com.leafguard.databinding.ActivitySettingsBinding;
+import com.leafguard.ui.BottomNav;
 
 /**
  * SettingsActivity
@@ -50,6 +51,8 @@ public class SettingsActivity extends AppCompatActivity {
 
         setSupportActionBar(binding.topAppBar);
         binding.topAppBar.setNavigationOnClickListener(view -> finish());
+
+        BottomNav.setup(this, binding.bottomNavigation, R.id.nav_about);
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 

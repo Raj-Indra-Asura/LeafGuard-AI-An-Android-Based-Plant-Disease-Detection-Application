@@ -2,15 +2,16 @@
 
 ## Objective
 
-By the end of this build task, you will have created a complete Android project structure for LeafGuard with 5 functional activities, proper navigation flow, and a professional UI foundation. This is the skeleton that will house all future features.
+By the end of this build task, you will have created a complete Android project structure for LeafGuard with 8 Activity classes: 5 top-level tab screens and 3 supporting workflow screens. This is the skeleton that will house all future features.
 
 ## Task Overview
 
 **What You Will Build:**
 - Android Studio project: LeafGuard
-- 5 activities with XML layouts
+- 8 activities with XML layouts
+- 5-tab bottom navigation (Home, Scan, Analytics, Library, About)
 - Complete navigation flow with Intent-based routing
-- Proper resource management (strings, colors, dimensions)
+- Proper resource management (strings, colors, drawables)
 - Professional UI using Material Design and ConstraintLayout
 - Git repository with organized commits
 
@@ -43,7 +44,7 @@ Before starting this build task, ensure:
 3. Select "Empty Activity" template
 4. Configure project:
    - Name: `LeafGuard`
-   - Package name: `com.example.leafguard`
+    - Package name: `com.leafguard`
    - Save location: Choose appropriate directory
    - Language: `Java`
    - Minimum SDK: `API 24: Android 7.0 (Nougat)`
@@ -62,26 +63,23 @@ Before starting this build task, ensure:
 **Time:** 30 minutes
 
 1. Create package structure:
-   ```
-   com.example.leafguard/
-   ├── activities/
-   ├── adapters/
-   ├── models/
-   ├── viewmodels/
-   ├── repositories/
-   ├── database/
-   ├── network/
-   └── utils/
-   ```
+    ```
+    com.leafguard/
+    ├── database/
+    ├── ml/
+    ├── network/
+    ├── ui/
+    └── utils/
+    ```
 
-2. Move `MainActivity.java` to `activities/` package
-3. Update imports in MainActivity
-4. Update AndroidManifest.xml activity name to `.activities.MainActivity`
-5. Build and run to verify refactoring works
+2. Keep Activity classes directly under `com.leafguard` for this beginner version
+3. Put reusable shared helpers under `com.leafguard.ui` (for example, `BottomNav`)
+4. Verify AndroidManifest.xml activity names use `.MainActivity`, `.ScanActivity`, etc.
+5. Build and run to verify the structure works
 
 **Verification:**
 - [ ] Packages created
-- [ ] MainActivity in activities package
+- [ ] Activity classes live under `com.leafguard`
 - [ ] App still runs without errors
 
 **Commit:** `Week 02: Organize package structure`
@@ -94,11 +92,11 @@ Edit `app/build.gradle`:
 
 ```gradle
 android {
-    namespace 'com.example.leafguard'
+    namespace 'com.leafguard'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.leafguard"
+        applicationId "com.leafguard"
         minSdk 24
         targetSdk 34
         versionCode 1
@@ -156,41 +154,32 @@ dependencies {
 <resources>
     <string name="app_name">LeafGuard AI</string>
 
-    <!-- MainActivity -->
-    <string name="welcome_title">Welcome to LeafGuard</string>
-    <string name="welcome_subtitle">AI-Powered Plant Disease Detection</string>
-    <string name="scan_leaf">Scan New Leaf</string>
-    <string name="view_history">View Scan History</string>
-    <string name="settings">Settings</string>
+    <!-- Home dashboard -->
+    <string name="home_dashboard_title">🍃 LeafGuard AI</string>
+    <string name="home_dashboard_subtitle">Plant Disease Detection System</string>
+    <string name="quick_scan_title">Quick Scan</string>
+    <string name="start_scanning">Start Scanning</string>
 
-    <!-- MainActivity (Capture functionality is here) -->
-    <string name="select_image_source">Select Image Source</string>
-    <string name="camera">Take Photo with Camera</string>
-    <string name="gallery">Choose from Gallery</string>
-    <string name="image_preview">Image Preview</string>
-    <string name="analyze">Analyze Leaf</string>
-    <string name="disease_library">Disease Library</string>
+    <!-- Bottom navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_scan">Scan</string>
+    <string name="nav_analytics">Analytics</string>
+    <string name="nav_library">Library</string>
+    <string name="nav_about">About</string>
 
-    <!-- ResultActivity -->
-    <string name="scan_result">Scan Result</string>
-    <string name="disease_detected">Disease Detected:</string>
-    <string name="confidence_score">Confidence:</string>
-    <string name="treatment_info">Treatment Information</string>
+    <!-- ScanActivity -->
+    <string name="scan_screen_title">Scan Leaf</string>
+    <string name="tap_to_upload">Tap to upload image</string>
+    <string name="choose_image_source_camera">Take Photo</string>
+    <string name="choose_image_source_gallery">Choose from Gallery</string>
+
+    <!-- ResultActivity / History / Settings -->
+    <string name="result_screen_title">Detection Result</string>
+    <string name="confidence_label">Confidence</string>
     <string name="save_to_history">Save to History</string>
-    <string name="scan_another">Scan Another Leaf</string>
-
-    <!-- HistoryActivity -->
-    <string name="scan_history">Scan History</string>
-    <string name="no_history">No scan history yet</string>
-    <string name="clear_history">Clear History</string>
-
-    <!-- SettingsActivity -->
-    <string name="app_settings">Settings</string>
-    <string name="offline_mode">Offline Mode</string>
-    <string name="offline_mode_desc">Use on-device AI model</string>
-    <string name="clear_cache">Clear Cache</string>
-    <string name="about">About</string>
-    <string name="version">Version 1.0.0</string>
+    <string name="history_screen_title">Scan History</string>
+    <string name="history_empty_state">No saved scans yet. Save a result to see it appear here.</string>
+    <string name="settings_screen_title">Settings</string>
 </resources>
 ```
 
@@ -273,9 +262,9 @@ dependencies {
 
 **Time:** 30 minutes
 
-Create 5 new activities (in addition to MainActivity):
+Create the first 5 supporting/top-level activities (in addition to MainActivity). Two more tab activities, `ScanActivity` and `AnalyticsActivity`, are added in Step 11 after the beginner foundation is in place.
 
-1. Right-click `activities` package → New → Activity → Empty Activity
+1. Right-click the `com.leafguard` package → New → Activity → Empty Activity
 2. Create:
    - `ResultActivity`
    - `HistoryActivity`
@@ -285,11 +274,11 @@ Create 5 new activities (in addition to MainActivity):
 3. Uncheck "Generate Layout File" (we'll create layouts manually)
 4. Uncheck "Launcher Activity"
 
-**Verify AndroidManifest.xml includes all 6 activities:**
+**Verify AndroidManifest.xml includes these 6 foundation activities:**
 
 ```xml
 <activity
-    android:name=".activities.MainActivity"
+    android:name=".MainActivity"
     android:exported="true">
     <intent-filter>
         <action android:name="android.intent.action.MAIN" />
@@ -298,33 +287,33 @@ Create 5 new activities (in addition to MainActivity):
 </activity>
 
 <activity
-    android:name=".activities.ResultActivity"
+    android:name=".ResultActivity"
     android:exported="false"
-    android:label="@string/scan_result" />
+    android:label="@string/result_screen_title" />
 
 <activity
-    android:name=".activities.HistoryActivity"
+    android:name=".HistoryActivity"
     android:exported="false"
-    android:label="@string/scan_history" />
+    android:label="@string/history_screen_title" />
 
 <activity
-    android:name=".activities.HistoryDetailActivity"
+    android:name=".HistoryDetailActivity"
     android:exported="false"
-    android:label="@string/scan_detail" />
+    android:label="@string/history_detail_screen_title" />
 
 <activity
-    android:name=".activities.DiseaseLibraryActivity"
+    android:name=".DiseaseLibraryActivity"
     android:exported="false"
-    android:label="@string/disease_library" />
+    android:label="@string/disease_library_screen_title" />
 
 <activity
-    android:name=".activities.SettingsActivity"
+    android:name=".SettingsActivity"
     android:exported="false"
-    android:label="@string/app_settings" />
+    android:label="@string/settings_screen_title" />
 ```
 
 **Verification:**
-- [ ] All 6 activity classes created
+- [ ] Foundation activity classes created
 - [ ] All activities in AndroidManifest.xml
 - [ ] Project builds successfully
 
@@ -345,7 +334,7 @@ Create `res/layout/activity_main.xml`:
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background"
-    tools:context=".activities.MainActivity">
+    tools:context=".MainActivity">
 
     <!-- App Title -->
     <TextView
@@ -438,7 +427,7 @@ Create `res/layout/activity_main.xml`:
 **MainActivity.kt (Kotlin — primary):**
 
 ```kotlin
-package com.leafguard.activities
+package com.leafguard
 
 import android.content.Intent
 import android.os.Bundle
@@ -519,7 +508,7 @@ class MainActivity : AppCompatActivity() {
 <summary>Java (secondary)</summary>
 
 ```java
-package com.leafguard.activities;
+package com.leafguard;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
@@ -644,7 +633,7 @@ Ensure navigation works:
 - MainActivity → HistoryActivity → HistoryDetailActivity
 - MainActivity → DiseaseLibraryActivity
 - MainActivity → SettingsActivity
-- ResultActivity → MainActivity (with FLAG_ACTIVITY_CLEAR_TOP)
+- ResultActivity → MainActivity (Back to Home action)
 - All activities support Back button
 
 Test scenarios:
@@ -681,11 +670,11 @@ Test scenarios:
 
 ## Detailed Layouts (Copy-Paste Ready)
 
-> Note: MainActivity handles image capture directly. The layouts below demonstrate ConstraintLayout for all six activities.
+> Note: Older drafts of this task placed capture directly in MainActivity. The current app uses the beginner-friendly final structure from Step 11: MainActivity is the Home dashboard, and ScanActivity owns camera/gallery capture and detection.
 
 ### MainActivity Layout (activity_main.xml)
 
-This layout includes capture buttons (Camera/Gallery) plus navigation to other activities. See Step 6 for the full layout.
+MainActivity is now the Home dashboard. It contains the Quick Scan banner, History/Library cards, Technical Features rows, and the shared bottom navigation bar. The capture UI lives in ScanActivity.
 
 ### HistoryDetailActivity Layout (activity_history_detail.xml)
 
@@ -898,7 +887,7 @@ This layout includes capture buttons (Camera/Gallery) plus navigation to other a
         android:id="@+id/tvNoHistory"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/no_history"
+        android:text="@string/history_empty_state"
         android:textSize="@dimen/text_size_body_large"
         android:textColor="@color/text_secondary"
         app:layout_constraintTop_toTopOf="parent"
@@ -926,7 +915,7 @@ This layout includes capture buttons (Camera/Gallery) plus navigation to other a
         android:id="@+id/tvSettingsTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/app_settings"
+        android:text="@string/settings_screen_title"
         android:textSize="@dimen/text_size_headline"
         android:textStyle="bold"
         app:layout_constraintTop_toTopOf="parent"
@@ -937,7 +926,7 @@ This layout includes capture buttons (Camera/Gallery) plus navigation to other a
         android:id="@+id/tvOfflineMode"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/offline_mode"
+        android:text="@string/settings_backend_section"
         android:textSize="@dimen/text_size_body_large"
         android:textStyle="bold"
         app:layout_constraintTop_toBottomOf="@id/tvSettingsTitle"
@@ -948,7 +937,7 @@ This layout includes capture buttons (Camera/Gallery) plus navigation to other a
         android:id="@+id/tvOfflineModeDesc"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="@string/offline_mode_desc"
+        android:text="@string/settings_backend_url_hint_note"
         android:textSize="@dimen/text_size_body"
         android:textColor="@color/text_secondary"
         app:layout_constraintTop_toBottomOf="@id/tvOfflineMode"
@@ -1089,10 +1078,13 @@ public class MainActivity extends AppCompatActivity {
 }
 ```
 
-### ResultActivity.java
+> The Java snippets below are **starter examples** for learning Intent extras and Activity structure.
+> For the exact current UI, follow Step 11 and the existing source files in `android-app-kotlin/` and `android-app/`.
+
+### ResultActivity.java (starter-only example)
 
 ```java
-package com.example.leafguard.activities;
+package com.leafguard;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
@@ -1102,7 +1094,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.example.leafguard.R;
+import com.leafguard.R;
 
 public class ResultActivity extends AppCompatActivity {
 
@@ -1151,23 +1143,23 @@ public class ResultActivity extends AppCompatActivity {
 
     private void navigateToMainActivity() {
         Intent intent = new Intent(ResultActivity.this, MainActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         finish();
     }
 }
 ```
 
-### HistoryActivity.java
+### HistoryActivity.java (starter-only example)
 
 ```java
-package com.example.leafguard.activities;
+package com.leafguard;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.example.leafguard.R;
+import com.leafguard.R;
 
 public class HistoryActivity extends AppCompatActivity {
 
@@ -1184,10 +1176,10 @@ public class HistoryActivity extends AppCompatActivity {
 }
 ```
 
-### SettingsActivity.java
+### SettingsActivity.java (starter-only example)
 
 ```java
-package com.example.leafguard.activities;
+package com.leafguard;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
@@ -1196,7 +1188,7 @@ import android.widget.Button;
 import android.widget.Toast;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 
-import com.example.leafguard.R;
+import com.leafguard.R;
 
 public class SettingsActivity extends AppCompatActivity {
 
@@ -1232,23 +1224,28 @@ public class SettingsActivity extends AppCompatActivity {
 Before proceeding to Week 03, verify all items:
 
 **Project Structure:**
-- [ ] Package structure organized (activities/, models/, utils/, etc.)
-- [ ] All 5 activities created in activities package
-- [ ] All 5 layout files created and properly named
+- [ ] Package structure organized (`com.leafguard`, database/, network/, ml/, utils/, ui/)
+- [ ] All 8 activities created
+- [ ] All 8 layout files created and properly named
 - [ ] AndroidManifest.xml declares all activities correctly
 
 **Resources:**
 - [ ] strings.xml contains all strings (no hardcoded strings in code/layouts)
 - [ ] colors.xml contains cohesive color scheme
-- [ ] dimens.xml contains standard dimensions
-- [ ] All resources properly referenced (@string/, @color/, @dimen/)
+- [ ] themes.xml contains Theme.LeafGuardAI
+- [ ] Drawables for bottom nav icons and custom backgrounds exist
+- [ ] Resources properly referenced (@string/, @color/, @drawable/)
 
 **Functionality:**
 - [ ] App launches without crashes
-- [ ] MainActivity camera/gallery buttons respond (capture flow lives in MainActivity)
+- [ ] MainActivity dashboard shows Quick Scan, History, Library, and Technical Features
+- [ ] Bottom navigation switches between Home, Scan, Analytics, Library, and About
+- [ ] Start Scanning opens ScanActivity
+- [ ] ScanActivity camera/gallery chooser responds
+- [ ] ScanActivity → ResultActivity navigation works with data passing
 - [ ] MainActivity → HistoryActivity navigation works
-- [ ] MainActivity → SettingsActivity navigation works
-- [ ] MainActivity → ResultActivity navigation works with data passing
+- [ ] MainActivity → DiseaseLibraryActivity navigation works
+- [ ] SettingsActivity works as the About tab
 - [ ] ResultActivity → MainActivity navigation works
 - [ ] Back button works correctly on all activities
 - [ ] Screen rotation preserves activities
@@ -1261,7 +1258,7 @@ Before proceeding to Week 03, verify all items:
 - [ ] Consistent naming conventions
 
 **Evidence:**
-- [ ] Screenshots of all 5 activities saved
+- [ ] Screenshots of all 8 activities saved
 - [ ] Video of complete navigation flow recorded
 - [ ] Logcat screenshot showing lifecycle events saved
 - [ ] Debug APK generated and saved
@@ -1300,10 +1297,13 @@ Submit to `evidence/week-02/build-task/`:
 
 1. **Complete Android project** (commit to Git)
 2. **Screenshots folder** with:
-   - MainActivity
-   - MainActivity (capture)
+    - MainActivity (Home dashboard)
+    - ScanActivity (upload/capture screen)
+    - AnalyticsActivity
+    - DiseaseLibraryActivity
    - ResultActivity
    - HistoryActivity
+    - HistoryDetailActivity
    - SettingsActivity
    - Project structure
    - Logcat lifecycle events
@@ -1335,20 +1335,190 @@ Submit to `evidence/week-02/build-task/`:
 
 ---
 
+## Step 11: Build the Dashboard Home Screen + Bottom Navigation
+
+**Time:** 3-4 hours
+
+The earlier steps in this file teach Activities, layouts, and navigation in
+small beginner-sized pieces. This step combines those pieces into the
+**actual current LeafGuard UI**: a dashboard Home screen and a 5-tab bottom
+navigation bar (Home / Scan / Analytics / Library / About), matching
+`android-app-kotlin/` exactly.
+See [README.md, Section 7](README.md#7-the-current-app-design-dashboard-home--bottom-navigation)
+for a description of the finished design before starting.
+
+### 11a. Shared bottom navigation bar
+
+1. Create `res/menu/bottom_nav_menu.xml` with 5 `<item>` entries: `nav_home`,
+   `nav_scan`, `nav_analytics`, `nav_library`, `nav_about` — each with an
+   `android:icon` and `android:title`.
+2. Add 5 vector drawables, one per tab (`res/drawable/ic_nav_home.xml`,
+   `ic_nav_scan.xml`, `ic_nav_analytics.xml`, `ic_nav_library.xml`,
+   `ic_nav_about.xml`). A single `<path>` per vector is enough —
+   `BottomNavigationView` tints icons automatically based on selection.
+3. Write **one** shared navigation helper instead of repeating the same
+   click-handling code on every screen:
+
+   ```kotlin
+   // com/leafguard/ui/BottomNav.kt
+   fun AppCompatActivity.setupBottomNav(bottomNav: BottomNavigationView, currentItemId: Int) {
+       bottomNav.setOnItemSelectedListener { item ->
+           if (item.itemId == currentItemId) return@setOnItemSelectedListener true
+           val target: Class<out AppCompatActivity> = when (item.itemId) {
+               R.id.nav_home -> MainActivity::class.java
+               R.id.nav_scan -> ScanActivity::class.java
+               R.id.nav_analytics -> AnalyticsActivity::class.java
+               R.id.nav_library -> DiseaseLibraryActivity::class.java
+               R.id.nav_about -> SettingsActivity::class.java
+               else -> return@setOnItemSelectedListener false
+           }
+           startActivity(Intent(this, target))
+           finish()
+           true
+       }
+       bottomNav.selectedItemId = currentItemId
+   }
+   ```
+
+   <details>
+   <summary>Java (secondary)</summary>
+
+   ```java
+   // com/leafguard/ui/BottomNav.java
+   public final class BottomNav {
+       public static void setup(AppCompatActivity activity, BottomNavigationView bottomNav, int currentItemId) {
+           bottomNav.setOnItemSelectedListener(item -> {
+               int itemId = item.getItemId();
+               if (itemId == currentItemId) return true;
+               Class<? extends AppCompatActivity> target;
+               if (itemId == R.id.nav_home) target = MainActivity.class;
+               else if (itemId == R.id.nav_scan) target = ScanActivity.class;
+               else if (itemId == R.id.nav_analytics) target = AnalyticsActivity.class;
+               else if (itemId == R.id.nav_library) target = DiseaseLibraryActivity.class;
+               else if (itemId == R.id.nav_about) target = SettingsActivity.class;
+               else return false;
+               activity.startActivity(new Intent(activity, target));
+               activity.finish();
+               return true;
+           });
+           bottomNav.setSelectedItemId(currentItemId);
+       }
+   }
+   ```
+   </details>
+
+4. Add a `BottomNavigationView` (id `bottomNavigation`, `app:menu="@menu/bottom_nav_menu"`)
+   constrained to the bottom of every tab screen's layout, and call the
+   helper once in each Activity's `onCreate` with that screen's own tab id
+   (e.g. `setupBottomNav(binding.bottomNavigation, R.id.nav_home)`).
+
+**Verification:**
+- [ ] All 5 icons render in the bottom bar
+- [ ] Tapping a tab switches screens and highlights the correct icon
+- [ ] Re-tapping the current tab does nothing (no crash, no restart)
+
+**Commit:** `Week 02: Add shared bottom navigation bar`
+
+### 11b. Home dashboard (`MainActivity` + `activity_main.xml`)
+
+1. Replace the placeholder welcome layout with a `ScrollView` containing:
+   a title ("🍃 LeafGuard AI") and subtitle, a green `MaterialCardView`
+   "Quick Scan" banner with a "Start Scanning" button, a horizontal row of
+   two `MaterialCardView`s ("History" / "Library"), and a "Technical
+   Features" card with two tappable rows.
+2. "Start Scanning" opens `ScanActivity` (built in 11c). The History and
+   Library cards open the existing `HistoryActivity` / `DiseaseLibraryActivity`.
+3. In `onResume()`, query `AppDatabase.getInstance(this).scanDao().getAllScans()`
+   (on a background thread/coroutine) and show `.size` in the History card's
+   subtitle — this is the same Room DAO you already use elsewhere in the app.
+
+**Verification:**
+- [ ] Home shows the Quick Scan banner + both summary cards on launch
+- [ ] History card subtitle updates after saving a new scan
+
+**Commit:** `Week 02: Build Home dashboard screen`
+
+### 11c. Scan tab (new `ScanActivity` + `activity_scan.xml`)
+
+1. Create a new Activity `ScanActivity` and move the camera/gallery
+   permission-request code, the `MaterialButtonToggleGroup` (Cloud/Offline),
+   and the "Detect Disease" button **out of `MainActivity` and into
+   `ScanActivity`** — this is the same capture/detect logic, just relocated.
+2. Replace the old side-by-side camera/gallery buttons with a single dashed
+   rectangle "tap to upload" area (`res/drawable/bg_dashed_upload.xml`, a
+   `<shape>` with a dashed `<stroke>`). Tapping it shows a small dialog with
+   "Take Photo" / "Choose from Gallery" options.
+3. Keep the mode toggle and "Detect Disease" button hidden (`visibility="gone"`)
+   until an image has been picked, then show them.
+
+   > **Gotcha:** dashed strokes don't reliably render with hardware
+   > acceleration on some devices. Call
+   > `view.setLayerType(View.LAYER_TYPE_SOFTWARE, null)` on the upload area
+   > View to fix it.
+4. Register `ScanActivity` in `AndroidManifest.xml`.
+
+**Verification:**
+- [ ] Tapping the dashed area opens the camera/gallery chooser
+- [ ] After picking an image, the mode toggle and Detect button appear
+- [ ] Detection still opens `ResultActivity` exactly as before
+
+**Commit:** `Week 02: Move capture/detect flow into ScanActivity`
+
+### 11d. Analytics placeholder (new `AnalyticsActivity`)
+
+1. Create `AnalyticsActivity` with a layout containing **only** the shared
+   bottom navigation bar — no other content yet.
+2. Add a `// TODO` comment noting that scan-trend charts arrive in a later
+   week, built from the same `scan_history` Room table.
+3. Register it in `AndroidManifest.xml`.
+
+**Verification:**
+- [ ] Tapping "Analytics" in the bottom bar opens a blank screen with the nav bar
+
+**Commit:** `Week 02: Add Analytics tab placeholder`
+
+### 11e. Library search + severity chip
+
+1. Add a `TextInputLayout`/`TextInputEditText` search box above the
+   `RecyclerView` in `activity_disease_library.xml`.
+2. Add a `TextWatcher` that filters the in-memory disease list by name or
+   plant (case-insensitive) and re-submits it to the adapter.
+3. Add a `severity` field ("high"/"medium"/"low") to the disease data model
+   and a `Chip` to `item_disease_library.xml` colored according to severity.
+4. Add the bottom navigation bar to this screen too (tab id `nav_library`).
+
+**Verification:**
+- [ ] Typing in the search box filters the list live
+- [ ] Each disease card shows a colored severity chip
+
+**Commit:** `Week 02: Add search and severity chip to Disease Library`
+
+### 11f. About tab
+
+Add the shared bottom navigation bar to the existing `SettingsActivity`
+(tab id `nav_about`) — no other changes needed; Settings already covers the
+"About" content (backend URL, confidence threshold, app version).
+
+**Commit:** `Week 02: Wire About tab into SettingsActivity`
+
+---
+
 ## Success Criteria
 
 You have successfully completed Week 02 Build Task when:
 
 1. LeafGuard Android project runs without errors
-2. All 5 activities are functional with proper layouts
+2. All 8 activities are functional with proper layouts
 3. Navigation flow works correctly between all activities
 4. Resources are properly externalized and organized
 5. Code follows Android best practices
 6. Git repository shows progressive development
 7. Evidence package is complete with screenshots and video
 8. You can explain every aspect of your implementation
+9. The 5-tab bottom navigation bar (Home / Scan / Analytics / Library / About)
+   works and matches the dashboard design described in README.md Section 7
 
-**Congratulations! You now have a solid Android UI foundation. Week 03 will add camera and gallery functionality to make the scan feature functional.**
+**Congratulations! You now have a solid Android UI foundation. Week 03 will strengthen the camera/gallery flow and permission-handling concepts that are introduced through ScanActivity.**
 
 
 <!-- NAV_FOOTER_START -->

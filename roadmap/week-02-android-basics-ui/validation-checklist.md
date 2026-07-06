@@ -24,13 +24,12 @@ This checklist ensures you have completed all Week 02 requirements before procee
 ## Project Creation and Structure
 
 - [ ] **LeafGuard project created** using Empty Activity template
-- [ ] **Package name is com.example.leafguard**
+- [ ] **Package name is com.leafguard**
 - [ ] **Minimum SDK set to API 24** (Android 7.0)
 - [ ] **Target SDK set to 34** (Android 14)
 - [ ] **Compile SDK set to 34**
 - [ ] **Project builds without errors**
 - [ ] **Package structure created** with:
-  - [ ] activities/
   - [ ] adapters/
   - [ ] models/
   - [ ] viewmodels/
@@ -38,7 +37,7 @@ This checklist ensures you have completed all Week 02 requirements before procee
   - [ ] database/
   - [ ] network/
   - [ ] utils/
-- [ ] **MainActivity moved to activities package**
+- [ ] **Activity classes live under com.leafguard**
 - [ ] **All imports updated correctly**
 - [ ] **Project syncs successfully after reorganization**
 
@@ -53,11 +52,13 @@ This checklist ensures you have completed all Week 02 requirements before procee
 - [ ] **versionCode = 1**
 - [ ] **versionName = "1.0.0"**
 - [ ] **Dependencies added**:
-  - [ ] androidx.appcompat:appcompat:1.6.1
-  - [ ] androidx.constraintlayout:constraintlayout:2.1.4
-  - [ ] com.google.android.material:material:1.10.0
+  - [ ] AndroidX AppCompat
+  - [ ] AndroidX ConstraintLayout
+  - [ ] Material Components
+  - [ ] Room
+  - [ ] Retrofit / OkHttp
 - [ ] **ViewBinding enabled** in buildFeatures
-- [ ] **Java version set to 1.8** in compileOptions
+- [ ] **Java/Kotlin target version matches app/build.gradle**
 - [ ] **Gradle sync successful** after all changes
 - [ ] **No dependency resolution errors**
 
@@ -72,12 +73,12 @@ This checklist ensures you have completed all Week 02 requirements before procee
 - [ ] **Minimum 20 string resources defined**
 - [ ] **Strings include**:
   - [ ] app_name
-  - [ ] welcome_title, welcome_subtitle
-  - [ ] scan_leaf, view_history, settings
-  - [ ] select_image_source, camera, gallery
-  - [ ] scan_result, disease_detected, confidence_score
-  - [ ] scan_history, no_history
-  - [ ] app_settings, offline_mode, offline_mode_desc
+  - [ ] home_dashboard_title, quick_scan_title, start_scanning
+  - [ ] nav_home, nav_scan, nav_analytics, nav_library, nav_about
+  - [ ] scan_screen_title, tap_to_upload, choose_image_source_camera, choose_image_source_gallery
+  - [ ] result_screen_title, confidence_label, save_to_history
+  - [ ] history_screen_title, history_empty_state
+  - [ ] settings_screen_title, settings_backend_section, settings_confidence_section
 
 ### colors.xml
 - [ ] **colors.xml contains color scheme**
@@ -89,36 +90,39 @@ This checklist ensures you have completed all Week 02 requirements before procee
 - [ ] **Status colors defined** (success, error, warning)
 - [ ] **All layouts use @color/** references (no hardcoded hex colors)
 
-### dimens.xml
-- [ ] **dimens.xml contains standard dimensions**
-- [ ] **Margins defined** (small, medium, large, xlarge)
-- [ ] **Padding defined** (small, medium, large)
-- [ ] **Text sizes defined** (caption, body, title, headline, display)
-- [ ] **Component sizes defined** (button_height, icon_size, etc.)
-- [ ] **All layouts use @dimen/** references (no hardcoded dp values)
+### themes.xml and Drawables
+- [ ] **themes.xml contains Theme.LeafGuardAI**
+- [ ] **Theme colors reference colors.xml**
+- [ ] **bottom_nav_menu.xml exists**
+- [ ] **5 navigation icon drawables exist** (`ic_nav_home`, `ic_nav_scan`, `ic_nav_analytics`, `ic_nav_library`, `ic_nav_about`)
+- [ ] **bg_dashed_upload.xml exists** for the Scan upload area
+- [ ] **bg_feature_row.xml exists** for the Home technical feature rows
 
 ---
 
 ## Activities Created
 
 ### Activity Classes
-- [ ] **MainActivity.java exists** in activities package
-- [ ] **MainActivity.java exists** in activities package
-- [ ] **ResultActivity.java exists** in activities package
-- [ ] **HistoryActivity.java exists** in activities package
-- [ ] **SettingsActivity.java exists** in activities package
+- [ ] **MainActivity exists** (Home dashboard)
+- [ ] **ScanActivity exists** (camera/gallery upload and detection)
+- [ ] **AnalyticsActivity exists** (placeholder tab)
+- [ ] **DiseaseLibraryActivity exists** (Library tab)
+- [ ] **SettingsActivity exists** (About tab)
+- [ ] **ResultActivity exists**
+- [ ] **HistoryActivity exists**
+- [ ] **HistoryDetailActivity exists**
 - [ ] **All activities extend AppCompatActivity**
 - [ ] **All activities have onCreate method**
 - [ ] **All activities call setContentView** with correct layout
 - [ ] **No compilation errors in any activity**
 
 ### AndroidManifest.xml
-- [ ] **All 5 activities declared** in manifest
+- [ ] **All 8 activities declared** in manifest
 - [ ] **MainActivity has intent-filter** with MAIN action and LAUNCHER category
 - [ ] **MainActivity has exported="true"**
 - [ ] **All other activities have exported="false"**
-- [ ] **All activity labels reference strings.xml**
-- [ ] **App icon configured** (ic_launcher)
+- [ ] **Activity text labels reference strings.xml where applicable**
+- [ ] **App icon configured**
 - [ ] **App name references @string/app_name**
 - [ ] **No manifest merger errors**
 
@@ -128,30 +132,32 @@ This checklist ensures you have completed all Week 02 requirements before procee
 
 ### Layout Files
 - [ ] **activity_main.xml exists** and renders correctly
-- [ ] **activity_main.xml exists** and renders correctly
+- [ ] **activity_scan.xml exists** and renders correctly
+- [ ] **activity_analytics.xml exists** and renders correctly
+- [ ] **activity_disease_library.xml exists** and renders correctly
 - [ ] **activity_result.xml exists** and renders correctly
 - [ ] **activity_history.xml exists** and renders correctly
+- [ ] **activity_history_detail.xml exists** and renders correctly
 - [ ] **activity_settings.xml exists** and renders correctly
-- [ ] **All layouts use ConstraintLayout** as root
-- [ ] **No LinearLayout nesting** (flat hierarchy)
+- [ ] **Tab layouts use ConstraintLayout as root**
+- [ ] **Nested LinearLayouts are used only where they simplify readable card content**
 - [ ] **All layouts render without errors** in Design view
 
-### MainActivity Layout
-- [ ] **Title TextView displayed** (welcome_title)
-- [ ] **Subtitle TextView displayed** (welcome_subtitle)
-- [ ] **Scan button present** with proper constraints
-- [ ] **History button present** with proper constraints
-- [ ] **Settings button present** with proper constraints
-- [ ] **All buttons use Material Button**
-- [ ] **Buttons have proper width** (0dp with constraints or match_parent)
-- [ ] **Proper margins and padding applied**
+### MainActivity Layout (Home)
+- [ ] **LeafGuard AI title displayed**
+- [ ] **Quick Scan card displayed**
+- [ ] **Start Scanning button present**
+- [ ] **History and Library summary cards present**
+- [ ] **Technical Features card present**
+- [ ] **Bottom navigation bar present**
 
-### MainActivity Layout
-- [ ] **Title TextView displayed** (select_image_source)
-- [ ] **ImageView for preview** present
-- [ ] **Camera button present**
-- [ ] **Gallery button present**
-- [ ] **Layout responsive** to different screen sizes
+### ScanActivity Layout
+- [ ] **Title TextView displayed** (Scan Leaf)
+- [ ] **Dashed upload area present**
+- [ ] **Upload placeholder text present** (Tap to upload image)
+- [ ] **Cloud/Offline toggle appears after image selection**
+- [ ] **Detect Disease button appears after image selection**
+- [ ] **Bottom navigation bar present**
 
 ### ResultActivity Layout
 - [ ] **ImageView for leaf image** present
@@ -168,28 +174,26 @@ This checklist ensures you have completed all Week 02 requirements before procee
 
 ### SettingsActivity Layout
 - [ ] **Title TextView displayed**
-- [ ] **Offline mode switch** present with label
-- [ ] **Clear cache button** present
+- [ ] **Backend URL field** present
+- [ ] **Confidence threshold slider** present
 - [ ] **Version TextView** present at bottom
+- [ ] **Bottom navigation bar present**
 
 ---
 
 ## Navigation Implementation
 
 ### MainActivity Navigation
-- [ ] **Scan button navigates** to MainActivity
-- [ ] **History button navigates** to HistoryActivity
-- [ ] **Settings button navigates** to SettingsActivity
-- [ ] **Click listeners implemented** for all buttons
-- [ ] **Intents created correctly**
-- [ ] **startActivity() called**
+- [ ] **Start Scanning button navigates** to ScanActivity
+- [ ] **History card navigates** to HistoryActivity
+- [ ] **Library card navigates** to DiseaseLibraryActivity
+- [ ] **Click listeners implemented** for all tappable dashboard elements
 
-### MainActivity Navigation
-- [ ] **Camera button shows Toast** (Week 03 feature)
-- [ ] **Gallery button shows Toast** (Week 03 feature)
-- [ ] **Camera button navigates** to ResultActivity with dummy data
-- [ ] **Gallery button navigates** to ResultActivity with dummy data
-- [ ] **Data passed with Intent extras** (source, disease_name, confidence)
+### ScanActivity Navigation
+- [ ] **Upload area opens camera/gallery chooser**
+- [ ] **Camera and gallery permission requests are handled**
+- [ ] **Detect Disease navigates** to ResultActivity with prediction extras
+- [ ] **Data passed with Intent extras** (disease name, confidence, image URI)
 
 ### ResultActivity Navigation
 - [ ] **Data received from Intent** correctly
@@ -197,27 +201,24 @@ This checklist ensures you have completed all Week 02 requirements before procee
 - [ ] **Confidence displayed** from Intent extra
 - [ ] **Save button navigates** to HistoryActivity
 - [ ] **Scan another button navigates** to MainActivity
-- [ ] **MainActivity launched with FLAG_ACTIVITY_CLEAR_TOP**
+- [ ] **Back to Home action returns to MainActivity**
 
 ### Back Button Behavior
-- [ ] **Back button works** from MainActivity → MainActivity
-- [ ] **Back button works** from ResultActivity → MainActivity
+- [ ] **Back button works** from ScanActivity → previous screen or exits current tab
+- [ ] **Back button works** from ResultActivity → ScanActivity or Home flow
 - [ ] **Back button works** from HistoryActivity → MainActivity
-- [ ] **Back button works** from SettingsActivity → MainActivity
+- [ ] **Back button works** from SettingsActivity → previous screen or exits current tab
 - [ ] **Back button from MainActivity closes app**
 
 ---
 
 ## Lifecycle Implementation
 
-- [ ] **MainActivity has onCreate** with Log statement
-- [ ] **MainActivity has onStart** with Log statement
-- [ ] **MainActivity has onResume** with Log statement
-- [ ] **MainActivity has onPause** with Log statement
-- [ ] **MainActivity has onStop** with Log statement
-- [ ] **MainActivity has onDestroy** with Log statement
-- [ ] **Lifecycle methods call super** before custom code
-- [ ] **Logcat shows lifecycle events** when testing
+- [ ] **MainActivity initializes UI in onCreate**
+- [ ] **MainActivity refreshes history count in onResume**
+- [ ] **Activity bindings are cleared in onDestroy where used**
+- [ ] **Lifecycle methods call super** before custom code when overridden
+- [ ] **Logcat shows no lifecycle-related crashes** when testing
 - [ ] **Lifecycle observed correctly** on rotation
 - [ ] **Lifecycle observed correctly** on home button press
 
@@ -225,9 +226,10 @@ This checklist ensures you have completed all Week 02 requirements before procee
 
 ## Data Passing
 
-- [ ] **MainActivity passes "source"** to ResultActivity
-- [ ] **MainActivity passes "disease_name"** to ResultActivity
-- [ ] **MainActivity passes "confidence"** to ResultActivity
+- [ ] **ScanActivity passes disease name** to ResultActivity
+- [ ] **ScanActivity passes confidence** to ResultActivity
+- [ ] **ScanActivity passes symptoms/treatment/prevention** to ResultActivity
+- [ ] **ScanActivity passes image URI** to ResultActivity
 - [ ] **ResultActivity retrieves all Intent extras** correctly
 - [ ] **ResultActivity displays disease name** from Intent
 - [ ] **ResultActivity displays confidence** formatted as percentage
@@ -240,9 +242,8 @@ This checklist ensures you have completed all Week 02 requirements before procee
 - [ ] **No compilation errors**
 - [ ] **No build warnings** (or only acceptable ones)
 - [ ] **Consistent naming conventions** (camelCase for variables, PascalCase for classes)
-- [ ] **All view IDs follow convention** (btnScan, tvTitle, ivPreview)
-- [ ] **Log tags defined as constants** (private static final String TAG)
-- [ ] **Log statements present** for debugging key events
+- [ ] **All view IDs use clear descriptive names** (buttonStartScanning, cardUploadArea, bottomNavigation)
+- [ ] **Logs or user-visible messages exist for important failures** (permissions, camera preparation, network/offline detection)
 - [ ] **Comments added** where logic is complex
 - [ ] **No unused imports**
 - [ ] **No unused variables**
@@ -254,9 +255,9 @@ This checklist ensures you have completed all Week 02 requirements before procee
 
 ### Emulator Testing
 - [ ] **App launches on emulator** without crashes
-- [ ] **MainActivity displays correctly**
-- [ ] **All buttons clickable**
-- [ ] **Navigation to MainActivity works**
+- [ ] **MainActivity Home dashboard displays correctly**
+- [ ] **All dashboard cards/buttons clickable**
+- [ ] **Navigation to ScanActivity works**
 - [ ] **Navigation to HistoryActivity works**
 - [ ] **Navigation to SettingsActivity works**
 - [ ] **Navigation to ResultActivity works**
@@ -283,10 +284,13 @@ This checklist ensures you have completed all Week 02 requirements before procee
 ## Evidence Collection
 
 ### Screenshots Saved
-- [ ] **MainActivity screenshot** saved
-- [ ] **MainActivity screenshot** saved
+- [ ] **MainActivity Home dashboard screenshot** saved
+- [ ] **ScanActivity upload screen screenshot** saved
+- [ ] **AnalyticsActivity placeholder screenshot** saved
+- [ ] **DiseaseLibraryActivity screenshot** saved
 - [ ] **ResultActivity screenshot** with data displayed
 - [ ] **HistoryActivity screenshot** saved
+- [ ] **HistoryDetailActivity screenshot** saved
 - [ ] **SettingsActivity screenshot** saved
 - [ ] **Project structure screenshot** in Android Studio
 - [ ] **Logcat lifecycle events screenshot** saved
@@ -294,7 +298,8 @@ This checklist ensures you have completed all Week 02 requirements before procee
 
 ### Video Documentation
 - [ ] **Navigation flow video recorded** (30-60 seconds)
-- [ ] **Video shows MainActivity → MainActivity → ResultActivity**
+- [ ] **Video shows Home → Scan → ResultActivity**
+- [ ] **Video shows bottom navigation across all 5 tabs**
 - [ ] **Video shows back button behavior**
 - [ ] **Video quality is clear** and viewable
 
@@ -365,7 +370,7 @@ This checklist ensures you have completed all Week 02 requirements before procee
 - [ ] **Add lifecycle methods** and log events
 - [ ] **Externalize hardcoded strings** to strings.xml
 - [ ] **Add a new color** to colors.xml and use it
-- [ ] **Add a new dimension** to dimens.xml and use it
+- [ ] **Add a reusable drawable resource** and use it in a layout
 - [ ] **Read Gradle file** and understand each section
 - [ ] **Debug using Logcat** and find specific messages
 
@@ -384,13 +389,26 @@ This checklist ensures you have completed all Week 02 requirements before procee
 
 ---
 
+## Dashboard UI + Bottom Navigation (see build-task.md Step 11)
+
+- [ ] `res/menu/bottom_nav_menu.xml` and 5 `ic_nav_*` drawables exist
+- [ ] Shared `BottomNav` helper (Kotlin `setupBottomNav`, Java `BottomNav.setup`) exists and is reused by every tab — not copy-pasted per screen
+- [ ] Home, Scan, Analytics, Library, and About screens all show the bottom navigation bar with the correct tab highlighted
+- [ ] Home shows the Quick Scan banner, History card (live scan count), and Library card
+- [ ] "Start Scanning" opens `ScanActivity`; capture, mode toggle, and detection still work exactly as before
+- [ ] Analytics tab opens a placeholder screen with just the nav bar (no crash)
+- [ ] Disease Library search box filters results live and each card shows a severity chip
+- [ ] Re-tapping the currently active tab does not restart the screen or crash
+
+---
+
 ## Completion Criteria
 
 **You may proceed to Week 03 ONLY when:**
 
 1. **All items in this checklist are verified** (not just checked, but actually verified)
 2. **App runs without crashes** on emulator or device
-3. **All 5 activities are functional** with navigation
+3. **All 8 activities are functional** with navigation
 4. **Quiz score is 8/10 or higher**
 5. **Build task is 100% complete**
 6. **Evidence package is submitted** to evidence/week-02/

@@ -107,14 +107,14 @@ This document contains detailed learning notes for Week 02, focusing on Android 
 
 ### 2.2 Folder-by-Folder Explanation
 
-**app/src/main/java/com/example/leafguard/**
+**app/src/main/java/com/leafguard/**
 
 This is where all your Java code lives. The package structure should match your domain (reversed domain naming convention: `com.company.appname`).
 
 **Recommended Subpackages for LeafGuard:**
 ```
-com.example.leafguard/
-├── activities/          (Activity classes)
+com.leafguard/
+├── MainActivity.kt / .java, ScanActivity.kt / .java, etc. (Activity classes)
 ├── fragments/           (Fragment classes - Week 08)
 ├── adapters/            (RecyclerView adapters - Week 07)
 ├── models/              (Data classes - Week 05)
@@ -327,11 +327,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.leafguard'
+    namespace 'com.leafguard'
     compileSdk 34
 
     defaultConfig {
-        applicationId "com.example.leafguard"
+        applicationId "com.leafguard"
         minSdk 24
         targetSdk 34
         versionCode 1
@@ -897,7 +897,7 @@ level:ERROR
 
 **Filter by Package:**
 ```
-package:com.example.leafguard
+package:com.leafguard
 ```
 
 **Regex Filter:**

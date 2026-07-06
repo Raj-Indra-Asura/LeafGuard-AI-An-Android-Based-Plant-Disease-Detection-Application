@@ -45,7 +45,7 @@ D) `android:layout_width="fill_parent"`
 What is the correct way to declare an Activity in AndroidManifest.xml?
 
 A) `<activity android:name="MainActivity" />`
-B) `<activity android:name=".activities.MainActivity" android:exported="true" />`
+B) `<activity android:name=".MainActivity" android:exported="true" />`
 C) `<component type="activity" class="MainActivity" />`
 D) Activities are automatically detected, no declaration needed
 

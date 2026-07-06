@@ -552,14 +552,14 @@ Properly configure AndroidManifest.xml for LeafGuard project.
 
 Review your AndroidManifest.xml:
 
-1. Verify all 5 activities are declared
+1. Verify all 8 activities are declared
 2. Ensure `exported` attribute is set correctly:
    - `exported="true"` only for MainActivity (launcher)
    - `exported="false"` for all other activities
 3. Add meaningful labels for each activity:
 ```xml
 <activity
-    android:name=".activities.MainActivity"
+    android:name=".MainActivity"
     android:label="@string/scan_activity_label"
     android:exported="false" />
 ```
@@ -621,7 +621,7 @@ Tasks:
 Configure screen orientation for MainActivity:
 ```xml
 <activity
-    android:name=".activities.MainActivity"
+    android:name=".MainActivity"
     android:screenOrientation="portrait"
     android:exported="false" />
 ```
@@ -696,7 +696,7 @@ public class MainActivity extends AppCompatActivity {
 ```
 
 Tasks:
-1. Add similar logging to all 5 activities
+1. Add similar logging to all 8 activities
 2. Run app and filter Logcat by your package name
 3. Navigate through all activities
 4. Save Logcat output to file
@@ -771,7 +771,7 @@ Create Logcat filters:
    - Tag: MainActivity
 
 3. **Filter 3: All LeafGuard Logs**
-   - Package: com.example.leafguard
+    - Package: com.leafguard
 
 4. **Filter 4: Lifecycle Events**
    - Regex: `.*(onCreate|onStart|onResume|onPause|onStop|onDestroy).*`

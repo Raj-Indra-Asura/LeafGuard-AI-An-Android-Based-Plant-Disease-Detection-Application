@@ -8,6 +8,7 @@ import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceManager
 import com.leafguard.databinding.ActivitySettingsBinding
+import com.leafguard.ui.setupBottomNav
 
 /**
  * Kotlin twin of SettingsActivity.java.
@@ -50,6 +51,8 @@ class SettingsActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.topAppBar)
         binding.topAppBar.setNavigationOnClickListener { finish() }
+
+        setupBottomNav(binding.bottomNavigation, R.id.nav_about)
 
         prefs = PreferenceManager.getDefaultSharedPreferences(this)
 

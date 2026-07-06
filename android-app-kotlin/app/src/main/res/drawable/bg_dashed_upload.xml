@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Dashed "tap to upload" border for the Scan screen. Dashed strokes need a
+     software rendering layer on the View using this background (see
+     ScanActivity.setLayerType) because of a long-standing hardware
+     acceleration limitation with dashed paths. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/white" />
+    <corners android:radius="16dp" />
+    <stroke
+        android:width="2dp"
+        android:color="@color/leaf_text_secondary"
+        android:dashWidth="8dp"
+        android:dashGap="6dp" />
+</shape>

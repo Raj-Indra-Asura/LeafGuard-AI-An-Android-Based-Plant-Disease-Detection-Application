@@ -153,7 +153,7 @@ Lesson Learned:
 **Your Answer:**
 ```
 Topic 1: [e.g., Activities]
-Evidence: [e.g., Created 5 activities in MainActivity.java, MainActivity.java, etc.]
+Evidence: [e.g., Created 8 Activity classes: Home, Scan, Analytics, Library, About, Result, History, and History Detail]
 
 Topic 2:
 Evidence:
@@ -355,7 +355,7 @@ If I could give advice to someone starting Week 02, I would say ________________
 **Your Answer:**
 ```
 Evidence completeness (list what you have):
-- [ ] Screenshots of all 5 activities
+- [ ] Screenshots of all 8 activities
 - [ ] Navigation flow video
 - [ ] Logcat screenshot
 - [ ] Project structure screenshot

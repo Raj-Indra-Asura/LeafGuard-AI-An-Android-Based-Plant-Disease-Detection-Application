@@ -13,26 +13,25 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * Java twin of MainActivityTest.kt — UI (instrumented) test that launches the
- * real MainActivity (Home dashboard) on an emulator or a connected phone and
- * checks that the "Start Scanning" quick-scan button is on screen.
+ * Java twin of ScanActivityTest.kt — UI (instrumented) test for ScanActivity,
+ * the "Scan" tab that now hosts the image capture/upload flow that used to
+ * live directly on MainActivity.
  *
- * A UI test runs the actual app and looks at the screen like a user would.
  * Run it in Android Studio by right-clicking this file and choosing
- * "Run 'MainActivityTest'" (an emulator must be running), or from a terminal
+ * "Run 'ScanActivityTest'" (an emulator must be running), or from a terminal
  * in android-app/ with:
  *   ./gradlew connectedDebugAndroidTest        (macOS/Linux)
  *   gradlew.bat connectedDebugAndroidTest      (Windows)
  */
 @RunWith(AndroidJUnit4.class)
-public class MainActivityTest {
+public class ScanActivityTest {
 
     @Rule
-    public ActivityScenarioRule<MainActivity> activityRule =
-            new ActivityScenarioRule<>(MainActivity.class);
+    public ActivityScenarioRule<ScanActivity> activityRule =
+            new ActivityScenarioRule<>(ScanActivity.class);
 
     @Test
-    public void quickScanCardIsVisibleOnLaunch() {
-        onView(withId(R.id.buttonStartScanning)).check(matches(isDisplayed()));
+    public void uploadAreaIsVisibleOnLaunch() {
+        onView(withId(R.id.cardUploadArea)).check(matches(isDisplayed()));
     }
 }

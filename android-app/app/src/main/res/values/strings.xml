@@ -69,4 +69,42 @@
     <string name="settings_about_section">About</string>
     <string name="settings_version_format">Version %1$s</string>
     <string name="settings_reset_button">Reset to Defaults</string>
+
+    <!-- Bottom Navigation (shared by Home, Scan, Analytics, Library, About) -->
+    <string name="nav_home">Home</string>
+    <string name="nav_scan">Scan</string>
+    <string name="nav_analytics">Analytics</string>
+    <string name="nav_library">Library</string>
+    <string name="nav_about">About</string>
+
+    <!-- Home Dashboard -->
+    <string name="home_dashboard_title">🍃 LeafGuard AI</string>
+    <string name="home_dashboard_subtitle">Plant Disease Detection System</string>
+    <string name="quick_scan_title">Quick Scan</string>
+    <string name="quick_scan_subtitle">Detect diseases instantly</string>
+    <string name="start_scanning">Start Scanning</string>
+    <string name="history_card_title">History</string>
+    <string name="history_count_format">%1$d scans</string>
+    <string name="library_card_title">Library</string>
+    <string name="library_count_format">%1$d diseases</string>
+    <string name="technical_features_title">Technical Features</string>
+    <string name="cloud_architecture_row">☁️  Cloud AI Architecture</string>
+    <string name="ondevice_tflite_row">📶  On-Device TFLite</string>
+
+    <!-- Scan screen -->
+    <string name="scan_screen_title">Scan Leaf</string>
+    <string name="scan_screen_subtitle">Upload or capture image</string>
+    <string name="tap_to_upload">Tap to upload image</string>
+    <string name="choose_image_source_title">Select Image Source</string>
+    <string name="choose_image_source_camera">Take Photo</string>
+    <string name="choose_image_source_gallery">Choose from Gallery</string>
+
+    <!-- Analytics screen (placeholder — see AnalyticsActivity TODO) -->
+    <string name="analytics_screen_title">Analytics</string>
+
+    <!-- Disease Library: search + severity -->
+    <string name="library_search_hint">Search diseases…</string>
+    <string name="severity_high">high</string>
+    <string name="severity_medium">medium</string>
+    <string name="severity_low">low</string>
 </resources>

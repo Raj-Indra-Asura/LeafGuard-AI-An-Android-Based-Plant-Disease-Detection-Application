@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Shared bottom navigation menu used by every top-level tab screen
+    (Home, Scan, Analytics, Library, About). See com.leafguard.ui.BottomNav.kt
+    for how taps on these items switch between the 5 Activities.
+-->
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/ic_nav_home"
+        android:title="@string/nav_home" />
+    <item
+        android:id="@+id/nav_scan"
+        android:icon="@drawable/ic_nav_scan"
+        android:title="@string/nav_scan" />
+    <item
+        android:id="@+id/nav_analytics"
+        android:icon="@drawable/ic_nav_analytics"
+        android:title="@string/nav_analytics" />
+    <item
+        android:id="@+id/nav_library"
+        android:icon="@drawable/ic_nav_library"
+        android:title="@string/nav_library" />
+    <item
+        android:id="@+id/nav_about"
+        android:icon="@drawable/ic_nav_about"
+        android:title="@string/nav_about" />
+</menu>
