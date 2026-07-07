@@ -2,6 +2,13 @@
 
 ## Building LeafGuard AI's User Interface
 
+> **Optional Java reference material.** This notebook is written entirely in Java as a
+> secondary/reference walkthrough. Kotlin is the primary track for Android code in this
+> repository — most students should follow `android-app-kotlin/` and
+> [`roadmap/week-02-android-basics-ui/README.md`](../../roadmap/week-02-android-basics-ui/README.md)
+> instead. Use this notebook only if you are intentionally following the Java twin
+> (`android-app/`).
+
 > This README acts like a Markdown notebook for CSE 2206. Read one cell at a time, run the code, and write your own notes after each checkpoint.
 
 ### How to use this notebook
@@ -15,7 +22,7 @@
 ### Weekly outcomes
 
 - Trace the Activity lifecycle with log messages.
-- Build a Java `MainActivity` with Camera, Gallery, History, and Disease Library actions.
+- Build a Java `MainActivity` with Camera, Gallery, History, and Disease Library actions (Java reference — Kotlin is the primary track).
 - Navigate between activities using intents.
 - Apply Material Design styling, an icon, and a splash theme.
 

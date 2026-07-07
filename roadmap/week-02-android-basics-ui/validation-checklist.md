@@ -58,7 +58,7 @@ This checklist ensures you have completed all Week 02 requirements before procee
   - [ ] Room
   - [ ] Retrofit / OkHttp
 - [ ] **ViewBinding enabled** in buildFeatures
-- [ ] **Java/Kotlin target version matches app/build.gradle**
+- [ ] **Kotlin/Java target version matches app/build.gradle**
 - [ ] **Gradle sync successful** after all changes
 - [ ] **No dependency resolution errors**
 
@@ -69,7 +69,7 @@ This checklist ensures you have completed all Week 02 requirements before procee
 ### strings.xml
 - [ ] **strings.xml contains all required strings**
 - [ ] **No hardcoded strings in layouts** (all use @string/)
-- [ ] **No hardcoded strings in Java code** (except log tags)
+- [ ] **No hardcoded strings in Kotlin/Java code** (except log tags)
 - [ ] **Minimum 20 string resources defined**
 - [ ] **Strings include**:
   - [ ] app_name

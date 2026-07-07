@@ -121,9 +121,9 @@ A **"track"** is simply *the programming language you follow the lessons in*. Th
 - 🤔 [Reflection](roadmap/week-02-android-basics-ui/reflection.md)
 
 ### Supplementary Materials
-- 💪 [Kotlin Exercises — primary track](exercises/android-kotlin/) · [Java Exercises](exercises/android/)
-- 📓 [Interactive Notebook](notebooks/week-02/) *(Available)*
-- 💡 [Solutions Guide](solutions/week-02/) *(Available)*
+- 💪 [Kotlin Exercises — primary track](exercises/android-kotlin/) · [Java Exercises — secondary/reference](exercises/android/)
+- 📓 [Interactive Notebook — optional Java reference](notebooks/week-02/) *(Available)*
+- 💡 [Solutions Guide — optional Java reference](solutions/week-02/) *(Available)*
 
 ### Learning Objectives
 - Setup Android Studio development environment

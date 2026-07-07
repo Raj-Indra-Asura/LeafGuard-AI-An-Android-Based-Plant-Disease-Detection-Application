@@ -375,10 +375,18 @@ Add formatted strings to `strings.xml`:
 <string name="scan_count">Total scans: %1$d</string>
 ```
 
-Use in Java:
-```java
-String formatted = getString(R.string.confidence_format, 87.5f);
+Use in Kotlin (primary track):
+```kotlin
+val formattedConfidence = getString(R.string.confidence_format, 87.5f)
 ```
+
+<details>
+<summary>Java (secondary)</summary>
+
+```java
+String formattedConfidence = getString(R.string.confidence_format, 87.5f);
+```
+</details>
 
 ### Deliverables
 
