@@ -4,7 +4,12 @@
 
 This directory contains hands-on Android development exercises for the LeafGuard AI project.
 These exercises build your practical skills progressively, from basic UI components to advanced
-features like offline AI inference. All code examples are in **Java** (the CSE 2206 standard).
+features like offline AI inference. All code examples are in **Java**.
+
+> **Kotlin is the primary track for this Kotlin-first course.** Most students should use
+> [`exercises/android-kotlin/`](../android-kotlin/) instead. This Java directory is the
+> **secondary/reference** twin — same pedagogy, same TODOs, same verification checklists,
+> expressed in Java for CSE 2206 students who are intentionally following the Java track.
 
 ## Weekly Mapping
 

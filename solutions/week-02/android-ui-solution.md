@@ -1,6 +1,12 @@
 # Week 02 Solution - Android UI, Resources, and Navigation
 
-This solution provides a working Java UI skeleton for LeafGuard AI.
+> **Optional Java reference solution.** Kotlin is the primary track for this course — this
+> document provides a secondary/reference solution written in Java for students who are
+> intentionally following the Java twin (`android-app/`). See
+> [`roadmap/week-02-android-basics-ui/build-task.md`](../../roadmap/week-02-android-basics-ui/build-task.md)
+> for the Kotlin-primary implementation.
+
+This solution provides a working Java UI skeleton for LeafGuard AI (secondary/reference track).
 
 ---
 

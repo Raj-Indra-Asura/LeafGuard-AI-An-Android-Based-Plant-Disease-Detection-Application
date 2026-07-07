@@ -46,7 +46,7 @@ Before starting this build task, ensure:
    - Name: `LeafGuard`
     - Package name: `com.leafguard`
    - Save location: Choose appropriate directory
-   - Language: `Java`
+   - Language: `Kotlin` (primary track — select `Java` only if you are intentionally following the secondary Java twin in `android-app/`)
    - Minimum SDK: `API 24: Android 7.0 (Nougat)`
 5. Click "Finish" and wait for Gradle sync
 6. Run the default app on emulator to verify setup

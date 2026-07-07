@@ -141,7 +141,7 @@ LeafGuard's 8 Activities provide rich demonstration of all these topics. Five ar
    - Understanding of LeafGuard scope
    - Syllabus mapping completed
 
-2. **Java/Kotlin Basics:**
+2. **Kotlin Basics** (primary track; Java basics are enough if you're following the secondary `android-app/` twin):
    - Classes, objects, methods
    - Variables, data types, conditionals
    - Arrays and ArrayList
