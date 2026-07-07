@@ -316,7 +316,9 @@ By combining these aspects, LeafGuard AI will not just be **another plant diseas
 
 ---
 
-## 13. Feasibility Validation (2025 Review)
+## 13. Feasibility Validation
+
+*Validation performed: July 2026, against the repository state and 2024–2026 Bangladesh evidence.*
 
 This section validates the plan above against the **actual repository state** and the **current ground reality of Bangladesh (2024–2025)**, based on a full review of the codebase and up-to-date external evidence.
 
@@ -347,7 +349,7 @@ Evidence gathered from current sources confirms the plan's core assumptions and 
 3. **Payments:** **bKash/Nagad** mobile financial services are widely used in rural areas, validating the micro-transaction consultation model in Section 7. [[pressxpress.org]](https://pressxpress.org/2024/05/08/agri-techs-impact-on-modernizing-bangladeshs-agricultural-practices/)
 4. **Competitive landscape:** Established players exist — **Dr. Chashi** (advisory app), government **Krishoker Janala** and the Krishi Call Center, plus agritech startups such as **iFarmer** (full-stack finance + advisory, >$3.5M raised), **Fashol**, and **Agroshift** (market linkage). None of them leads with **on-device, explainable, severity-aware disease diagnostics**, which validates the differentiation strategy in Section 12. [[futurestartup.com]](https://futurestartup.com/2024/10/23/a-list-of-bangladeshs-most-fascinating-agritech-startups/)
 5. **Funding availability:** Early-stage capital paths exist — **Startup Bangladesh Limited** (state VC), the **iDEA Project** (government grants), **Biniyog Briddhi (B-Briddhi)** impact funding, and the Bangladesh Angels Network — so the startup route is financially plausible if pilot traction is demonstrated. [[lightcastlepartners.com]](https://lightcastlepartners.com/insights/2024/11/bangladesh-startup-investments-report-2024-a-decade-in-review/)
-6. **Regulation:** Company registration goes through **RJSC** (name clearance, Memorandum & Articles, TIN, minimum two shareholders/directors for a private limited company). A **Personal Data Protection Ordinance (2025)** is emerging, so the plan's consent, encryption, and deletion requirements (Section 9) shift from "good practice" to **anticipated legal compliance**. [[tahmidurrahman.com]](https://tahmidurrahman.com/bangladesh-startup-funding-options/)
+6. **Regulation:** Company registration goes through **RJSC** (name clearance, Memorandum & Articles, TIN, minimum two shareholders/directors for a private limited company). Bangladesh's **Personal Data Protection Ordinance (introduced 2025)** brings formal data-privacy rules for digital businesses, so the plan's consent, encryption, and deletion requirements (Section 9) shift from "good practice" to **legal compliance obligations** — verify the ordinance's current enforcement status and rules with local counsel before launch. [[tahmidurrahman.com]](https://tahmidurrahman.com/bangladesh-startup-funding-options/)
 7. **Agronomic need:** Rice blast and bacterial leaf blight remain persistent, high-loss diseases, and climate variability is intensifying pest/disease pressure — confirming Section 12's advice to start with **rice diseases done extremely well**.
 
 ### 13.3 Pillar-by-pillar verdict
@@ -456,7 +458,7 @@ A practical, ordered checklist to turn the project into an established startup:
 
 1. **Pre-incorporation (Months 0–2):** Keep operating as a project. Finalize Bangla localization and pilot plan. Draft a one-page memorandum of understanding template for pilot partners.
 2. **Incorporation (when first grant/contract requires it):** Name clearance → register a **Private Limited Company with RJSC** (minimum two shareholders/directors, Memorandum & Articles of Association) → obtain **TIN**, trade license, and open a company bank account → register for **VAT/BIN** when revenue begins.
-3. **Compliance foundations:** Bangla + English privacy policy; consent flows for image/location upload; data retention and deletion policy aligned with the emerging Personal Data Protection Ordinance; terms of service reviewed by local counsel before any paid offering.
+3. **Compliance foundations:** Bangla + English privacy policy; consent flows for image/location upload; data retention and deletion policy aligned with the Personal Data Protection Ordinance (confirm current enforcement status with local counsel); terms of service reviewed by local counsel before any paid offering.
 4. **Funding sequence:** iDEA Project grant → B-Briddhi impact investment readiness support → Startup Bangladesh Limited / Bangladesh Angels seed round, each unlocked by hitting the Section 14 metrics of the previous stage.
 5. **Team sequence (matches Section 10):** Founder-developer → agricultural domain advisor (part-time, university partnership acceptable) → business/operations lead → dedicated ML engineer → backend/dashboard developer.
 6. **Partnership sequence:** University (data + credibility) → NGO (distribution + trust) → DAE/government (scale + legitimacy) → agri-input companies (revenue).
@@ -466,7 +468,7 @@ A practical, ordered checklist to turn the project into an established startup:
 
 ## 18. Final Validation Statement
 
-**The Future Improvement Plan is validated as FEASIBLE**, with the following qualifications:
+*As of July 2026:* **the Future Improvement Plan is validated as FEASIBLE**, with the following qualifications:
 
 1. **The starting point is stronger than the plan assumed.** The repository already delivers the Phase 0 MVP and part of Phase 1 (dual Android apps, TFLite on-device mode, FastAPI backend, disease library, scan history). The 12-month roadmap in Section 11 is therefore realistic and even slightly conservative on the engineering side.
 2. **The binding constraint is data, not code.** Every pathway succeeds or fails on collecting and expert-labeling Bangladeshi field images. This must begin at the first pilot and be treated as the project's primary asset.
