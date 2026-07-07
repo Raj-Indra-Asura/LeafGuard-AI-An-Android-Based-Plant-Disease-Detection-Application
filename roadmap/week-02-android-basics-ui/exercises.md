@@ -377,14 +377,14 @@ Add formatted strings to `strings.xml`:
 
 Use in Kotlin (primary track):
 ```kotlin
-val formatted = getString(R.string.confidence_format, 87.5f)
+val formattedConfidence = getString(R.string.confidence_format, 87.5f)
 ```
 
 <details>
 <summary>Java (secondary)</summary>
 
 ```java
-String formatted = getString(R.string.confidence_format, 87.5f);
+String formattedConfidence = getString(R.string.confidence_format, 87.5f);
 ```
 </details>
 
