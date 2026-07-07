@@ -147,7 +147,7 @@ LeafGuard's 8 Activities provide rich demonstration of all these topics. Five ar
    - Arrays and ArrayList
    - Basic OOP concepts
 
-   _Note: Java basics are sufficient instead, only if you are intentionally following the secondary `android-app/` twin._
+   > **Note:** Java basics are sufficient instead, only if you are intentionally following the secondary `android-app/` twin.
 
 3. **XML Basics:**
    - Understanding tags, attributes, nesting
