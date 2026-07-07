@@ -250,8 +250,6 @@ class MainActivity : AppCompatActivity() {
 
 1. **Local Data Sources:**
    - `AppDatabase.kt` - Room database definition
-   - `ScanDao.java` - Database access methods
-   - `ScanEntity.java` - Database table schema
    - `ScanRecord.kt` - Room entity for scan history
    - `ScanDao.kt` - Room DAO for database operations
    - `XmlParser.kt` - Parse diseases.xml file
@@ -320,13 +318,13 @@ interface ScanDao {
 **Scenario: Changing Network Library**
 
 Without tiers:
-```java
+```kotlin
 // MainActivity directly uses Retrofit - BAD!
-public class MainActivity extends AppCompatActivity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+class MainActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         // Network call in Activity - very bad!
-        RetrofitClient.getApiService().uploadImage(image).enqueue(...);
+        RetrofitClient.apiService.uploadImage(image).enqueue(...)
     }
 }
 ```
@@ -854,26 +852,18 @@ class MainActivity : AppCompatActivity() {
 4. **Parsing Error** - JSON response format unexpected
 
 **Handling in LeafGuard:**
-```java
-@Override
-public void onFailure(Call<UploadResponse> call, Throwable t) {
-    String errorMessage;
-
-    if (t instanceof IOException) {
-        // Network error
-        errorMessage = "No internet connection. Please check your network.";
-    } else if (t instanceof SocketTimeoutException) {
-        // Timeout error
-        errorMessage = "Request timed out. Server might be busy.";
-    } else if (t instanceof JsonSyntaxException) {
-        // Parsing error
-        errorMessage = "Invalid server response.";
-    } else {
-        // Unknown error
-        errorMessage = "Unknown error occurred: " + t.getMessage();
+```kotlin
+try {
+    val response = apiService.predict(imagePart)
+    // ... handle success
+} catch (e: Exception) {
+    val errorMessage = when (e) {
+        is IOException -> "No internet connection. Please check your network."
+        is SocketTimeoutException -> "Request timed out. Server might be busy."
+        is JsonSyntaxException -> "Invalid server response."
+        else -> "Unknown error occurred: ${e.message}"
     }
-
-    callback.onError(new Exception(errorMessage));
+    showError(errorMessage)
 }
 ```
 
@@ -920,126 +910,99 @@ Android's official database library, built on top of SQLite.
 ### Room Implementation
 
 **Step 1: Define Entity**
-```java
-// ScanEntity.java
+```kotlin
+// ScanEntity.kt
 @Entity(tableName = "scans")
-public class ScanEntity {
-
-    @PrimaryKey(autoGenerate = true)
-    private int id;
-
-    @ColumnInfo(name = "image_path")
-    private String imagePath;
-
-    @ColumnInfo(name = "disease_name")
-    private String diseaseName;
-
-    private float confidence;
-
-    private String mode; // "cloud" or "offline"
-
-    private long timestamp;
-
-    @ColumnInfo(name = "location_lat")
-    private Double locationLat;
-
-    @ColumnInfo(name = "location_lon")
-    private Double locationLon;
-
-    // Getters and setters
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
-
-    public String getImagePath() { return imagePath; }
-    public void setImagePath(String imagePath) { this.imagePath = imagePath; }
-
-    // ... more getters/setters
-}
+data class ScanEntity(
+    @PrimaryKey(autoGenerate = true) val id: Int = 0,
+    @ColumnInfo(name = "image_path") val imagePath: String,
+    @ColumnInfo(name = "disease_name") val diseaseName: String,
+    val confidence: Float,
+    val mode: String, // "cloud" or "offline"
+    val timestamp: Long,
+    @ColumnInfo(name = "location_lat") val locationLat: Double? = null,
+    @ColumnInfo(name = "location_lon") val locationLon: Double? = null
+)
 ```
 
 **Step 2: Define DAO**
-```java
-// ScanDao.java
+```kotlin
+// ScanDao.kt
 @Dao
-public interface ScanDao {
+interface ScanDao {
 
     @Insert
-    void insert(ScanEntity scan);
+    suspend fun insert(scan: ScanEntity)
 
     @Update
-    void update(ScanEntity scan);
+    suspend fun update(scan: ScanEntity)
 
     @Delete
-    void delete(ScanEntity scan);
+    suspend fun delete(scan: ScanEntity)
 
     @Query("SELECT * FROM scans ORDER BY timestamp DESC")
-    LiveData<List<ScanEntity>> getAllScans();
+    fun getAllScans(): LiveData<List<ScanEntity>>
 
     @Query("SELECT * FROM scans WHERE id = :scanId")
-    LiveData<ScanEntity> getScanById(int scanId);
+    fun getScanById(scanId: Int): LiveData<ScanEntity>
 
     @Query("SELECT * FROM scans WHERE disease_name = :diseaseName ORDER BY timestamp DESC")
-    LiveData<List<ScanEntity>> getScansByDisease(String diseaseName);
+    fun getScansByDisease(diseaseName: String): LiveData<List<ScanEntity>>
 
     @Query("DELETE FROM scans")
-    void deleteAll();
+    suspend fun deleteAll()
 
     @Query("SELECT COUNT(*) FROM scans")
-    int getCount();
+    suspend fun getCount(): Int
 }
 ```
 
 **Step 3: Define Database**
-```java
-// AppDatabase.java
-@Database(entities = {ScanEntity.class, UserEntity.class}, version = 1, exportSchema = false)
-public abstract class AppDatabase extends RoomDatabase {
+```kotlin
+// AppDatabase.kt
+@Database(entities = [ScanEntity::class, UserEntity::class], version = 1, exportSchema = false)
+abstract class AppDatabase : RoomDatabase() {
 
-    private static AppDatabase instance;
+    abstract fun scanDao(): ScanDao
+    abstract fun userDao(): UserDao
 
-    public abstract ScanDao scanDao();
-    public abstract UserDao userDao();
+    companion object {
+        @Volatile
+        private var instance: AppDatabase? = null
 
-    // Singleton pattern
-    public static synchronized AppDatabase getInstance(Context context) {
-        if (instance == null) {
-            instance = Room.databaseBuilder(
-                context.getApplicationContext(),
-                AppDatabase.class,
-                "leafguard_database"
-            )
-            .fallbackToDestructiveMigration() // For development only
-            .build();
+        // Singleton pattern
+        fun getInstance(context: Context): AppDatabase {
+            return instance ?: synchronized(this) {
+                instance ?: Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "leafguard_database"
+                )
+                    .fallbackToDestructiveMigration() // For development only
+                    .build()
+                    .also { instance = it }
+            }
         }
-        return instance;
     }
 }
 ```
 
 **Step 4: Use in Repository**
-```java
-// ScanRepository.java
-public class ScanRepository {
-    private final ScanDao scanDao;
-
-    public ScanRepository(ScanDao scanDao) {
-        this.scanDao = scanDao;
-    }
+```kotlin
+// ScanRepository.kt
+class ScanRepository(private val scanDao: ScanDao) {
 
     // Get all scans (returns LiveData, updates automatically)
-    public LiveData<List<ScanEntity>> getAllScans() {
-        return scanDao.getAllScans();
-    }
+    fun getAllScans(): LiveData<List<ScanEntity>> = scanDao.getAllScans()
 
-    // Insert scan (must run on background thread)
-    public void insert(ScanEntity scan) {
-        // Room enforces background thread for write operations
-        new Thread(() -> scanDao.insert(scan)).start();
+    // Insert scan (Room enforces a background thread for suspend DAO functions)
+    suspend fun insert(scan: ScanEntity) {
+        scanDao.insert(scan)
     }
 
     // Delete scan
-    public void delete(ScanEntity scan) {
-        new Thread(() -> scanDao.delete(scan)).start();
+    suspend fun delete(scan: ScanEntity) {
+        scanDao.delete(scan)
     }
 }
 ```
@@ -1048,20 +1011,19 @@ public class ScanRepository {
 
 When you change schema in production app, you need migrations:
 
-```java
+```kotlin
 // Migration from version 1 to 2: Add location columns
-static final Migration MIGRATION_1_2 = new Migration(1, 2) {
-    @Override
-    public void migrate(SupportSQLiteDatabase database) {
-        database.execSQL("ALTER TABLE scans ADD COLUMN location_lat REAL");
-        database.execSQL("ALTER TABLE scans ADD COLUMN location_lon REAL");
+val MIGRATION_1_2 = object : Migration(1, 2) {
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL("ALTER TABLE scans ADD COLUMN location_lat REAL")
+        database.execSQL("ALTER TABLE scans ADD COLUMN location_lon REAL")
     }
-};
+}
 
 // Use in database builder
-AppDatabase database = Room.databaseBuilder(context, AppDatabase.class, "leafguard_database")
+val database = Room.databaseBuilder(context, AppDatabase::class.java, "leafguard_database")
     .addMigrations(MIGRATION_1_2)
-    .build();
+    .build()
 ```
 
 ---
@@ -1141,90 +1103,84 @@ Pepper Bell Bacterial Spot
 ```
 
 **Step 3: TFLite Inference Class**
-```java
-// TFLiteInference.java
-public class TFLiteInference {
-    private Interpreter tflite;
-    private List<String> labels;
+```kotlin
+// TFLiteInference.kt
+class TFLiteInference(context: Context) {
+    private var tflite: Interpreter? = null
+    private val labels: List<String>
 
-    private static final int INPUT_SIZE = 224;
-    private static final int NUM_CHANNELS = 3;
+    companion object {
+        private const val INPUT_SIZE = 224
+        private const val NUM_CHANNELS = 3
+    }
 
-    public TFLiteInference(Context context) {
+    init {
         try {
             // Load model from assets
-            tflite = new Interpreter(loadModelFile(context));
-
-            // Load labels from assets
-            labels = loadLabels(context);
-        } catch (Exception e) {
-            Log.e("TFLite", "Error loading model", e);
+            tflite = Interpreter(loadModelFile(context))
+        } catch (e: Exception) {
+            Log.e("TFLite", "Error loading model", e)
         }
+        // Load labels from assets
+        labels = loadLabels(context)
     }
 
-    private MappedByteBuffer loadModelFile(Context context) throws IOException {
-        AssetFileDescriptor fileDescriptor = context.getAssets().openFd("plant_disease_model.tflite");
-        FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
-        FileChannel fileChannel = inputStream.getChannel();
-        long startOffset = fileDescriptor.getStartOffset();
-        long declaredLength = fileDescriptor.getDeclaredLength();
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
+    private fun loadModelFile(context: Context): MappedByteBuffer {
+        val fileDescriptor = context.assets.openFd("plant_disease_model.tflite")
+        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
+        val fileChannel = inputStream.channel
+        val startOffset = fileDescriptor.startOffset
+        val declaredLength = fileDescriptor.declaredLength
+        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
     }
 
-    private List<String> loadLabels(Context context) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(context.getAssets().open("labels.txt")));
-        List<String> labels = new ArrayList<>();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            labels.add(line);
-        }
-        reader.close();
-        return labels;
+    private fun loadLabels(context: Context): List<String> {
+        return context.assets.open("labels.txt").bufferedReader().useLines { it.toList() }
     }
 
-    public DiseaseResult classify(Bitmap bitmap) {
+    fun classify(bitmap: Bitmap): DiseaseResult {
         // Resize bitmap to model input size
-        Bitmap resizedBitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, true);
+        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, true)
 
         // Convert bitmap to ByteBuffer
-        ByteBuffer inputBuffer = convertBitmapToByteBuffer(resizedBitmap);
+        val inputBuffer = convertBitmapToByteBuffer(resizedBitmap)
 
         // Output buffer
-        float[][] output = new float[1][labels.size()];
+        val output = Array(1) { FloatArray(labels.size) }
 
         // Run inference
-        tflite.run(inputBuffer, output);
+        tflite?.run(inputBuffer, output)
 
         // Find class with highest probability
-        float maxConfidence = 0;
-        int maxIndex = 0;
-        for (int i = 0; i < output[0].length; i++) {
+        var maxConfidence = 0f
+        var maxIndex = 0
+        for (i in output[0].indices) {
             if (output[0][i] > maxConfidence) {
-                maxConfidence = output[0][i];
-                maxIndex = i;
+                maxConfidence = output[0][i]
+                maxIndex = i
             }
         }
 
-        String diseaseName = labels.get(maxIndex);
+        val diseaseName = labels[maxIndex]
 
-        return new DiseaseResult(diseaseName, maxConfidence);
+        return DiseaseResult(diseaseName, maxConfidence)
     }
 
-    private ByteBuffer convertBitmapToByteBuffer(Bitmap bitmap) {
-        ByteBuffer byteBuffer = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * NUM_CHANNELS);
-        byteBuffer.order(ByteOrder.nativeOrder());
+    private fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
+        val byteBuffer = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * NUM_CHANNELS)
+        byteBuffer.order(ByteOrder.nativeOrder())
 
-        int[] pixels = new int[INPUT_SIZE * INPUT_SIZE];
-        bitmap.getPixels(pixels, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
+        val pixels = IntArray(INPUT_SIZE * INPUT_SIZE)
+        bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
 
-        for (int pixel : pixels) {
-            // Normalize pixel values to [-1, 1] or [0, 1] depending on model training
-            byteBuffer.putFloat(((pixel >> 16) & 0xFF) / 255.0f); // Red
-            byteBuffer.putFloat(((pixel >> 8) & 0xFF) / 255.0f);  // Green
-            byteBuffer.putFloat((pixel & 0xFF) / 255.0f);         // Blue
+        for (pixel in pixels) {
+            // Normalize pixel values to [0, 1] (matches model training)
+            byteBuffer.putFloat(((pixel shr 16) and 0xFF) / 255.0f) // Red
+            byteBuffer.putFloat(((pixel shr 8) and 0xFF) / 255.0f)  // Green
+            byteBuffer.putFloat((pixel and 0xFF) / 255.0f)          // Blue
         }
 
-        return byteBuffer;
+        return byteBuffer
     }
 
     fun close() {
@@ -1347,110 +1303,91 @@ class MainActivity : AppCompatActivity() {
 
 **Using XmlPullParser:**
 
-```java
-// XmlParser.java
-public class XmlParser {
+```kotlin
+// XmlParser.kt
+object XmlParser {
 
-    public static List<Disease> parseDiseaseLibrary(Context context) {
-        List<Disease> diseases = new ArrayList<>();
+    fun parseDiseaseLibrary(context: Context): List<Disease> {
+        val diseases = mutableListOf<Disease>()
 
         try {
             // Open XML file from assets
-            InputStream inputStream = context.getAssets().open("diseases.xml");
+            val inputStream = context.assets.open("diseases.xml")
 
             // Create parser
-            XmlPullParserFactory factory = XmlPullParserFactory.newInstance();
-            XmlPullParser parser = factory.newPullParser();
-            parser.setInput(inputStream, "UTF-8");
+            val factory = XmlPullParserFactory.newInstance()
+            val parser = factory.newPullParser()
+            parser.setInput(inputStream, "UTF-8")
 
-            Disease currentDisease = null;
-            String currentTag = null;
-            int eventType = parser.getEventType();
+            var currentDisease: Disease? = null
+            var currentTag: String? = null
+            var eventType = parser.eventType
 
             // Parse XML
             while (eventType != XmlPullParser.END_DOCUMENT) {
-                switch (eventType) {
-                    case XmlPullParser.START_TAG:
-                        currentTag = parser.getName();
-                        if (currentTag.equals("disease")) {
-                            currentDisease = new Disease();
+                when (eventType) {
+                    XmlPullParser.START_TAG -> {
+                        currentTag = parser.name
+                        if (currentTag == "disease") {
+                            currentDisease = Disease()
                         }
-                        break;
+                    }
 
-                    case XmlPullParser.TEXT:
-                        String text = parser.getText().trim();
-                        if (currentDisease != null && !text.isEmpty()) {
-                            switch (currentTag) {
-                                case "name":
-                                    currentDisease.setName(text);
-                                    break;
-                                case "scientificName":
-                                    currentDisease.setScientificName(text);
-                                    break;
-                                case "symptoms":
-                                    currentDisease.setSymptoms(text);
-                                    break;
-                                case "causes":
-                                    currentDisease.setCauses(text);
-                                    break;
-                                case "treatment":
-                                    currentDisease.setTreatment(text);
-                                    break;
-                                case "prevention":
-                                    currentDisease.setPrevention(text);
-                                    break;
+                    XmlPullParser.TEXT -> {
+                        val text = parser.text.trim()
+                        if (currentDisease != null && text.isNotEmpty()) {
+                            when (currentTag) {
+                                "name" -> currentDisease.name = text
+                                "scientificName" -> currentDisease.scientificName = text
+                                "symptoms" -> currentDisease.symptoms = text
+                                "causes" -> currentDisease.causes = text
+                                "treatment" -> currentDisease.treatment = text
+                                "prevention" -> currentDisease.prevention = text
                             }
                         }
-                        break;
+                    }
 
-                    case XmlPullParser.END_TAG:
-                        if (parser.getName().equals("disease") && currentDisease != null) {
-                            diseases.add(currentDisease);
-                            currentDisease = null;
+                    XmlPullParser.END_TAG -> {
+                        if (parser.name == "disease" && currentDisease != null) {
+                            diseases.add(currentDisease)
+                            currentDisease = null
                         }
-                        break;
+                    }
                 }
-                eventType = parser.next();
+                eventType = parser.next()
             }
 
-            inputStream.close();
-        } catch (Exception e) {
-            Log.e("XmlParser", "Error parsing disease library", e);
+            inputStream.close()
+        } catch (e: Exception) {
+            Log.e("XmlParser", "Error parsing disease library", e)
         }
 
-        return diseases;
+        return diseases
     }
 
     // Find disease by name
-    public static Disease findDiseaseByName(Context context, String name) {
-        List<Disease> diseases = parseDiseaseLibrary(context);
-        for (Disease disease : diseases) {
-            if (disease.getName().equalsIgnoreCase(name)) {
-                return disease;
-            }
-        }
-        return null;
+    fun findDiseaseByName(context: Context, name: String): Disease? {
+        val diseases = parseDiseaseLibrary(context)
+        return diseases.find { it.name.equals(name, ignoreCase = true) }
     }
 }
 ```
 
 **Using in ViewModel:**
-```java
-// DiseaseViewModel.java
-public class DiseaseViewModel extends ViewModel {
-    private MutableLiveData<List<Disease>> diseases = new MutableLiveData<>();
+```kotlin
+// DiseaseViewModel.kt
+class DiseaseViewModel : ViewModel() {
+    private val diseases = MutableLiveData<List<Disease>>()
 
-    public void loadDiseases(Context context) {
+    fun loadDiseases(context: Context) {
         // Load in background thread
-        new Thread(() -> {
-            List<Disease> diseaseList = XmlParser.parseDiseaseLibrary(context);
-            diseases.postValue(diseaseList);
-        }).start();
+        viewModelScope.launch(Dispatchers.IO) {
+            val diseaseList = XmlParser.parseDiseaseLibrary(context)
+            diseases.postValue(diseaseList)
+        }
     }
 
-    public LiveData<List<Disease>> getDiseases() {
-        return diseases;
-    }
+    fun getDiseases(): LiveData<List<Disease>> = diseases
 }
 ```
 
@@ -1469,7 +1406,7 @@ public class DiseaseViewModel extends ViewModel {
 
 **What they did poorly:**
 1. **No ViewModels:** Activities directly access database (tight coupling)
-2. **Hard-coded strings:** URLs and messages in Java code instead of strings.xml
+2. **Hard-coded strings:** URLs and messages in Kotlin code instead of strings.xml
 3. **Large activities:** MainActivity has 800+ lines (should be split)
 
 **Adopt in LeafGuard:**
@@ -1526,7 +1463,7 @@ public class DiseaseViewModel extends ViewModel {
 
 1. **Code Documentation:**
    - Inline comments explaining WHY, not WHAT
-   - Javadoc for public methods
+   - KDoc for public functions (Kotlin's documentation format)
    - README for each module
 
 2. **User Documentation:**
@@ -1547,33 +1484,32 @@ public class DiseaseViewModel extends ViewModel {
 ### Writing Effective Comments
 
 **Bad Comment (explains WHAT):**
-```java
+```kotlin
 // Set text to disease name
-textView.setText(disease.getName());
+textView.text = disease.name
 ```
 
 **Good Comment (explains WHY):**
-```java
+```kotlin
 // Display disease name in red if confidence is low to alert user
-if (result.getConfidence() < 0.6) {
-    textView.setTextColor(Color.RED);
+if (result.confidence < 0.6) {
+    textView.setTextColor(Color.RED)
 }
-textView.setText(disease.getName());
+textView.text = disease.name
 ```
 
-**Javadoc Example:**
-```java
+**KDoc Example:**
+```kotlin
 /**
  * Uploads an image to the backend API for disease detection.
  *
- * This method compresses the image before upload to reduce bandwidth usage.
- * The API call is asynchronous and result is delivered via callback.
+ * This function compresses the image before upload to reduce bandwidth usage.
+ * The API call is a suspend function and the result is returned to the caller.
  *
  * @param imagePath Absolute path to the image file
- * @param callback Callback to receive result or error
- * @throws IllegalArgumentException if imagePath is null or empty
+ * @throws IllegalArgumentException if imagePath is blank
  */
-public void detectDisease(String imagePath, Callback<DiseaseResult> callback) {
+suspend fun detectDisease(imagePath: String): DiseaseResult {
     // Implementation
 }
 ```
@@ -1596,7 +1532,7 @@ LeafGuard AI is an Android application for plant disease detection using deep le
 - ✈️ Offline mode with TensorFlow Lite
 
 ## Technology Stack
-- **Android:** Java, MVVM architecture
+- **Android:** Kotlin, direct Activity-to-Service architecture
 - **Networking:** Retrofit 2.9
 - **Database:** Room 2.5
 - **Backend:** FastAPI
@@ -1647,7 +1583,7 @@ MIT License
 
 **Prerequisites:**
 - Android Studio installed
-- Basic Java/Kotlin knowledge refreshed
+- Basic Kotlin knowledge refreshed
 - Understanding of this week's concepts
 
 **Resources to review:**

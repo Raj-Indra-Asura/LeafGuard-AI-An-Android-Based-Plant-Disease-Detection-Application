@@ -21,7 +21,7 @@ By the end of this week, you will understand:
 | **Multipart** | A way to upload files (like images) over the internet |
 | **JSON** | A text format for exchanging data between apps and servers |
 
-> **🎯 Kotlin Learner? Start here:** This project uses Kotlin as the primary language. If you're new to Kotlin, focus on understanding the concepts first—the syntax will become familiar with practice. When you see Java code examples, know that Kotlin equivalents are shown first.
+> **🎯 Kotlin Learner? Start here:** This project is Kotlin-first — the LeafGuard AI codebase (`android-app-kotlin/`) is written entirely in Kotlin, and every code example in this roadmap uses Kotlin syntax. If you're new to Kotlin, focus on understanding the concepts first—the syntax will become familiar with practice.
 
 ---
 
@@ -323,11 +323,11 @@ Take argmax → Disease with highest probability
 ```
 
 **Parsing in Android:**
-```java
-XmlPullParser parser = ...
+```kotlin
+val parser: XmlPullParser = ...
 while (parser.next() != XmlPullParser.END_TAG) {
-    if (parser.getName().equals("name")) {
-        String diseaseName = parser.nextText();
+    if (parser.name == "name") {
+        val diseaseName = parser.nextText()
     }
 }
 ```
@@ -482,7 +482,7 @@ What evidence to save each week:
 
 **Prepare for Week 02:**
 - Install Android Studio
-- Review Java/Kotlin basics
+- Review Kotlin basics
 - Read about Android project structure
 
 ---
@@ -555,16 +555,16 @@ Libraries:
 
 | Syllabus Topic | LeafGuard Component | Proof Location |
 |----------------|---------------------|----------------|
-| Activities | MainActivity, ResultActivity, etc. | app/src/main/java/.../activities/ |
-| Intents | Camera intent, Gallery intent | MainActivity.java line 45-60 |
-| RecyclerView | History list | HistoryActivity.java |
-| Retrofit | API service | network/ApiService.java |
-| Room | Scan history DB | database/AppDatabase.java |
-| XML Parsing | Disease info | utils/XmlParser.java |
-| JSON Parsing | API responses | models/UploadResponse.java |
+| Activities | MainActivity, ResultActivity, etc. | android-app-kotlin/app/src/main/java/com/leafguard/ |
+| Intents | Camera intent, Gallery intent | MainActivity.kt line 45-60 |
+| RecyclerView | History list | HistoryActivity.kt |
+| Retrofit | API service | network/ApiService.kt |
+| Room | Scan history DB | database/AppDatabase.kt |
+| XML Parsing | Disease info | DiseaseLibraryActivity.kt (parseDiseaseXml) |
+| JSON Parsing | API responses | network/PredictionResponse.kt |
 | Permissions | Camera, Storage | AndroidManifest.xml + MainActivity |
-| Fragments | Disease library | fragments/LibraryFragment.java |
-| Notifications | Scan reminders | utils/NotificationHelper.java |
+| Fragments | Disease library | DiseaseLibraryActivity.kt |
+| Notifications | Scan reminders | utils/NotificationHelper.kt |
 
 **Expected Output:** A complete mapping document showing WHERE each syllabus topic appears in your project.
 
@@ -767,7 +767,7 @@ Database Class:
 - State saved/restored on configuration changes
 
 **Evidence Location:**
-- `app/src/main/java/com/example/leafguard/activities/MainActivity.java`
+- `android-app-kotlin/app/src/main/java/com/leafguard/MainActivity.kt`
 - Lines 34-45: onCreate() implementation
 - Lines 78-82: onSaveInstanceState() for rotation handling
 
@@ -1608,7 +1608,7 @@ Content-Type: image/jpeg
   LeafGuard AI is a mobile application that helps farmers identify plant diseases by analyzing leaf images. The app uses a CNN model trained on plant disease datasets and provides treatment recommendations.
 
   ## Technology Stack
-  - Android (Java/Kotlin)
+  - Android (Kotlin)
   - Retrofit (REST API)
   - Room (Local database)
   - FastAPI (Backend)
@@ -1822,7 +1822,7 @@ Week 02 focuses on Android Basics and UI:
 ### Preparation for Week 02
 
 - [ ] **Install Android Studio:** Download from https://developer.android.com/studio (large download, ~1-2 GB)
-- [ ] **Review Java/Kotlin basics:** If rusty, watch a refresher tutorial
+- [ ] **Review Kotlin basics:** If rusty, watch a refresher tutorial
 - [ ] **Read Android basics:** https://developer.android.com/guide/components/activities/intro-activities
 - [ ] **Prepare device:** If you have an Android phone, enable Developer Options and USB Debugging
 

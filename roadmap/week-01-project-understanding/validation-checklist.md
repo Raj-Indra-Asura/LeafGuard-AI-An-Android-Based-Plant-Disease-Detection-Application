@@ -256,7 +256,7 @@ Use this checklist to verify complete Week 01 completion before proceeding to We
 ### Week 02 Readiness
 
 - [ ] **Android Studio installed** (ready for Week 02)
-- [ ] **Java/Kotlin basics reviewed** (if rusty)
+- [ ] **Kotlin basics reviewed** (if rusty)
 - [ ] **Read Android Activity documentation** (basic familiarity)
 - [ ] **Familiar with XML layout syntax** (basic understanding)
 - [ ] **Android device or emulator ready** for testing

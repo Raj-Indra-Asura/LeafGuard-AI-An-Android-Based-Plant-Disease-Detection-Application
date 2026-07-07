@@ -108,7 +108,7 @@ Create a comprehensive mapping table connecting syllabus topics to implementatio
 
 **Example row:**
 ```
-| 5 | Retrofit | Network layer | app/src/main/java/com/example/leafguard/network/ApiService.java | @POST /predict endpoint | Demonstrates understanding of REST API calls, multipart upload, asynchronous callbacks, error handling |
+| 5 | Retrofit | Network layer | android-app-kotlin/app/src/main/java/com/leafguard/network/ApiService.kt | @POST /predict endpoint | Demonstrates understanding of REST API calls, multipart upload, coroutines, error handling |
 ```
 
 ### Verification
@@ -477,7 +477,7 @@ LeafGuard AI helps farmers identify plant diseases by analyzing leaf images usin
 
 ## Technology Stack
 
-- **Android:** Java/Kotlin with MVVM architecture
+- **Android:** Kotlin with a direct Activity-to-Service architecture
 - **Networking:** Retrofit 2.x for REST API communication
 - **Database:** Room for local data persistence
 - **Backend:** FastAPI (Python)
@@ -922,7 +922,7 @@ Once all exercises are complete:
 3. Verify all files are committed to Git
 4. Take screenshots of completed work
 5. Proceed to Week 01 Build Task (if not yet done)
-6. Prepare for Week 02: Install Android Studio, review Java/Kotlin basics
+6. Prepare for Week 02: Install Android Studio, review Kotlin basics
 
 **Completion target:** End of Week 01 (allow 12-15 hours total for all exercises)
 

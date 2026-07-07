@@ -166,7 +166,7 @@ In MVVM, Activities should directly access the database using DAO objects.
 ---
 
 ### Question 14
-Retrofit automatically converts JSON responses to Java objects using Gson or Moshi.
+Retrofit automatically converts JSON responses to Kotlin data class instances using Gson or Moshi.
 
 **True** or **False**?
 
@@ -498,12 +498,6 @@ val intent = Intent(this, ResultActivity::class.java)
 intent.putExtra("disease", disease)
 intent.putExtra("confidence", confidence)
 startActivity(intent)
-    if (scanResult.isSuccess()) {
-        textView.setText(scanResult.getData().getDiseaseName());
-    } else {
-        textView.setText("Error: " + scanResult.getErrorMessage());
-    }
-});
 ```
 
 ### Section 7: Scenario-Based Questions
@@ -512,7 +506,7 @@ startActivity(intent)
 The network call continues in the background because it's initiated in the ViewModel, which survives configuration changes. When the Activity is recreated after rotation, it re-observes the same ViewModel. If the result arrives after rotation, the new Activity instance will receive it through LiveData observation and display it normally. If the result arrived before rotation, the LiveData will immediately deliver the last value to the new Activity. The user will see the result either way—no data is lost. This is the key benefit of MVVM architecture.
 
 **29. Why Room over SharedPreferences for scan history (Sample answer):**
-1. **Structured queries:** Room allows SQL queries like "get all scans from last week" or "find scans with confidence >90%". SharedPreferences would require loading all data and filtering in Java, which is inefficient.
+1. **Structured queries:** Room allows SQL queries like "get all scans from last week" or "find scans with confidence >90%". SharedPreferences would require loading all data and filtering it manually in Kotlin, which is inefficient.
 2. **Data relationships:** Room supports foreign keys and table relationships (e.g., scans belonging to users). SharedPreferences cannot enforce referential integrity.
 3. **Performance:** Room is optimized for large datasets with indexing and lazy loading. SharedPreferences would load entire JSON string into memory every time, causing performance issues with 100+ scans.
 

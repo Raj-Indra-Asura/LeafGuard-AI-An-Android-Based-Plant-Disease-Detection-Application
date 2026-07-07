@@ -397,7 +397,7 @@ The MVVM pattern was confusing initially. I didn't understand why we need three 
 
 **Guidance:**
 - Install Android Studio?
-- Review Java/Kotlin?
+- Review Kotlin?
 - Watch Android tutorials?
 - Read documentation?
 - Set up emulator?
