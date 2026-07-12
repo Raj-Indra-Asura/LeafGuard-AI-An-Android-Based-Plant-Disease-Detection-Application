@@ -35,6 +35,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -51,7 +52,6 @@ class ScanActivity : AppCompatActivity() {
 
     companion object {
         private const val ACTION_CAMERA = "camera"
-        private const val ACTION_GALLERY = "gallery"
     }
 
     private var binding: ActivityScanBinding? = null
@@ -62,7 +62,7 @@ class ScanActivity : AppCompatActivity() {
     private var selectedImageUri: Uri? = null
     private var pendingCameraUri: Uri? = null
     private var pendingPermissionAction: String? = null
-    private var cloudMode = true
+    private var cloudMode = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -83,7 +83,7 @@ class ScanActivity : AppCompatActivity() {
 
     private fun setupModeToggle() {
         val binding = binding ?: return
-        binding.toggleDetectionMode.check(R.id.buttonCloudMode)
+        binding.toggleDetectionMode.check(R.id.buttonOfflineMode)
         binding.toggleDetectionMode.addOnButtonCheckedListener { _, checkedId, isChecked ->
             if (!isChecked) {
                 return@addOnButtonCheckedListener
@@ -128,7 +128,6 @@ class ScanActivity : AppCompatActivity() {
 
             when (pendingPermissionAction) {
                 ACTION_CAMERA -> launchCamera()
-                ACTION_GALLERY -> galleryLauncher.launch("image/*")
             }
             pendingPermissionAction = null
         }
@@ -163,12 +162,9 @@ class ScanActivity : AppCompatActivity() {
     }
 
     private fun openGalleryWithPermissionCheck() {
-        if (hasPermissions(requiredGalleryPermissions())) {
-            galleryLauncher.launch("image/*")
-            return
-        }
-        pendingPermissionAction = ACTION_GALLERY
-        permissionLauncher.launch(requiredGalleryPermissions())
+        // GetContent grants temporary access to the selected URI, so broad
+        // storage/media permission is neither required nor appropriate.
+        galleryLauncher.launch("image/*")
     }
 
     private fun launchCamera() {
@@ -229,6 +225,12 @@ class ScanActivity : AppCompatActivity() {
 
     private fun runCloudDetection() {
         val imageUri = selectedImageUri ?: return
+        val backendBaseUrl = getBackendBaseUrl()
+        if (backendBaseUrl == null) {
+            setDetectionInProgress(false)
+            Toast.makeText(this, R.string.invalid_backend_url, Toast.LENGTH_LONG).show()
+            return
+        }
         val uploadFile: File
         try {
             uploadFile = copyUriToCacheFile(imageUri)
@@ -240,9 +242,10 @@ class ScanActivity : AppCompatActivity() {
 
         val requestBody = uploadFile.asRequestBody(getImageMimeType(imageUri).toMediaTypeOrNull())
         val imagePart = MultipartBody.Part.createFormData("image", uploadFile.name, requestBody)
-        val apiService = RetrofitClient.getInstance(getBackendBaseUrl()).create(ApiService::class.java)
+        val apiService = RetrofitClient.getInstance(backendBaseUrl).create(ApiService::class.java)
         apiService.uploadImage(imagePart).enqueue(object : Callback<PredictionResponse> {
             override fun onResponse(call: Call<PredictionResponse>, response: Response<PredictionResponse>) {
+                uploadFile.delete()
                 setDetectionInProgress(false)
                 val prediction = response.body()
                 if (!response.isSuccessful || prediction == null) {
@@ -253,6 +256,7 @@ class ScanActivity : AppCompatActivity() {
             }
 
             override fun onFailure(call: Call<PredictionResponse>, throwable: Throwable) {
+                uploadFile.delete()
                 setDetectionInProgress(false)
                 Toast.makeText(this@ScanActivity, getString(R.string.network_error_format, throwable.message), Toast.LENGTH_LONG).show()
             }
@@ -284,13 +288,18 @@ class ScanActivity : AppCompatActivity() {
     @Throws(IOException::class)
     private fun copyUriToCacheFile(imageUri: Uri): File {
         val uploadFile = File(cacheDir, "leafguard_upload_${System.currentTimeMillis()}.jpg")
-        contentResolver.openInputStream(imageUri).use { inputStream ->
-            if (inputStream == null) {
-                throw IOException("Unable to open selected image. The file may have been moved or deleted.")
+        try {
+            contentResolver.openInputStream(imageUri).use { inputStream ->
+                if (inputStream == null) {
+                    throw IOException("Unable to open selected image. The file may have been moved or deleted.")
+                }
+                FileOutputStream(uploadFile).use { outputStream ->
+                    inputStream.copyTo(outputStream, bufferSize = 8192)
+                }
             }
-            FileOutputStream(uploadFile).use { outputStream ->
-                inputStream.copyTo(outputStream, bufferSize = 8192)
-            }
+        } catch (exception: IOException) {
+            uploadFile.delete()
+            throw exception
         }
         return uploadFile
     }
@@ -313,11 +322,11 @@ class ScanActivity : AppCompatActivity() {
         return mimeType
     }
 
-    private fun getBackendBaseUrl(): String {
+    private fun getBackendBaseUrl(): String? {
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         var baseUrl = prefs.getString(SettingsActivity.PREF_BACKEND_URL, SettingsActivity.DEFAULT_BACKEND_URL) ?: ""
         baseUrl = if (baseUrl.trim().isEmpty()) SettingsActivity.DEFAULT_BACKEND_URL else baseUrl.trim()
-        return if (baseUrl.endsWith("/")) baseUrl else "$baseUrl/"
+        return baseUrl.toHttpUrlOrNull()?.toString()
     }
 
     private fun openResult(prediction: PredictionResponse) {
@@ -361,14 +370,6 @@ class ScanActivity : AppCompatActivity() {
     }
 
     private fun requiredCameraPermissions(): Array<String> = arrayOf(Manifest.permission.CAMERA)
-
-    private fun requiredGalleryPermissions(): Array<String> {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            arrayOf(Manifest.permission.READ_MEDIA_IMAGES)
-        } else {
-            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-        }
-    }
 
     override fun onDestroy() {
         super.onDestroy()

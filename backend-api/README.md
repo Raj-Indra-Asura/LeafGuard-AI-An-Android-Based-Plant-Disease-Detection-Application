@@ -39,7 +39,11 @@ backend-api/
 ├── main.py                      # FastAPI application: /, /diseases, /predict endpoints + disease knowledge base
 ├── config.py                    # Configuration via environment variables / optional .env file
 ├── model_loader.py              # Loads the Keras model, or falls back to a mock predictor
-├── requirements.txt             # Python dependencies (already provided)
+├── requirements-base.txt        # API + mock-mode dependencies (Python 3.12 supported)
+├── requirements.txt             # Base dependencies + real-model TensorFlow runtime
+├── requirements-dev.txt         # Base dependencies + API test client
+├── Dockerfile                   # Container deployment definition
+├── test_api.py                  # Automated API contract and upload tests
 ├── .env                         # OPTIONAL — override configuration defaults (create only if needed)
 ├── models/                      # OPTIONAL — place a trained model here
 │   └── leafguard_model.keras    #   default MODEL_PATH; absent = automatic mock mode
@@ -82,29 +86,25 @@ You should see `(venv)` prefix in your terminal.
 # Upgrade pip
 pip install --upgrade pip
 
-# Install dependencies
-pip install -r requirements.txt
+# Demo/mock mode (works on Python 3.12+)
+pip install -r requirements-base.txt
+
+# Real Keras model mode (normally requires Python 3.10/3.11)
+# pip install -r requirements.txt
 ```
 
-### 3. About `requirements.txt`
+### 3. About the requirements files
 
-The file is **already provided** in this folder — do not create it. It pins:
+The files are **already provided**:
 
 ```txt
-fastapi==0.109.0
-uvicorn[standard]==0.27.0
-python-multipart==0.0.6
-pillow==10.2.0
-numpy==1.26.3
-tensorflow==2.14.0
-python-dotenv==1.0.0
+requirements-base.txt  # runnable API with mock fallback
+requirements.txt       # base dependencies plus TensorFlow 2.14
+requirements-dev.txt   # base dependencies plus API test tooling
 ```
 
 > **Note**: `tensorflow==2.14.0` requires **Python 3.9 – 3.11**. If you are on a newer
-> Python or TensorFlow fails to install, you can skip it entirely:
-> ```bash
-> pip install fastapi "uvicorn[standard]" python-multipart pillow numpy python-dotenv
-> ```
+> Python or TensorFlow fails to install, use `requirements-base.txt`.
 > The server detects the missing TensorFlow and runs in **mock mode** automatically —
 > every endpoint still works, so you can develop and demo the full app without it.
 
@@ -137,6 +137,7 @@ MODEL_PATH=models/leafguard_model.keras   # path to the trained Keras model
 IMAGE_SIZE=224                            # input resolution expected by the model
 CONFIDENCE_THRESHOLD=0.50                 # below this, a low-confidence log line is emitted
 USE_MOCK=false                            # true = force mock predictions even if a model exists
+MAX_IMAGE_SIZE_BYTES=10485760             # maximum accepted upload size (10 MiB)
 PORT=8000                                 # informational; pass --port to uvicorn to change it
 ALLOWED_ORIGINS=*                         # comma-separated CORS origins
 ```
@@ -151,7 +152,7 @@ echo ".env" >> .gitignore
 > **📚 Learning material — not setup steps.** Everything below shows how a server like
 > this is designed. The real, already-working code lives in `main.py`, `config.py`, and
 > `model_loader.py` in this folder, and its details differ slightly from these teaching
-> sketches (real endpoints: `GET /`, `GET /diseases`, `POST /predict` with form field
+> sketches (real endpoints: `GET /`, `GET /health`, `GET /diseases`, `POST /predict` with form field
 > `image`).
 
 ### Minimal `main.py` Structure
@@ -466,7 +467,7 @@ Once the server is running:
 
 ## Testing the API
 
-The real endpoints are `GET /` (health), `GET /diseases`, and `POST /predict` with a
+The real endpoints are `GET /` and `GET /health` (health aliases), `GET /diseases`, and `POST /predict` with a
 multipart form field named **`image`**.
 
 ### Using cURL
@@ -474,6 +475,9 @@ multipart form field named **`image`**.
 ```bash
 # Health check (also reports whether a real model or the mock predictor is active)
 curl http://localhost:8000/
+
+# Equivalent deployment health-check alias
+curl http://localhost:8000/health
 
 # Predict from image (note the field name: image)
 curl -X POST "http://localhost:8000/predict" \

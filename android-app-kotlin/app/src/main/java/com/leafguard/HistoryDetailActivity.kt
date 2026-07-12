@@ -32,6 +32,7 @@ class HistoryDetailActivity : AppCompatActivity() {
     }
 
     private var binding: ActivityHistoryDetailBinding? = null
+    private var currentConfidencePercent = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,9 +82,9 @@ class HistoryDetailActivity : AppCompatActivity() {
 
         // Disease name and confidence
         binding.textDetailDiseaseName.text = record.diseaseName
-        val confidencePercent = (record.confidence * 100f).roundToInt()
-        binding.textDetailConfidence.text = getString(R.string.confidence_format, confidencePercent)
-        binding.progressDetailConfidence.progress = confidencePercent
+        currentConfidencePercent = (record.confidence * 100f).roundToInt().coerceIn(0, 100)
+        binding.textDetailConfidence.text = getString(R.string.confidence_format, currentConfidencePercent)
+        binding.progressDetailConfidence.progress = currentConfidencePercent
 
         // Formatted timestamp
         val formattedDate = DateFormat
@@ -118,7 +119,7 @@ class HistoryDetailActivity : AppCompatActivity() {
         val shareText = getString(
             R.string.share_result_template,
             diseaseName,
-            binding.textDetailConfidence.text.toString(),
+            currentConfidencePercent,
             symptoms,
             treatment,
             binding.textDetailPrevention.text.toString()

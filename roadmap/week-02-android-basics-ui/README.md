@@ -722,8 +722,8 @@ produces the actual product UI.
   camera/gallery chooser; once an image is picked, the Cloud/Offline mode
   toggle and "Detect Disease" button appear. This is the new `ScanActivity`
   (the capture logic that used to live on `MainActivity` moved here).
-- **Analytics** — an intentionally blank placeholder tab (`AnalyticsActivity`)
-  reserved for a future week's charts.
+- **Analytics** — a local summary tab (`AnalyticsActivity`) showing saved-scan
+    count, average confidence, and the most frequent result from Room history.
 - **Library** — `DiseaseLibraryActivity` with a search box and a severity chip
   ("high"/"medium"/"low") on each disease card.
 - **About** — the existing `SettingsActivity`, reused as the fifth tab.
@@ -785,9 +785,9 @@ when Fragments + the Navigation Component are introduced.
    > acceleration. Call
    > `view.setLayerType(View.LAYER_TYPE_SOFTWARE, null)` on the View that
    > uses the dashed background — the same fix applied in `ScanActivity`.
-7. **Create the placeholder `AnalyticsActivity`** — just a layout with the
-   bottom navigation bar and no other content, plus a `// TODO` comment
-   pointing to a future week.
+7. **Create `AnalyticsActivity`** — add the shared bottom navigation and load
+    Room history to show the saved-scan count, average confidence, and most
+    frequent result. Keep the empty state visible until a result is saved.
 8. **Add a search box and severity chip to the Library screen** — a
    `TextInputEditText` with a `TextWatcher` that filters the in-memory
    disease list by name/plant, and a `Chip` on each `item_disease_library.xml`

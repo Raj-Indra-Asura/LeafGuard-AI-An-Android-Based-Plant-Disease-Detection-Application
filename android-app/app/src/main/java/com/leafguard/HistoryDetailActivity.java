@@ -33,6 +33,7 @@ public class HistoryDetailActivity extends AppCompatActivity {
 
     private ActivityHistoryDetailBinding binding;
     private final ExecutorService databaseExecutor = Executors.newSingleThreadExecutor();
+    private int currentConfidencePercent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,10 +82,10 @@ public class HistoryDetailActivity extends AppCompatActivity {
     private void renderRecord(ScanRecord record) {
         // Disease name and confidence
         binding.textDetailDiseaseName.setText(record.getDiseaseName());
-        int confidencePercent = Math.round(record.getConfidence() * 100f);
+        currentConfidencePercent = Math.max(0, Math.min(100, Math.round(record.getConfidence() * 100f)));
         binding.textDetailConfidence.setText(
-                getString(R.string.confidence_format, confidencePercent));
-        binding.progressDetailConfidence.setProgress(confidencePercent);
+            getString(R.string.confidence_format, currentConfidencePercent));
+        binding.progressDetailConfidence.setProgress(currentConfidencePercent);
 
         // Formatted timestamp
         String formattedDate = DateFormat
@@ -120,7 +121,7 @@ public class HistoryDetailActivity extends AppCompatActivity {
         String shareText = getString(
                 R.string.share_result_template,
                 diseaseName,
-                binding.textDetailConfidence.getText().toString(),
+                currentConfidencePercent,
                 symptoms,
                 treatment,
                 binding.textDetailPrevention.getText().toString()

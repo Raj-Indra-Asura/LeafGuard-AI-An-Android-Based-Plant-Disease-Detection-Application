@@ -88,8 +88,7 @@ class DiseaseLibraryActivity : AppCompatActivity() {
      */
     private fun loadDiseases() {
         val diseases: List<DiseaseEntry> = try {
-            val inputStream = assets.open("diseases.xml")
-            parseDiseaseXml(inputStream)
+            assets.open("diseases.xml").use(::parseDiseaseXml)
         } catch (e: IOException) {
             // assets/diseases.xml not present or malformed — load built-in fallback data
             getFallbackDiseaseList()
@@ -164,7 +163,6 @@ class DiseaseLibraryActivity : AppCompatActivity() {
             eventType = parser.next()
         }
 
-        inputStream.close()
         return diseases
     }
 

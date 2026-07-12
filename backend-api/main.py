@@ -8,7 +8,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image, UnidentifiedImageError
 from pydantic import BaseModel
 
-from config import ALLOWED_ORIGINS, CONFIDENCE_THRESHOLD, IMAGE_SIZE, MODEL_PATH, USE_MOCK
+from config import (
+    ALLOWED_ORIGINS,
+    CONFIDENCE_THRESHOLD,
+    IMAGE_SIZE,
+    MAX_IMAGE_SIZE_BYTES,
+    MODEL_PATH,
+    USE_MOCK,
+)
 from model_loader import load_predictor
 
 logging.basicConfig(level=logging.INFO)
@@ -89,7 +96,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS or ["*"],
-    allow_credentials=True,
+    allow_credentials="*" not in ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -108,6 +115,7 @@ def preprocess_image(raw_bytes: bytes) -> np.ndarray:
 
 
 @app.get("/")
+@app.get("/health")
 async def health_check() -> Dict[str, object]:
     """Simple health endpoint to verify the API is running and to expose runtime mode."""
     return {
@@ -145,9 +153,14 @@ async def predict(image: UploadFile = File(...)) -> PredictionResult:
         raise HTTPException(status_code=400, detail="Uploaded file must be an image.")
 
     try:
-        raw_bytes = await image.read()
+        raw_bytes = await image.read(MAX_IMAGE_SIZE_BYTES + 1)
         if not raw_bytes:
             raise HTTPException(status_code=400, detail="Uploaded image is empty.")
+        if len(raw_bytes) > MAX_IMAGE_SIZE_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail=f"Image exceeds the {MAX_IMAGE_SIZE_BYTES // (1024 * 1024)} MB upload limit.",
+            )
 
         model_input = preprocess_image(raw_bytes)
         disease_name, confidence = predictor.predict(model_input)
@@ -180,3 +193,5 @@ async def predict(image: UploadFile = File(...)) -> PredictionResult:
     except Exception as exc:  # pragma: no cover - runtime guard
         logger.exception("Prediction failed: %s", exc)
         raise HTTPException(status_code=500, detail="Model prediction failed.") from exc
+    finally:
+        await image.close()

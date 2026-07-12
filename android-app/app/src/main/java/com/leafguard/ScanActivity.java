@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import okhttp3.MediaType;
+import okhttp3.HttpUrl;
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
 import retrofit2.Call;
@@ -56,7 +57,6 @@ import java.util.concurrent.Executors;
 public class ScanActivity extends AppCompatActivity {
 
     private static final String ACTION_CAMERA = "camera";
-    private static final String ACTION_GALLERY = "gallery";
 
     private ActivityScanBinding binding;
     private ActivityResultLauncher<String[]> permissionLauncher;
@@ -66,7 +66,7 @@ public class ScanActivity extends AppCompatActivity {
     private Uri selectedImageUri;
     private Uri pendingCameraUri;
     private String pendingPermissionAction;
-    private boolean cloudMode = true;
+    private boolean cloudMode = false;
     private final ExecutorService detectionExecutor = Executors.newSingleThreadExecutor();
 
     @Override
@@ -87,7 +87,7 @@ public class ScanActivity extends AppCompatActivity {
     }
 
     private void setupModeToggle() {
-        binding.toggleDetectionMode.check(R.id.buttonCloudMode);
+        binding.toggleDetectionMode.check(R.id.buttonOfflineMode);
         binding.toggleDetectionMode.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (!isChecked) {
                 return;
@@ -141,8 +141,6 @@ public class ScanActivity extends AppCompatActivity {
 
                     if (ACTION_CAMERA.equals(pendingPermissionAction)) {
                         launchCamera();
-                    } else if (ACTION_GALLERY.equals(pendingPermissionAction)) {
-                        galleryLauncher.launch("image/*");
                     }
                     pendingPermissionAction = null;
                 }
@@ -179,12 +177,9 @@ public class ScanActivity extends AppCompatActivity {
     }
 
     private void openGalleryWithPermissionCheck() {
-        if (hasPermissions(requiredGalleryPermissions())) {
-            galleryLauncher.launch("image/*");
-            return;
-        }
-        pendingPermissionAction = ACTION_GALLERY;
-        permissionLauncher.launch(requiredGalleryPermissions());
+        // GetContent grants temporary access to the selected URI, so broad
+        // storage/media permission is neither required nor appropriate.
+        galleryLauncher.launch("image/*");
     }
 
     private void launchCamera() {
@@ -241,6 +236,12 @@ public class ScanActivity extends AppCompatActivity {
     }
 
     private void runCloudDetection() {
+        String backendBaseUrl = getBackendBaseUrl();
+        if (backendBaseUrl == null) {
+            setDetectionInProgress(false);
+            Toast.makeText(this, R.string.invalid_backend_url, Toast.LENGTH_LONG).show();
+            return;
+        }
         File uploadFile;
         try {
             uploadFile = copyUriToCacheFile(selectedImageUri);
@@ -252,10 +253,11 @@ public class ScanActivity extends AppCompatActivity {
 
         RequestBody requestBody = RequestBody.create(MediaType.parse(getImageMimeType(selectedImageUri)), uploadFile);
         MultipartBody.Part imagePart = MultipartBody.Part.createFormData("image", uploadFile.getName(), requestBody);
-        ApiService apiService = RetrofitClient.getInstance(getBackendBaseUrl()).create(ApiService.class);
+        ApiService apiService = RetrofitClient.getInstance(backendBaseUrl).create(ApiService.class);
         apiService.uploadImage(imagePart).enqueue(new Callback<PredictionResponse>() {
             @Override
             public void onResponse(@NonNull Call<PredictionResponse> call, @NonNull Response<PredictionResponse> response) {
+                uploadFile.delete();
                 setDetectionInProgress(false);
                 PredictionResponse prediction = response.body();
                 if (!response.isSuccessful() || prediction == null) {
@@ -267,6 +269,7 @@ public class ScanActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(@NonNull Call<PredictionResponse> call, @NonNull Throwable throwable) {
+                uploadFile.delete();
                 setDetectionInProgress(false);
                 Toast.makeText(ScanActivity.this, getString(R.string.network_error_format, throwable.getMessage()), Toast.LENGTH_LONG).show();
             }
@@ -293,16 +296,21 @@ public class ScanActivity extends AppCompatActivity {
 
     private File copyUriToCacheFile(Uri imageUri) throws IOException {
         File uploadFile = new File(getCacheDir(), "leafguard_upload_" + System.currentTimeMillis() + ".jpg");
-        try (InputStream inputStream = getContentResolver().openInputStream(imageUri);
-             FileOutputStream outputStream = new FileOutputStream(uploadFile)) {
-            if (inputStream == null) {
-                throw new IOException("Unable to open selected image. The file may have been moved or deleted.");
+        try {
+            try (InputStream inputStream = getContentResolver().openInputStream(imageUri);
+                 FileOutputStream outputStream = new FileOutputStream(uploadFile)) {
+                if (inputStream == null) {
+                    throw new IOException("Unable to open selected image. The file may have been moved or deleted.");
+                }
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
             }
-            byte[] buffer = new byte[8192];
-            int bytesRead;
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                outputStream.write(buffer, 0, bytesRead);
-            }
+        } catch (IOException exception) {
+            uploadFile.delete();
+            throw exception;
         }
         return uploadFile;
     }
@@ -330,7 +338,8 @@ public class ScanActivity extends AppCompatActivity {
             baseUrl = "";
         }
         baseUrl = baseUrl.trim().isEmpty() ? SettingsActivity.DEFAULT_BACKEND_URL : baseUrl.trim();
-        return baseUrl.endsWith("/") ? baseUrl : baseUrl + "/";
+        HttpUrl parsed = HttpUrl.parse(baseUrl);
+        return parsed == null ? null : parsed.toString();
     }
 
     private void openResult(PredictionResponse prediction) {
@@ -379,13 +388,6 @@ public class ScanActivity extends AppCompatActivity {
 
     private String[] requiredCameraPermissions() {
         return new String[]{Manifest.permission.CAMERA};
-    }
-
-    private String[] requiredGalleryPermissions() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            return new String[]{Manifest.permission.READ_MEDIA_IMAGES};
-        }
-        return new String[]{Manifest.permission.READ_EXTERNAL_STORAGE};
     }
 
     @Override

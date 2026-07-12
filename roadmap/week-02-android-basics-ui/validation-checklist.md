@@ -105,7 +105,7 @@ This checklist ensures you have completed all Week 02 requirements before procee
 ### Activity Classes
 - [ ] **MainActivity exists** (Home dashboard)
 - [ ] **ScanActivity exists** (camera/gallery upload and detection)
-- [ ] **AnalyticsActivity exists** (placeholder tab)
+- [ ] **AnalyticsActivity exists** (local Room-history summary tab)
 - [ ] **DiseaseLibraryActivity exists** (Library tab)
 - [ ] **SettingsActivity exists** (About tab)
 - [ ] **ResultActivity exists**
@@ -286,7 +286,7 @@ This checklist ensures you have completed all Week 02 requirements before procee
 ### Screenshots Saved
 - [ ] **MainActivity Home dashboard screenshot** saved
 - [ ] **ScanActivity upload screen screenshot** saved
-- [ ] **AnalyticsActivity placeholder screenshot** saved
+- [ ] **AnalyticsActivity summary screenshot** saved
 - [ ] **DiseaseLibraryActivity screenshot** saved
 - [ ] **ResultActivity screenshot** with data displayed
 - [ ] **HistoryActivity screenshot** saved
@@ -396,7 +396,7 @@ This checklist ensures you have completed all Week 02 requirements before procee
 - [ ] Home, Scan, Analytics, Library, and About screens all show the bottom navigation bar with the correct tab highlighted
 - [ ] Home shows the Quick Scan banner, History card (live scan count), and Library card
 - [ ] "Start Scanning" opens `ScanActivity`; capture, mode toggle, and detection still work exactly as before
-- [ ] Analytics tab opens a placeholder screen with just the nav bar (no crash)
+- [ ] Analytics tab opens and shows total scans, average confidence, and most frequent result
 - [ ] Disease Library search box filters results live and each card shows a severity chip
 - [ ] Re-tapping the currently active tab does not restart the screen or crash
 

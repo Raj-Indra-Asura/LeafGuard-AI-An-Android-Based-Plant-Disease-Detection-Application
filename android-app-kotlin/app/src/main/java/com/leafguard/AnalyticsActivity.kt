@@ -2,17 +2,17 @@ package com.leafguard
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.leafguard.database.AppDatabase
 import com.leafguard.databinding.ActivityAnalyticsBinding
 import com.leafguard.ui.setupBottomNav
+import kotlin.math.roundToInt
+import kotlinx.coroutines.launch
 
 /**
  * Analytics tab of the bottom navigation bar.
  *
- * This is a placeholder screen for this build — it only hosts the shared
- * bottom navigation bar so students can navigate to and from it.
- *
- * TODO (future week): render scan-trend and disease-frequency charts here,
- * built from the scan_history Room table (see AppDatabase / ScanDao).
+ * Summarizes the local Room scan history without sending analytics data off-device.
  */
 class AnalyticsActivity : AppCompatActivity() {
 
@@ -25,6 +25,35 @@ class AnalyticsActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setupBottomNav(binding.bottomNavigation, R.id.nav_analytics)
+        loadAnalytics()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadAnalytics()
+    }
+
+    private fun loadAnalytics() {
+        lifecycleScope.launch {
+            val records = AppDatabase.getInstance(applicationContext).scanDao().getAllScans()
+            val binding = binding ?: return@launch
+            binding.textAnalyticsTotal.text = records.size.toString()
+            binding.textAnalyticsAverage.text = if (records.isEmpty()) {
+                getString(R.string.analytics_no_data)
+            } else {
+                getString(
+                    R.string.analytics_confidence_format,
+                    (records.map { it.confidence }.average() * 100.0).roundToInt().coerceIn(0, 100)
+                )
+            }
+            binding.textAnalyticsTopDisease.text = records
+                .groupingBy { it.diseaseName }
+                .eachCount()
+                .maxByOrNull { it.value }
+                ?.key
+                ?: getString(R.string.analytics_no_data)
+            binding.textAnalyticsEmpty.visibility = if (records.isEmpty()) android.view.View.VISIBLE else android.view.View.GONE
+        }
     }
 
     override fun onDestroy() {

@@ -20,9 +20,13 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+.env
+**/.env
 
 # Compiled Android app packages (built from source; don't store in Git)
 *.apk
+*.jks
+*.keystore
 
 # macOS system files
 .DS_Store

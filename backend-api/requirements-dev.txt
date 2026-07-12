@@ -1,2 +1,2 @@
 -r requirements-base.txt
-tensorflow==2.14.0
+httpx==0.26.0

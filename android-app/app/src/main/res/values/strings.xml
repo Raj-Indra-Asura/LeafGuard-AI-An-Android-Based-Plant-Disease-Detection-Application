@@ -17,6 +17,7 @@
     <string name="open_settings">Settings</string>
     <string name="image_prepare_error">Unable to prepare image upload: %1$s</string>
     <string name="cloud_prediction_failed">Cloud prediction failed. Check the backend URL and server logs.</string>
+    <string name="invalid_backend_url">Enter a valid backend URL beginning with http:// or https:// in About.</string>
     <string name="network_error_format">Network error: %1$s</string>
     <string name="offline_prediction_failed">Offline prediction failed: %1$s</string>
     <string name="low_confidence_warning">Prediction is below your confidence threshold. Verify manually with the disease library.</string>
@@ -62,7 +63,7 @@
     <string name="settings_screen_title">Settings</string>
     <string name="settings_backend_section">Backend Server</string>
     <string name="settings_backend_url_hint">Backend URL</string>
-    <string name="settings_backend_url_hint_note">Use http://10.0.2.2:8000 for an emulator pointing to your local machine. Change to your server IP for a real device.</string>
+    <string name="settings_backend_url_hint_note">Use http://10.0.2.2:8000 from the emulator. On a real phone, use the HTTPS URL of a deployed backend.</string>
     <string name="settings_confidence_section">Confidence Threshold</string>
     <string name="settings_confidence_value_format">%1$d%%</string>
     <string name="settings_confidence_hint_note">Predictions with confidence below this threshold will be shown with a low-confidence warning.</string>
@@ -99,8 +100,15 @@
     <string name="choose_image_source_camera">Take Photo</string>
     <string name="choose_image_source_gallery">Choose from Gallery</string>
 
-    <!-- Analytics screen (placeholder — see AnalyticsActivity TODO) -->
+    <!-- Analytics screen -->
     <string name="analytics_screen_title">Analytics</string>
+    <string name="analytics_subtitle">Private summaries calculated from scan history stored on this device.</string>
+    <string name="analytics_total_label">Total saved scans</string>
+    <string name="analytics_average_label">Average confidence</string>
+    <string name="analytics_top_disease_label">Most frequent result</string>
+    <string name="analytics_confidence_format">%1$d%%</string>
+    <string name="analytics_no_data">No data</string>
+    <string name="analytics_empty_message">Save a scan result to start building analytics.</string>
 
     <!-- Disease Library: search + severity -->
     <string name="library_search_hint">Search diseases…</string>

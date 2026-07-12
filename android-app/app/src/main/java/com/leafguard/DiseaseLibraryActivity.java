@@ -100,8 +100,7 @@ public class DiseaseLibraryActivity extends AppCompatActivity {
     private void loadDiseases() {
         List<DiseaseEntry> diseases;
 
-        try {
-            InputStream inputStream = getAssets().open("diseases.xml");
+        try (InputStream inputStream = getAssets().open("diseases.xml")) {
             diseases = parseDiseaseXml(inputStream);
         } catch (IOException | XmlPullParserException e) {
             // assets/diseases.xml not present or malformed — load built-in fallback data
@@ -179,7 +178,6 @@ public class DiseaseLibraryActivity extends AppCompatActivity {
             eventType = parser.next();
         }
 
-        inputStream.close();
         return diseases;
     }
 

@@ -35,7 +35,7 @@ class ModelPredictor:
 
         scores = predictions[0]
         best_index = int(np.argmax(scores))
-        confidence = float(scores[best_index])
+        confidence = max(0.0, min(1.0, float(scores[best_index])))
         disease_name = self.class_names[best_index] if best_index < len(self.class_names) else f"Class {best_index}"
         return disease_name, confidence
 

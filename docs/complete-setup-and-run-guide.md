@@ -23,6 +23,7 @@ authoritative "how do I run everything right now?" reference.
 9. [Part F — Running the automated tests](#9-part-f--running-the-automated-tests)
 10. [Part G — Production release build (signed APK/AAB)](#10-part-g--production-release-build-signed-apkaab)
 11. [Troubleshooting](#11-troubleshooting)
+12. [Backend deployment and maintenance](backend-deployment-and-maintenance.md)
 
 ---
 
@@ -45,6 +46,7 @@ implemented in two identical tracks:
 - ☁️ Cloud inference via the FastAPI backend (mock predictor if no model file)
 - 📄 Result screen with disease, confidence, symptoms, treatment, prevention + share
 - 🗂 Scan history saved in a Room (SQLite) database, with detail view and delete
+- 📊 Local analytics: saved-scan count, average confidence, and most frequent result
 - 📚 Disease library parsed from `assets/diseases.xml` (10 diseases)
 - ⚙️ Settings: backend URL and confidence threshold (persisted in SharedPreferences)
 - 🔔 Scan-reminder notification channel
@@ -54,7 +56,8 @@ trained model is a large binary that each learner must obtain or train themselve
 [`../model/model-acquisition-guide.md`](../model/model-acquisition-guide.md)). The app
 detects the invalid stub and automatically switches to a built-in **heuristic
 classifier** (leaf-color analysis over 3 tomato classes), so Offline mode still returns
-sensible demo predictions and the entire UI flow works without any extra download.
+demo predictions and the entire UI flow works without any extra download. These outputs
+are not validated diagnoses and must not be presented as real model results.
 Likewise, the backend runs in **mock mode** when no Keras model file is present. To turn
 the demo AI into real AI, follow [Part D](#7-part-d--real-ai-install-a-trained-tensorflow-lite-model).
 
@@ -120,14 +123,15 @@ cd LeafGuard-AI-An-Android-Based-Plant-Disease-Detection-Application
    - Emulator: **Device Manager → Create Device** → e.g. Pixel 7, system image API 34.
    - Physical device: enable **Developer Options → USB debugging** and plug it in.
 4. **Run**: press the green **▶ Run** button (or `Shift+F10`).
-5. The **LeafGuard AI home screen** appears with: image preview area, *Capture Image* /
-   *Choose from Gallery* buttons, an *Offline / Cloud* detection-mode toggle, *Detect
-   Disease* button, and navigation to History, Disease Library, and Settings.
+5. The **LeafGuard AI home dashboard** appears with a Quick Scan action, History and
+   Library cards, technical-feature information, and five tabs: Home, Scan, Analytics,
+   Library, and About.
 
 ### First functional test (no backend needed)
 
-1. Leave the mode toggle on **Offline**.
-2. Tap **Choose from Gallery** and pick any leaf photo — or **Capture Image** (grant the
+1. Open **Scan** and leave the mode toggle on **Offline**.
+2. Tap the upload area, choose **Choose from Gallery**, and pick any leaf photo — or
+   choose **Take Photo** (grant the
    camera permission when asked). Sample images are in
    [`../sample-images/`](../sample-images/).
 3. Tap **Detect Disease** → the **Result screen** shows a disease name, confidence,
@@ -195,11 +199,11 @@ cd backend-api
 python3 -m venv venv
 source venv/bin/activate            # Windows: venv\Scripts\activate
 
-# 2. Install dependencies
-pip install -r requirements.txt
-#    If TensorFlow fails to install (e.g. Python 3.12+), install without it —
-#    the server then runs in mock mode automatically:
-#    pip install fastapi "uvicorn[standard]" python-multipart pillow numpy python-dotenv
+# 2a. Demo/mock dependencies (works on Python 3.12+)
+pip install -r requirements-base.txt
+
+# 2b. Or real-model dependencies (requires a TensorFlow-compatible Python, normally 3.10/3.11)
+# pip install -r requirements.txt
 
 # 3. Start the server
 uvicorn main:app --host 0.0.0.0 --port 8000
@@ -232,19 +236,18 @@ restart — `model_loaded` flips to `true`.
 | Where the app runs | Backend URL to use | Configuration needed |
 |---|---|---|
 | **Android emulator**, backend on the same computer | `http://10.0.2.2:8000/` | **None — this is the app's default** |
-| **Physical phone**, backend on your computer (same Wi-Fi) | `http://<your-computer-IP>:8000/` | Set in the app's **Settings** screen |
+| **Physical phone**, deployed backend | `https://<your-api-host>/` | Set in the app's **About** screen |
 
 1. Make sure the backend is running (Part B) with `--host 0.0.0.0`.
-2. Physical device only: find your computer's IP (`ip addr` / `ipconfig`), open the app's
-   **Settings** screen, and set the Backend API URL (e.g. `http://192.168.1.105:8000/`).
-   Allow port 8000 through your firewall if the phone cannot reach it.
-3. On the home screen switch the detection mode toggle to **Cloud**.
+2. Physical device: deploy the backend behind HTTPS using
+   [`backend-deployment-and-maintenance.md`](backend-deployment-and-maintenance.md), open
+   the app's **About** screen, and set the Backend API URL.
+3. On the Scan screen switch the detection mode toggle to **Cloud**.
 4. Pick an image and tap **Detect Disease** → the app POSTs the image to `/predict` and
    shows the JSON response on the Result screen.
 
-> The app allows cleartext (`http://`) traffic via its network security config, so no
-> HTTPS certificate is needed for local development. For a real production deployment,
-> host the API behind HTTPS and use an `https://` URL in Settings.
+> Cleartext (`http://`) is restricted to emulator/localhost addresses by the app's network
+> security policy. A physical-phone deployment must use HTTPS.
 
 ---
 
@@ -293,6 +296,7 @@ Run through this list to confirm the complete system:
 - [ ] Share button opens the Android share sheet with the result text
 - [ ] Save to history persists the scan (survives app restart — Room/SQLite)
 - [ ] History list shows saved scans; tapping opens the detail view; delete works
+- [ ] Analytics shows totals calculated from saved local history
 - [ ] Disease Library lists 10 diseases parsed from `assets/diseases.xml`
 - [ ] Settings: changing the confidence threshold and backend URL persists
 - [ ] Backend: `curl http://localhost:8000/` returns `{"status":"ok",...}`
@@ -314,6 +318,11 @@ cd android-app        && ./gradlew testDebugUnitTest
 
 # Instrumented UI tests (emulator/device must be running)
 cd android-app-kotlin && ./gradlew connectedDebugAndroidTest
+
+# Backend contract and validation tests
+cd backend-api
+pip install -r requirements-dev.txt
+python -m unittest test_api.py
 ```
 
 Backend manual test: see the `curl` commands in Part B, or the interactive Swagger UI at
@@ -340,7 +349,7 @@ For a distributable, installable release build (Week 12 material):
    ```
 4. Production hardening checklist:
    - Install a **real trained model** (Part D) — do not ship the heuristic fallback
-   - Point Settings' default URL at your **HTTPS** production API, or ship offline-only
+   - Configure the app's About screen with your **HTTPS** production API, or ship offline-only
    - Consider enabling `minifyEnabled true` (R8) and re-testing
    - Bump `versionCode`/`versionName` in `app/build.gradle` for each release
 
@@ -356,7 +365,7 @@ For a distributable, installable release build (Week 12 material):
 | Build fails: `Unresolved reference: BuildConfig` / `cannot find symbol BuildConfig` | AGP 8 disables `BuildConfig` generation by default | Already fixed: `buildFeatures { buildConfig true }` is set in both tracks' `app/build.gradle` — keep it if you edit that block |
 | Gradle sync fails: cannot resolve `com.android.application` | No access to `dl.google.com` (offline/blocked network) | Build on a network with Google Maven access; corporate proxies must allow it |
 | App result always tomato-related, Logcat warns about "heuristic fallback" | `model.tflite` is still the text placeholder | Expected demo behavior; install a real model (Part D) |
-| Cloud mode: "Unable to reach the backend" | Backend not running, wrong URL, or firewall | Verify `curl http://localhost:8000/`; emulator must use `10.0.2.2`, phone must use the computer's LAN IP; open port 8000 |
+| Cloud mode: network error | Backend not running, wrong URL, HTTP used from a physical release, or firewall | Verify `/health`; emulator may use `10.0.2.2`, but a physical-phone backend must use HTTPS |
 | Backend `use_mock: true` even with TensorFlow installed | No model file at `MODEL_PATH` | Place `models/leafguard_model.keras` or set `MODEL_PATH` in `.env` |
 | `pip install -r requirements.txt` fails on TensorFlow | Python 3.12+ (TF 2.14 needs 3.9–3.11) | Use Python 3.10/3.11, or install without TensorFlow (mock mode) |
 | Camera button does nothing on emulator | AVD has no camera configured | AVD settings → set front/back camera to *Emulated* or *Webcam0* |

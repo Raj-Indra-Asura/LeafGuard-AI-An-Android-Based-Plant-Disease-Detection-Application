@@ -8,8 +8,9 @@ import androidx.room.RoomDatabase
 /**
  * Kotlin twin of AppDatabase.java.
  *
- * Same database name ("leafguard.db"), version, destructive-migration
- * fallback, and double-checked-locking singleton pattern.
+ * Same database name ("leafguard.db"), version, and double-checked-locking
+ * singleton pattern. Schema changes must provide an explicit migration so
+ * saved scan history is never silently deleted.
  */
 @Database(entities = [ScanRecord::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
@@ -29,9 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     DATABASE_NAME
-                )
-                    .fallbackToDestructiveMigration()
-                    .build()
+                ).build()
                     .also { instance = it }
             }
         }

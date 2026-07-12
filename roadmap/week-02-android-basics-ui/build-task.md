@@ -1467,18 +1467,19 @@ for a description of the finished design before starting.
 
 **Commit:** `Week 02: Move capture/detect flow into ScanActivity`
 
-### 11d. Analytics placeholder (new `AnalyticsActivity`)
+### 11d. Analytics summary (new `AnalyticsActivity`)
 
-1. Create `AnalyticsActivity` with a layout containing **only** the shared
-   bottom navigation bar — no other content yet.
-2. Add a `// TODO` comment noting that scan-trend charts arrive in a later
-   week, built from the same `scan_history` Room table.
+1. Create `AnalyticsActivity` with the shared bottom navigation bar and summary
+   fields for total scans, average confidence, and most frequent result.
+2. Load the values from the existing `scan_history` Room table and show a clear
+   empty state before any result has been saved.
 3. Register it in `AndroidManifest.xml`.
 
 **Verification:**
-- [ ] Tapping "Analytics" in the bottom bar opens a blank screen with the nav bar
+- [ ] Tapping "Analytics" opens the summary without a crash
+- [ ] Saving a result updates the analytics values
 
-**Commit:** `Week 02: Add Analytics tab placeholder`
+**Commit:** `Week 02: Add Analytics summary tab`
 
 ### 11e. Library search + severity chip
 
