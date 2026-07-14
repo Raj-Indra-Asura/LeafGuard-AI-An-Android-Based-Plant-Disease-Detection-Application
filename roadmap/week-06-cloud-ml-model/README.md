@@ -1035,6 +1035,16 @@ Week 06 established your core AI functionality. Everything from here builds on t
 
 ---
 
+## 📈 Product State After This Week
+
+**Cumulative product completion: 55%** *(official model: [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md))*
+
+- **Your app can now…** run the complete cloud prediction pipeline — photo → upload → model preprocessing and inference on the server → result on screen.
+- **Your app still cannot…** remember past scans, show treatment advice, or work without internet. Week 07 adds persistent scan history.
+- **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
+
+---
+
 ## 📚 Week 06 — Navigation
 
 ### All Files In This Week (Complete In Order)

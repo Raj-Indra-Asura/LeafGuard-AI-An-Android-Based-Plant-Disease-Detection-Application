@@ -274,6 +274,16 @@ Collect 5+ measurements for each mode (cloud / offline) and average them for the
 
 ---
 
+## 📈 Product State After This Week
+
+**Cumulative product completion: 94%** *(official model: [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md))*
+
+- **Your app can now…** prove itself: unit and instrumentation tests pass, edge cases are handled, and the full demo flow runs crash-free with acceptable performance.
+- **Your app still cannot…** be installed from a signed release APK with final documentation. Week 12 delivers that.
+- **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
+
+---
+
 ## 📚 Week 11 — Navigation
 
 ### All Files In This Week (Complete In Order)

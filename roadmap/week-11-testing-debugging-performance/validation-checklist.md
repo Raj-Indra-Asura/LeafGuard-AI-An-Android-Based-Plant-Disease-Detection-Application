@@ -1,5 +1,12 @@
 # Week 11: Validation Checklist - Testing, Debugging, and Performance
 
+## 🎬 Milestone Demo (proves the cumulative product state)
+
+> **Demo:** Run the test suite green, then perform the complete crash-free demo flow (scan → result → history → library → share) (**cumulative product: 94%**).
+>
+> This single live demo proves the product state defined in [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md). You may not advance to Week 12 until this demo works and every item below passes.
+
+
 ## Overview
 
 This checklist defines the pass/fail standard for Week 11. A feature is not complete just because it ran once.

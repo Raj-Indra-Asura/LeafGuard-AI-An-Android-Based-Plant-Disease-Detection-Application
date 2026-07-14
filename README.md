@@ -1,5 +1,7 @@
 # LeafGuard AI - 12-Week Learning Roadmap
 
+> **🚀 First time here? Read [START_HERE.md](START_HERE.md)** — the single official starting sequence (it replaces every other "where do I begin?" list) — and check [PRODUCT_PROGRESS_MAP.md](PRODUCT_PROGRESS_MAP.md) to see how the product grows week by week.
+
 > **🎯 New! Unified Learning System:** Navigate seamlessly through all course materials with our [**Interactive Learning Path**](LEARNING_PATH.md) - featuring progressive navigation, exercises, solutions, and interactive notebooks!
 
 ---

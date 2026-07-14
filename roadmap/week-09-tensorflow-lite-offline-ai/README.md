@@ -133,6 +133,16 @@ The repo ships `app/src/main/assets/model.tflite` as a **text placeholder** so t
 
 ---
 
+## 📈 Product State After This Week
+
+**Cumulative product completion: 82%** *(official model: [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md))*
+
+- **Your app can now…** diagnose a leaf **with no internet at all** using on-device TensorFlow Lite — the complete core product now works both online and offline.
+- **Your app still cannot…** notify the user, share results, or tag scans with location; it is also not yet hardened or packaged. Weeks 10–12 finish the job.
+- **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
+
+---
+
 ## 📚 Week 09 — Navigation
 
 ### All Files In This Week (Complete In Order)

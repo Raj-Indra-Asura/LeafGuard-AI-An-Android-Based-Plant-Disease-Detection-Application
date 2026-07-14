@@ -218,6 +218,16 @@ if (info != null) {
 
 ---
 
+## 📈 Product State After This Week
+
+**Cumulative product completion: 72%** *(official model: [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md))*
+
+- **Your app can now…** show symptoms, treatment, and prevention for every predicted disease, and browse a full 10-disease encyclopedia parsed from `assets/diseases.xml`.
+- **Your app still cannot…** work without internet — predictions still require the cloud backend. Week 09 brings the AI on-device.
+- **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
+
+---
+
 ## 📚 Week 08 — Navigation
 
 ### All Files In This Week (Complete In Order)

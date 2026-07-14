@@ -1,5 +1,12 @@
 # Week 12: Final Submission - Validation Checklist
 
+## 🎬 Milestone Demo (proves the cumulative product state)
+
+> **Demo:** Install the signed release APK on a fresh device and demo every feature end-to-end (**cumulative product: 100%** — done 🎉).
+>
+> This single live demo proves the product state defined in [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md). The product is complete when this demo works and every item below passes.
+
+
 **Total Points: 100**
 
 ---

@@ -1270,6 +1270,16 @@ You will implement:
 
 ---
 
+## 📈 Product State After This Week
+
+**Cumulative product completion: 35%** *(official model: [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md))*
+
+- **Your app can now…** accept an image upload on your own FastAPI server and return a JSON disease prediction (mock for now) — fully testable from the interactive `/docs` page.
+- **Your app still cannot…** connect the app to the server — the Android app doesn't talk to it yet. Week 05 wires them together with Retrofit.
+- **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
+
+---
+
 ## 📚 Week 04 — Navigation
 
 ### All Files In This Week (Complete In Order)

@@ -1,5 +1,12 @@
 # Week 03 Validation Checklist
 
+## 🎬 Milestone Demo (proves the cumulative product state)
+
+> **Demo:** Capture a photo with the camera, then pick one from the gallery, and show both displayed in the app — including a graceful permission-denial path (**cumulative product: 25%**).
+>
+> This single live demo proves the product state defined in [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md). You may not advance to Week 04 until this demo works and every item below passes.
+
+
 ## Purpose
 Verify complete Week 03 implementation before proceeding to Week 04. All items must be checked. Answer each question honestly with "yes" or "no"—you should be able to answer "yes" to every item before moving on.
 

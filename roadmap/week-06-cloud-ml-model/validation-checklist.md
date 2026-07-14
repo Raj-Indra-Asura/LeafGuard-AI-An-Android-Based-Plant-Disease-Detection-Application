@@ -1,5 +1,12 @@
 # Week 06 Validation Checklist
 
+## 🎬 Milestone Demo (proves the cumulative product state)
+
+> **Demo:** Run the full cloud round-trip live: photo → upload → model inference on the server → disease name and confidence on the Result screen (**cumulative product: 55%**).
+>
+> This single live demo proves the product state defined in [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md). You may not advance to Week 07 until this demo works and every item below passes.
+
+
 ## Week 06 project reality check
 
 > Note: The committed `assets/model.tflite` is a placeholder TEXT file, not a real trained model. Until a real model is provided, the backend uses a **mock predictor** (in `model_loader.py`) and the on-device `TFLiteClassifier` uses a **green-channel heuristic fallback**, so the app still runs end-to-end. The real trained model arrives in **Week 09**. Low or odd confidence values are normal this week because predictions are placeholders.

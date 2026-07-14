@@ -1,5 +1,12 @@
 # Week 04 Validation Checklist
 
+## 🎬 Milestone Demo (proves the cumulative product state)
+
+> **Demo:** Upload a leaf image via the FastAPI `/docs` page and read back the JSON disease prediction, proving the backend accepts images and responds (**cumulative product: 35%**).
+>
+> This single live demo proves the product state defined in [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md). You may not advance to Week 05 until this demo works and every item below passes.
+
+
 ## Purpose
 
 Use this checklist to verify your Week 04 FastAPI backend is complete and functional before proceeding to Week 05 Android networking. Every item must be checked for successful completion.

@@ -1,5 +1,12 @@
 # Week 09: Validation Checklist - TensorFlow Lite Offline AI
 
+## 🎬 Milestone Demo (proves the cumulative product state)
+
+> **Demo:** Turn on airplane mode and complete a full scan → result → history flow entirely offline (**cumulative product: 82%**).
+>
+> This single live demo proves the product state defined in [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md). You may not advance to Week 10 until this demo works and every item below passes.
+
+
 Use this checklist after finishing the Week 09 build task.
 For each item, answer **Yes** or **No** — tick it **Yes** only when you have real evidence: a screenshot, log entry, code snippet, or successful test. A **No** shows you what to fix next.
 
