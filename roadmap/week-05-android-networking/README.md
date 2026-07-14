@@ -945,6 +945,16 @@ Write your own code. Understand every line.
 
 ---
 
+## 📈 Product State After This Week
+
+**Cumulative product completion: 45%** *(official model: [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md))*
+
+- **Your app can now…** send a captured photo from the phone to your backend and display the disease name and confidence on a real Result screen, with friendly error handling when the server is down.
+- **Your app still cannot…** give real AI answers (predictions are still mock), remember past scans, or work offline. Week 06 integrates the real model.
+- **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
+
+---
+
 ## 📚 Week 05 — Navigation
 
 ### All Files In This Week (Complete In Order)

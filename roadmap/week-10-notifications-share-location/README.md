@@ -308,6 +308,16 @@ implementation 'com.google.android.gms:play-services-location:21.0.1'
 
 ---
 
+## 📈 Product State After This Week
+
+**Cumulative product completion: 88%** *(official model: [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md))*
+
+- **Your app can now…** notify the user, share a diagnosis to other apps via a share intent, and attach location to scans — every planned feature now exists.
+- **Your app still cannot…** guarantee stability under stress, and it is not yet a signed, installable release. Week 11 hardens it; Week 12 ships it.
+- **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
+
+---
+
 ## 📚 Week 10 — Navigation
 
 ### All Files In This Week (Complete In Order)

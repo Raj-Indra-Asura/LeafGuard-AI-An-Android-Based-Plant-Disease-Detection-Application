@@ -1,5 +1,12 @@
 # Week 08 Validation Checklist — XML Disease Library
 
+## 🎬 Milestone Demo (proves the cumulative product state)
+
+> **Demo:** Scan a leaf and show full symptoms/treatment/prevention advice on the Result screen, then open the Disease Library and browse all 10 diseases (**cumulative product: 72%**).
+>
+> This single live demo proves the product state defined in [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md). You may not advance to Week 09 until this demo works and every item below passes.
+
+
 > Complete all items before marking Week 08 done. **How to use this:** for each row, answer **Yes** or **No**. Every row should be **Yes** before you finish the week. A **No** just tells you what to go back and fix.
 >
 > **Accuracy note:** the shipped `assets/diseases.xml` uses five tags — `<name>`, `<plant>`, `<symptoms>`, `<treatment>`, `<prevention>` — with **10** `<disease>` entries whose `<name>` matches `assets/labels.txt` exactly. Extra fields (scientific name, severity, etc.) are an optional extension if you chose the richer schema.

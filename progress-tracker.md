@@ -17,6 +17,9 @@ New here? This file is your weekly checklist. Each week, tick `[x]` the boxes as
 
 ## Week 01: Project Understanding and Proposal [Start Date: ____ / End Date: ____]
 
+**📈 Cumulative product target: 5%** (see [PRODUCT_PROGRESS_MAP.md](PRODUCT_PROGRESS_MAP.md)) — Cumulative % achieved: [____%]
+**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary) → `android-app/` — do the identical steps in whichever track you chose.
+
 ### Learning Phase
 - [ ] Read COURSE_OVERVIEW.md [____]
 - [ ] Read LEARNING_RULES.md [____]
@@ -56,6 +59,9 @@ New here? This file is your weekly checklist. Each week, tick `[x]` the boxes as
 ---
 
 ## Week 02: Android Basics and UI Skeleton [Start Date: ____ / End Date: ____]
+
+**📈 Cumulative product target: 15%** (see [PRODUCT_PROGRESS_MAP.md](PRODUCT_PROGRESS_MAP.md)) — Cumulative % achieved: [____%]
+**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary) → `android-app/` — do the identical steps in whichever track you chose.
 
 ### Setup
 - [ ] Install Android Studio (done in pre-Week-01 setup) [____]
@@ -100,6 +106,9 @@ New here? This file is your weekly checklist. Each week, tick `[x]` the boxes as
 
 ## Week 03: Camera and Gallery [Start Date: ____ / End Date: ____]
 
+**📈 Cumulative product target: 25%** (see [PRODUCT_PROGRESS_MAP.md](PRODUCT_PROGRESS_MAP.md)) — Cumulative % achieved: [____%]
+**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary) → `android-app/` — do the identical steps in whichever track you chose.
+
 ### Exercises
 - [ ] Exercise 1: Launch camera intent [____]
 - [ ] Exercise 2: Handle camera result [____]
@@ -140,6 +149,9 @@ New here? This file is your weekly checklist. Each week, tick `[x]` the boxes as
 ---
 
 ## Week 04: FastAPI Backend [Start Date: ____ / End Date: ____]
+
+**📈 Cumulative product target: 35%** (see [PRODUCT_PROGRESS_MAP.md](PRODUCT_PROGRESS_MAP.md)) — Cumulative % achieved: [____%]
+**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary) → `android-app/` — do the identical steps in whichever track you chose.
 
 ### Setup
 - [ ] Install Python 3.8+ [____]
@@ -185,6 +197,9 @@ New here? This file is your weekly checklist. Each week, tick `[x]` the boxes as
 
 ## Week 05: Android Networking [Start Date: ____ / End Date: ____]
 
+**📈 Cumulative product target: 45%** (see [PRODUCT_PROGRESS_MAP.md](PRODUCT_PROGRESS_MAP.md)) — Cumulative % achieved: [____%]
+**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary) → `android-app/` — do the identical steps in whichever track you chose.
+
 ### Exercises
 - [ ] Exercise 1: Add Retrofit dependency [____]
 - [ ] Exercise 2: Create API interface [____]
@@ -228,6 +243,9 @@ New here? This file is your weekly checklist. Each week, tick `[x]` the boxes as
 
 ## Week 06: Cloud ML Model Integration [Start Date: ____ / End Date: ____]
 
+**📈 Cumulative product target: 55%** (see [PRODUCT_PROGRESS_MAP.md](PRODUCT_PROGRESS_MAP.md)) — Cumulative % achieved: [____%]
+**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary) → `android-app/` — do the identical steps in whichever track you chose.
+
 ### Exercises
 - [ ] Exercise 1: Find plant disease dataset [____]
 - [ ] Exercise 2: Load model in FastAPI [____]
@@ -269,6 +287,9 @@ New here? This file is your weekly checklist. Each week, tick `[x]` the boxes as
 
 ## Week 07: Room Database and Scan History [Start Date: ____ / End Date: ____]
 
+**📈 Cumulative product target: 65%** (see [PRODUCT_PROGRESS_MAP.md](PRODUCT_PROGRESS_MAP.md)) — Cumulative % achieved: [____%]
+**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary) → `android-app/` — do the identical steps in whichever track you chose.
+
 ### Exercises
 - [ ] Exercise 1: Define Entity class [____]
 - [ ] Exercise 2: Create DAO interface [____]
@@ -309,6 +330,9 @@ New here? This file is your weekly checklist. Each week, tick `[x]` the boxes as
 
 ## Week 08: XML Disease Library [Start Date: ____ / End Date: ____]
 
+**📈 Cumulative product target: 72%** (see [PRODUCT_PROGRESS_MAP.md](PRODUCT_PROGRESS_MAP.md)) — Cumulative % achieved: [____%]
+**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary) → `android-app/` — do the identical steps in whichever track you chose.
+
 ### Exercises
 - [ ] Exercise 1: Design XML structure [____]
 - [ ] Exercise 2: Create diseases.xml [____]
@@ -347,6 +371,9 @@ New here? This file is your weekly checklist. Each week, tick `[x]` the boxes as
 ---
 
 ## Week 09: TensorFlow Lite Offline AI [Start Date: ____ / End Date: ____]
+
+**📈 Cumulative product target: 82%** (see [PRODUCT_PROGRESS_MAP.md](PRODUCT_PROGRESS_MAP.md)) — Cumulative % achieved: [____%]
+**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary) → `android-app/` — do the identical steps in whichever track you chose.
 
 ### Exercises
 - [ ] Exercise 1: Convert model to TFLite [____]
@@ -389,6 +416,9 @@ New here? This file is your weekly checklist. Each week, tick `[x]` the boxes as
 
 ## Week 10: Notifications, Share, and Location [Start Date: ____ / End Date: ____]
 
+**📈 Cumulative product target: 88%** (see [PRODUCT_PROGRESS_MAP.md](PRODUCT_PROGRESS_MAP.md)) — Cumulative % achieved: [____%]
+**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary) → `android-app/` — do the identical steps in whichever track you chose.
+
 ### Exercises
 - [ ] Exercise 1: Create NotificationChannel [____]
 - [ ] Exercise 2: Build notification [____]
@@ -428,6 +458,9 @@ New here? This file is your weekly checklist. Each week, tick `[x]` the boxes as
 ---
 
 ## Week 11: Testing, Debugging, and Performance [Start Date: ____ / End Date: ____]
+
+**📈 Cumulative product target: 94%** (see [PRODUCT_PROGRESS_MAP.md](PRODUCT_PROGRESS_MAP.md)) — Cumulative % achieved: [____%]
+**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary) → `android-app/` — do the identical steps in whichever track you chose.
 
 ### Exercises
 - [ ] Exercise 1: Write test case table [____]
@@ -469,6 +502,9 @@ New here? This file is your weekly checklist. Each week, tick `[x]` the boxes as
 ---
 
 ## Week 12: Final Submission [Start Date: ____ / End Date: ____]
+
+**📈 Cumulative product target: 100%** (see [PRODUCT_PROGRESS_MAP.md](PRODUCT_PROGRESS_MAP.md)) — Cumulative % achieved: [____%]
+**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary) → `android-app/` — do the identical steps in whichever track you chose.
 
 ### UI Polish
 - [ ] Add app icon [____]

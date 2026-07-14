@@ -1,5 +1,12 @@
 # Week 02 Validation Checklist
 
+## 🎬 Milestone Demo (proves the cumulative product state)
+
+> **Demo:** Launch the app on the emulator and tap through every screen (Main → Result → History → Settings) and back, proving the navigable UI skeleton works (**cumulative product: 15%**).
+>
+> This single live demo proves the product state defined in [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md). You may not advance to Week 03 until this demo works and every item below passes.
+
+
 ## Purpose
 
 This checklist ensures you have completed all Week 02 requirements before proceeding to Week 03. Each item must be verified and checked. Do not skip items or proceed with incomplete work.

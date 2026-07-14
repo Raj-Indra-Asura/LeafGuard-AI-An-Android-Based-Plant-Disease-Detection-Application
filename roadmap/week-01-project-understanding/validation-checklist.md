@@ -1,5 +1,12 @@
 # Week 01 Validation Checklist
 
+## 🎬 Milestone Demo (proves the cumulative product state)
+
+> **Demo:** Walk through your architecture diagram end-to-end, explaining every component and data-flow arrow, to prove the product is fully planned (**cumulative product: 5%**).
+>
+> This single live demo proves the product state defined in [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md). You may not advance to Week 02 until this demo works and every item below passes.
+
+
 ## Purpose
 
 Use this checklist to verify complete Week 01 completion before proceeding to Week 02. ALL items must be checked. Do not skip items or proceed if anything is incomplete.

@@ -1116,6 +1116,16 @@ You may proceed to Week 03 only when:
 
 ---
 
+## 📈 Product State After This Week
+
+**Cumulative product completion: 15%** *(official model: [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md))*
+
+- **Your app can now…** launch on an emulator and navigate between 4+ real screens (Main, Result, History, Settings) using Intents, with all text in `strings.xml`.
+- **Your app still cannot…** take photos, analyze anything, or store anything. Week 03 adds the camera and gallery.
+- **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
+
+---
+
 ## 📚 Week 02 — Navigation
 
 ### All Files In This Week (Complete In Order)

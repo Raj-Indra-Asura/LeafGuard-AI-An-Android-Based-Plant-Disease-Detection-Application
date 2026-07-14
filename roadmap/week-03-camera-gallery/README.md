@@ -615,6 +615,16 @@ You may proceed to Week 04 only when:
 
 ---
 
+## 📈 Product State After This Week
+
+**Cumulative product completion: 25%** *(official model: [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md))*
+
+- **Your app can now…** capture a leaf photo with the camera (or pick one from the gallery) and display it on screen, handling runtime permission grants and denials gracefully.
+- **Your app still cannot…** analyze the photo — there is no backend and no AI yet. Week 04 builds the server.
+- **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
+
+---
+
 ## 📚 Week 03 — Navigation
 
 ### All Files In This Week (Complete In Order)

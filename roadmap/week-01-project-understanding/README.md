@@ -1848,6 +1848,16 @@ You will create:
 
 ---
 
+## 📈 Product State After This Week
+
+**Cumulative product completion: 5%** *(official model: [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md))*
+
+- **Your app can now…** exist as a fully planned product — every screen, layer, and data flow is designed, the architecture diagram is drawn, and the Git repository is ready.
+- **Your app still cannot…** run at all — no application code exists yet. Week 02 turns the plan into a launchable app skeleton.
+- **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
+
+---
+
 ## 📚 Week 01 — Navigation
 
 ### All Files In This Week (Complete In Order)

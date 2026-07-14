@@ -1,5 +1,12 @@
 # Week 07: Validation Checklist - Room Database and Scan History
 
+## 🎬 Milestone Demo (proves the cumulative product state)
+
+> **Demo:** Do a scan, kill and reopen the app, and show the scan still listed in History — then delete it live (**cumulative product: 65%**).
+>
+> This single live demo proves the product state defined in [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md). You may not advance to Week 08 until this demo works and every item below passes.
+
+
 ## Pass/Fail Validation Criteria
 
 Answer **Yes** or **No** for each item (tick the box for **Yes**). Every box should be **Yes** before you finish the week — no partial credit. A **No** just shows you what to go back and fix.

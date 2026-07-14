@@ -1,5 +1,12 @@
 # Week 05: Validation Checklist - Android Networking with Retrofit
 
+## 🎬 Milestone Demo (proves the cumulative product state)
+
+> **Demo:** Capture a photo in the app and see a prediction from your server on the Result screen; then stop the backend and show the friendly error message (**cumulative product: 45%**).
+>
+> This single live demo proves the product state defined in [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md). You may not advance to Week 06 until this demo works and every item below passes.
+
+
 ## Related materials
 
 - Exercises (primary Kotlin): [../../exercises/android-kotlin/](../../exercises/android-kotlin/)

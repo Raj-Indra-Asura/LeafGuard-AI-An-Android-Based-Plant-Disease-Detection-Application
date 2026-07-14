@@ -1,5 +1,12 @@
 # Week 10: Validation Checklist - Notifications, Share Intent, and Location Services
 
+## 🎬 Milestone Demo (proves the cumulative product state)
+
+> **Demo:** Complete a scan, share the result to another app, and show the notification and location attached to the scan (**cumulative product: 88%**).
+>
+> This single live demo proves the product state defined in [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md). You may not advance to Week 11 until this demo works and every item below passes.
+
+
 ## Overview
 
 This checklist provides **pass/fail validation criteria** for Week 10. Each item must pass before you move to Week 11. There are no partial points - features either work or they do not.

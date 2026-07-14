@@ -889,6 +889,16 @@ Write your own code. Understand every annotation.
 
 ---
 
+## 📈 Product State After This Week
+
+**Cumulative product completion: 65%** *(official model: [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md))*
+
+- **Your app can now…** save every scan automatically to a Room/SQLite database and browse, view, and delete a scan history that survives app restarts.
+- **Your app still cannot…** show symptoms/treatment/prevention advice or work offline. Week 08 adds the XML disease library.
+- **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
+
+---
+
 ## 📚 Week 07 — Navigation
 
 ### All Files In This Week (Complete In Order)
