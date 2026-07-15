@@ -7,6 +7,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_KERAS_MODEL = ROOT / "backend-api" / "models" / "leafguard_model.keras"
 DEFAULT_LABELS = ROOT / "model" / "labels-38.txt"
+BACKEND_LABELS = ROOT / "backend-api" / "labels-38.txt"
 ANDROID_ASSETS = (
     ROOT / "android-app" / "app" / "src" / "main" / "assets",
     ROOT / "android-app-kotlin" / "app" / "src" / "main" / "assets",

@@ -161,8 +161,11 @@ public class TFLiteClassifier implements AutoCloseable {
                 bestValue = scores[index];
                 bestIndex = index;
             }
+        }
+        return bestIndex;
+    }
 
-            private String displayLabel(String modelLabel) {
+    private String displayLabel(String modelLabel) {
                 switch (modelLabel) {
                     case "Apple___Apple_scab":
                         return "Apple Scab";
@@ -223,9 +226,6 @@ public class TFLiteClassifier implements AutoCloseable {
                     this.treatment = treatment;
                     this.prevention = prevention;
                 }
-            }
-        }
-        return bestIndex;
     }
 
     @Override

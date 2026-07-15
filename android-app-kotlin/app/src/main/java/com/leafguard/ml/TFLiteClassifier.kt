@@ -164,8 +164,11 @@ class TFLiteClassifier @Throws(IOException::class) @JvmOverloads constructor(
                 bestValue = scores[index]
                 bestIndex = index
             }
+        }
+        return bestIndex
+    }
 
-            private fun displayLabel(modelLabel: String): String = when (modelLabel) {
+    private fun displayLabel(modelLabel: String): String = when (modelLabel) {
                 "Apple___Apple_scab" -> "Apple Scab"
                 "Corn___Cercospora_leaf_spot Gray_leaf_spot" -> "Corn Gray Leaf Spot"
                 "Corn___Northern_Leaf_Blight" -> "Corn Northern Leaf Blight"
@@ -215,10 +218,7 @@ class TFLiteClassifier @Throws(IOException::class) @JvmOverloads constructor(
                 val symptoms: String,
                 val treatment: String,
                 val prevention: String
-            )
-        }
-        return bestIndex
-    }
+    )
 
     override fun close() {
         interpreter?.close()

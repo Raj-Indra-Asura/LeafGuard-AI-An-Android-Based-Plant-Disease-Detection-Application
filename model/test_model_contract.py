@@ -2,12 +2,13 @@ import unittest
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-from model_contract import ANDROID_ASSETS, DEFAULT_LABELS, load_labels
+from model_contract import ANDROID_ASSETS, BACKEND_LABELS, DEFAULT_LABELS, load_labels
 
 
 class ModelContractTest(unittest.TestCase):
     def test_canonical_labels_are_unique_and_synchronized(self):
         canonical = load_labels(DEFAULT_LABELS)
+        self.assertEqual(canonical, load_labels(BACKEND_LABELS))
         for assets_dir in ANDROID_ASSETS:
             self.assertEqual(canonical, load_labels(assets_dir / "labels.txt"))
 

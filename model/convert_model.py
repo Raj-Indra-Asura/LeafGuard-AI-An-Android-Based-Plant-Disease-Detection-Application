@@ -7,6 +7,7 @@ import tensorflow as tf
 
 from model_contract import (
     ANDROID_ASSETS,
+    BACKEND_LABELS,
     DEFAULT_KERAS_MODEL,
     DEFAULT_LABELS,
     find_embedded_rescaling,
@@ -32,6 +33,8 @@ def main() -> None:
     converter = tf.lite.TFLiteConverter.from_keras_model(model)
     tflite_model = converter.convert()
 
+    shutil.copyfile(args.labels, BACKEND_LABELS)
+    print(f"Synchronized {BACKEND_LABELS}")
     for assets_dir in ANDROID_ASSETS:
         assets_dir.mkdir(parents=True, exist_ok=True)
         (assets_dir / "model.tflite").write_bytes(tflite_model)

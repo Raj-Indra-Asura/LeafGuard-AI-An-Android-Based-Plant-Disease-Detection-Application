@@ -45,6 +45,7 @@ cmp android-app/app/src/main/assets/model.tflite \
     android-app-kotlin/app/src/main/assets/model.tflite
 cmp model/labels-38.txt android-app/app/src/main/assets/labels.txt
 cmp model/labels-38.txt android-app-kotlin/app/src/main/assets/labels.txt
+cmp model/labels-38.txt backend-api/labels-38.txt
 ```
 
 The conversion utility refuses an incompatible model and writes identical TFLite

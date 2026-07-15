@@ -7,7 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent
 load_dotenv(BASE_DIR / ".env")
 
 MODEL_PATH = os.getenv("MODEL_PATH", str(BASE_DIR / "models" / "leafguard_model.keras"))
-LABELS_PATH = os.getenv("LABELS_PATH", str(BASE_DIR.parent / "model" / "labels-38.txt"))
+LABELS_PATH = os.getenv("LABELS_PATH", str(BASE_DIR / "labels-38.txt"))
 IMAGE_SIZE = int(os.getenv("IMAGE_SIZE", "224"))
 CONFIDENCE_THRESHOLD = float(os.getenv("CONFIDENCE_THRESHOLD", "0.50"))
 MAX_IMAGE_SIZE_BYTES = int(os.getenv("MAX_IMAGE_SIZE_BYTES", str(10 * 1024 * 1024)))
