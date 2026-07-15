@@ -57,7 +57,9 @@ def find_embedded_rescaling(model):
             config = layer.get_config()
             scale = float(config.get("scale"))
             offset = float(config.get("offset", 0.0))
-            if np.isclose(scale, 1.0 / 127.5) and np.isclose(offset, -1.0):
+            if np.isclose(scale, 1.0 / 127.5, rtol=1e-6, atol=1e-8) and np.isclose(
+                offset, -1.0, rtol=0.0, atol=1e-8
+            ):
                 return layer
         pending.extend(getattr(layer, "layers", []))
     raise ValueError(

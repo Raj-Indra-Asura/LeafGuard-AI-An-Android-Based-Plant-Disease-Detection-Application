@@ -4,7 +4,7 @@ from typing import List, Sequence, Tuple
 
 import numpy as np
 
-from config import MODEL_PATH, USE_MOCK
+from config import IMAGE_SIZE, MODEL_PATH, USE_MOCK
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +71,11 @@ def load_predictor(class_names: Sequence[str]) -> ModelPredictor:
         model = tf.keras.models.load_model(model_path)
         input_shape = tuple(model.input_shape)
         output_shape = tuple(model.output_shape)
-        if len(input_shape) != 4 or input_shape[1:] != (224, 224, 3):
-            raise ValueError(f"Expected model input shape (None, 224, 224, 3), got {input_shape}")
+        if len(input_shape) != 4 or input_shape[1:] != (IMAGE_SIZE, IMAGE_SIZE, 3):
+            raise ValueError(
+                f"Expected model input shape (None, {IMAGE_SIZE}, {IMAGE_SIZE}, 3), "
+                f"got {input_shape}"
+            )
         if len(output_shape) != 2 or output_shape[-1] != len(class_names):
             raise ValueError(
                 f"Model output count {output_shape[-1]} does not match label count {len(class_names)}"

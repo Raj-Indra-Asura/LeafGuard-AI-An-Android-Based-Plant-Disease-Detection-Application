@@ -83,9 +83,15 @@ tasks.register("validateReleaseModel") {
     doLast {
         def modelFile = file("src/main/assets/model.tflite")
         def labelsFile = file("src/main/assets/labels.txt")
-        if (!modelFile.isFile() || modelFile.length() < 1_000_000) {
+        if (!modelFile.isFile()) {
             throw new GradleException(
                     "A real converted model.tflite is required for release builds. Run model/convert_model.py first.")
+        }
+        modelFile.withInputStream { input ->
+            byte[] header = new byte[8]
+            if (input.read(header) != 8 || new String(header, 4, 4, "US-ASCII") != "TFL3") {
+                throw new GradleException("model.tflite is not a valid TensorFlow Lite FlatBuffer.")
+            }
         }
         def labels = labelsFile.readLines("UTF-8").collect { it.trim() }
                 .findAll { !it.isEmpty() && !it.startsWith("#") }
