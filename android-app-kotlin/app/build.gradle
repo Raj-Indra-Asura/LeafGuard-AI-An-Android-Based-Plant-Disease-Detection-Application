@@ -101,6 +101,7 @@ tasks.register("validateReleaseModel") {
                     "A real converted model.tflite is required for release builds. Run model/convert_model.py first.")
         }
         modelFile.withInputStream { input ->
+            // TensorFlow Lite FlatBuffers identify schema v3 with "TFL3" at bytes 4-7.
             byte[] header = new byte[8]
             if (input.read(header) != 8 || new String(header, 4, 4, "US-ASCII") != "TFL3") {
                 throw new GradleException("model.tflite is not a valid TensorFlow Lite FlatBuffer.")

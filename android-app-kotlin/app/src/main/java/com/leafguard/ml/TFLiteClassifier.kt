@@ -14,6 +14,7 @@ import java.nio.ByteOrder
 import java.nio.channels.FileChannel
 import org.tensorflow.lite.Interpreter
 import org.xmlpull.v1.XmlPullParser
+import org.xmlpull.v1.XmlPullParserException
 
 /**
  * Kotlin twin of TFLiteClassifier.java.
@@ -183,7 +184,9 @@ class TFLiteClassifier @Throws(IOException::class) @JvmOverloads constructor(
                         parser.setInput(input, "UTF-8")
                         parseGuidance(parser, guidance)
                     }
-                } catch (exception: Exception) {
+                } catch (exception: IOException) {
+                    Log.w(TAG, "Unable to load optional disease guidance.", exception)
+                } catch (exception: XmlPullParserException) {
                     Log.w(TAG, "Unable to load optional disease guidance.", exception)
                 }
                 return guidance

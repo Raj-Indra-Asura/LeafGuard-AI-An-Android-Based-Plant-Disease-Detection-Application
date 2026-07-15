@@ -108,7 +108,7 @@ app.add_middleware(
 
 
 def preprocess_image(raw_bytes: bytes) -> np.ndarray:
-    """Convert raw upload bytes into the model's raw RGB float32 tensor."""
+    """Convert upload bytes into an RGB float32 tensor with values in [0, 255]."""
     try:
         image = Image.open(io.BytesIO(raw_bytes)).convert("RGB")
     except (UnidentifiedImageError, OSError) as exc:

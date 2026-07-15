@@ -10,6 +10,7 @@ import com.leafguard.network.PredictionResponse;
 
 import org.tensorflow.lite.Interpreter;
 import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -184,13 +185,14 @@ public class TFLiteClassifier implements AutoCloseable {
                     XmlPullParser parser = android.util.Xml.newPullParser();
                     parser.setInput(context.getAssets().open("diseases.xml"), "UTF-8");
                     parseGuidance(parser, guidance);
-                } catch (Exception exception) {
+                } catch (IOException | XmlPullParserException exception) {
                     Log.w(TAG, "Unable to load optional disease guidance.", exception);
                 }
                 return guidance;
             }
 
-            private void parseGuidance(XmlPullParser parser, Map<String, Guidance> output) throws Exception {
+            private void parseGuidance(XmlPullParser parser, Map<String, Guidance> output)
+                    throws IOException, XmlPullParserException {
                 String name = null;
                 String symptoms = null;
                 String treatment = null;
