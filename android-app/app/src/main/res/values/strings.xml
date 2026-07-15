@@ -20,7 +20,11 @@
     <string name="invalid_backend_url">Enter a valid backend URL beginning with http:// or https:// in About.</string>
     <string name="network_error_format">Network error: %1$s</string>
     <string name="offline_prediction_failed">Offline prediction failed: %1$s</string>
-    <string name="low_confidence_warning">Prediction is below your confidence threshold. Verify manually with the disease library.</string>
+    <string name="low_confidence_warning">Uncertain result. Retake a clear, close-up leaf image and verify manually.</string>
+    <string name="uncertain_prediction_title">Uncertain / retake image (top match: %1$s)</string>
+    <string name="uncertain_prediction_details">Confidence is below your configured threshold, so this result should not be treated as a diagnosis.</string>
+    <string name="uncertain_prediction_action">Retake the image in good light with one leaf filling the frame, then verify with a local agricultural expert.</string>
+    <string name="uncertain_prediction_prevention">Do not take treatment action based only on this uncertain result.</string>
     <string name="permissions_required_message">Required permissions were denied. Please enable them and try again.</string>
     <string name="camera_cancelled_message">Camera capture was cancelled.</string>
     <string name="camera_prepare_error">Unable to prepare camera file: %1$s</string>

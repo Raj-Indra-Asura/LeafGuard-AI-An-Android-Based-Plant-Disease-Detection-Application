@@ -10,11 +10,20 @@ import com.google.gson.annotations.SerializedName
  * The @SerializedName values keep the JSON contract identical.
  */
 data class PredictionResponse(
+    @SerializedName("model_label")
+    var modelLabel: String? = null,
+
     @SerializedName("disease")
     var disease: String? = null,
 
     @SerializedName("confidence")
     var confidence: Float = 0f,
+
+    @SerializedName("uncertain")
+    var uncertain: Boolean = false,
+
+    @SerializedName("guidance_available")
+    var guidanceAvailable: Boolean = false,
 
     @SerializedName("symptoms")
     var symptoms: String? = null,

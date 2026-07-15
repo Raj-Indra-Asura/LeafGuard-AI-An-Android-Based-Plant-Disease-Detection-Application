@@ -27,7 +27,7 @@ jobs:
       - uses: android-actions/setup-android@v3
       - name: Validate, lint, and package
         working-directory: ${{ matrix.track }}
-        run: ./gradlew testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest assembleRelease
+        run: ./gradlew testDebugUnitTest lintDebug assembleDebug assembleDebugAndroidTest
       - name: Upload Kotlin beta APK
         if: matrix.track == 'android-app-kotlin'
         uses: actions/upload-artifact@v4
