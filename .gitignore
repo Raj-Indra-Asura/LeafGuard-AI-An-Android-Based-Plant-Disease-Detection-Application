@@ -28,5 +28,10 @@ venv/
 *.jks
 *.keystore
 
+# User-approved third-party model artifacts (generated/staged locally)
+backend-api/models/*.keras
+android-app/app/src/main/assets/model.tflite
+android-app-kotlin/app/src/main/assets/model.tflite
+
 # macOS system files
 .DS_Store

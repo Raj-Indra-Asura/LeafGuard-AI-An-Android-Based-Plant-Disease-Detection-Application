@@ -265,7 +265,7 @@ on-device inference**:
 2. **Match the app's contract** (also in [`../model/model-notes.md`](../model/model-notes.md)):
    - Input: `1 × 224 × 224 × 3` float32, RGB, normalized to `0..1`
    - Output: `1 × 10` softmax matching the exact label order of
-     [`../model/labels.txt`](../model/labels.txt)
+     [`../model/labels-38.txt`](../model/labels-38.txt)
 3. **Install it into BOTH app tracks** (they must stay identical):
    ```bash
    cp your_model.tflite android-app-kotlin/app/src/main/assets/model.tflite
@@ -274,7 +274,9 @@ on-device inference**:
 4. **Rebuild and run.** The classifier now loads the real interpreter (Logcat no longer
    shows the "heuristic fallback" warning) and predictions cover all 10 classes.
 
-**Pipeline smoke test without training**: `python3 model/generate_stub_model.py`
+**Real-model pipeline**: follow
+[`production-end-to-end-setup.md`](production-end-to-end-setup.md). Random-weight stub
+inference is intentionally unsupported.
 (requires `pip install tensorflow`) generates a *valid but untrained* model into
 `android-app/app/src/main/assets/` — useful to prove the TFLite integration works, but
 its predictions are random. Copy it to the Kotlin track's assets too if you use it.
@@ -370,7 +372,7 @@ For a distributable, installable release build (Week 12 material):
 | `pip install -r requirements.txt` fails on TensorFlow | Python 3.12+ (TF 2.14 needs 3.9–3.11) | Use Python 3.10/3.11, or install without TensorFlow (mock mode) |
 | Camera button does nothing on emulator | AVD has no camera configured | AVD settings → set front/back camera to *Emulated* or *Webcam0* |
 | Port 8000 already in use | Another process bound to it | `lsof -ti:8000 \| xargs kill -9` (or run uvicorn with `--port 8001` and update Settings) |
-| Predictions look wrong with a custom model | Preprocessing/label mismatch | Model must take 224×224×3 float32 RGB 0..1 and output 10 classes in `model/labels.txt` order |
+| Predictions look wrong with the approved model | Preprocessing/label mismatch | Model must take 224×224×3 raw float32 RGB 0..255, contain embedded rescaling, and output 38 classes in `model/labels-38.txt` order |
 
 More: [`environment-setup.md`](environment-setup.md) →
 Troubleshooting, and each component's own README.

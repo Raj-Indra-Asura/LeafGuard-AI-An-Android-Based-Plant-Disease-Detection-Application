@@ -12,8 +12,8 @@ import java.io.InputStreamReader
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.channels.FileChannel
-import java.util.Locale
 import org.tensorflow.lite.Interpreter
+import org.xmlpull.v1.XmlPullParser
 
 /**
  * Kotlin twin of TFLiteClassifier.java.
@@ -21,10 +21,10 @@ import org.tensorflow.lite.Interpreter
  * Behavioral contract preserved exactly:
  * - default assets model.tflite / labels.txt, input size 224
  * - memory-mapped model load, 4 interpreter threads
- * - RGB float32 normalization to 0..1 (divide by 255)
+ * - raw RGB float32 input in 0..255 because preprocessing is embedded in the model
  * - labels parsing skips blank lines and lines starting with '#'
  * - argmax over the single output tensor
- * - heuristic green-channel fallback when the model asset is missing/invalid
+ * - strict tensor and label validation
  */
 class TFLiteClassifier @Throws(IOException::class) @JvmOverloads constructor(
     context: Context,
@@ -37,28 +37,30 @@ class TFLiteClassifier @Throws(IOException::class) @JvmOverloads constructor(
         private const val TAG = "TFLiteClassifier"
         private const val PIXEL_SIZE = 3
         private const val BYTES_PER_CHANNEL = 4
-        private const val FALLBACK_TOMATO_EARLY_BLIGHT_INDEX = 0
-        private const val FALLBACK_TOMATO_LATE_BLIGHT_INDEX = 1
-        private const val FALLBACK_TOMATO_HEALTHY_INDEX = 2
+        private const val GENERIC_SYMPTOMS =
+            "Detailed symptoms and treatment guidance are not available in this version."
+        private const val GENERIC_TREATMENT =
+            "Please verify this result with a local agricultural expert or plant-disease reference."
+        private const val GENERIC_PREVENTION =
+            "Capture a clear close-up and continue monitoring. This result is not a confirmed diagnosis."
     }
 
     private val labels = mutableListOf<String>()
+    private val guidanceByDisplayName: Map<String, Guidance>
     private var interpreter: Interpreter? = null
     private var outputClasses = 1
-    private var heuristicFallback = false
 
     init {
-        initializeModelOrFallback(context, modelAssetName)
         labels.addAll(loadLabels(context, labelsAssetName))
         if (labels.isEmpty()) {
-            labels.add("Unknown disease")
+            throw IOException("The model labels asset is empty.")
         }
-        while (labels.size < outputClasses) {
-            labels.add(String.format(Locale.getDefault(), "Class %d", labels.size))
-        }
+        guidanceByDisplayName = loadGuidance(context)
+        initializeModel(context, modelAssetName)
     }
 
-    private fun initializeModelOrFallback(context: Context, modelAssetName: String) {
+    @Throws(IOException::class)
+    private fun initializeModel(context: Context, modelAssetName: String) {
         try {
             val fileDescriptor = context.assets.openFd(modelAssetName)
             FileInputStream(fileDescriptor.fileDescriptor).use { inputStream ->
@@ -71,22 +73,30 @@ class TFLiteClassifier @Throws(IOException::class) @JvmOverloads constructor(
                 val options = Interpreter.Options().apply { setNumThreads(4) }
                 interpreter = Interpreter(mappedByteBuffer, options)
 
-                val outputShape = interpreter!!.getOutputTensor(0).shape()
-                if (outputShape.size > 1) {
-                    outputClasses = outputShape[1]
+                val activeInterpreter = interpreter!!
+                val inputShape = activeInterpreter.getInputTensor(0).shape()
+                val outputShape = activeInterpreter.getOutputTensor(0).shape()
+                if (!inputShape.contentEquals(intArrayOf(1, inputSize, inputSize, PIXEL_SIZE))) {
+                    throw IOException("Expected TFLite input shape [1, $inputSize, $inputSize, 3].")
                 }
+                if (outputShape.size != 2 || outputShape[0] != 1) {
+                    throw IOException("Expected TFLite output shape [1, class_count].")
+                }
+                outputClasses = outputShape[1]
+                if (outputClasses != labels.size) {
+                    throw IOException(
+                        "TFLite output count $outputClasses does not match label count ${labels.size}."
+                    )
+                }
+                Log.i(TAG, "Loaded valid TFLite model with $outputClasses labels.")
             }
         } catch (exception: IOException) {
-            fallBackToHeuristic(exception)
+            close()
+            throw IOException("Unable to load a compatible TFLite model asset.", exception)
         } catch (exception: IllegalArgumentException) {
-            fallBackToHeuristic(exception)
+            close()
+            throw IOException("Unable to load a compatible TFLite model asset.", exception)
         }
-    }
-
-    private fun fallBackToHeuristic(exception: Exception) {
-        Log.w(TAG, "Unable to load a valid TFLite model asset; using the starter heuristic fallback.", exception)
-        heuristicFallback = true
-        outputClasses = 3
     }
 
     @Throws(IOException::class)
@@ -112,9 +122,9 @@ class TFLiteClassifier @Throws(IOException::class) @JvmOverloads constructor(
         for (y in 0 until inputSize) {
             for (x in 0 until inputSize) {
                 val pixel = scaledBitmap.getPixel(x, y)
-                inputBuffer.putFloat(Color.red(pixel) / 255.0f)
-                inputBuffer.putFloat(Color.green(pixel) / 255.0f)
-                inputBuffer.putFloat(Color.blue(pixel) / 255.0f)
+                inputBuffer.putFloat(Color.red(pixel).toFloat())
+                inputBuffer.putFloat(Color.green(pixel).toFloat())
+                inputBuffer.putFloat(Color.blue(pixel).toFloat())
             }
         }
         inputBuffer.rewind()
@@ -125,64 +135,25 @@ class TFLiteClassifier @Throws(IOException::class) @JvmOverloads constructor(
     }
 
     fun classify(bitmap: Bitmap): PredictionResponse {
-        val bestIndex: Int
-        val confidence: Float
-
-        val activeInterpreter = interpreter
-        if (heuristicFallback || activeInterpreter == null) {
-            val averageGreen = averageGreen(bitmap)
-            when {
-                averageGreen > 0.48f -> {
-                    bestIndex = findLabelIndex("Tomato Healthy", FALLBACK_TOMATO_HEALTHY_INDEX)
-                    confidence = 0.78f
-                }
-                averageGreen > 0.32f -> {
-                    bestIndex = findLabelIndex("Tomato Early Blight", FALLBACK_TOMATO_EARLY_BLIGHT_INDEX)
-                    confidence = 0.72f
-                }
-                else -> {
-                    bestIndex = findLabelIndex("Tomato Late Blight", FALLBACK_TOMATO_LATE_BLIGHT_INDEX)
-                    confidence = 0.69f
-                }
-            }
-        } else {
-            val inputBuffer = preprocessImage(bitmap)
-            val outputBuffer = Array(1) { FloatArray(outputClasses) }
-            activeInterpreter.run(inputBuffer, outputBuffer)
-            bestIndex = argmax(outputBuffer[0])
-            confidence = outputBuffer[0][bestIndex]
-        }
+        val activeInterpreter = checkNotNull(interpreter) { "TFLite interpreter is closed." }
+        val inputBuffer = preprocessImage(bitmap)
+        val outputBuffer = Array(1) { FloatArray(outputClasses) }
+        activeInterpreter.run(inputBuffer, outputBuffer)
+        val bestIndex = argmax(outputBuffer[0])
+        val confidence = outputBuffer[0][bestIndex]
+        val modelLabel = labels[bestIndex]
+        val displayName = displayLabel(modelLabel)
+        val guidance = guidanceByDisplayName[displayName]
 
         return PredictionResponse(
-            disease = labels[minOf(bestIndex, labels.size - 1)],
+            modelLabel = modelLabel,
+            disease = displayName,
             confidence = confidence,
-            symptoms = "Inspect the leaf closely and compare symptoms with the bundled disease library.",
-            treatment = "Apply the treatment plan recommended for the predicted class after manual verification.",
-            prevention = "Capture clear images, monitor plants regularly, and replace the starter model with a trained model for production use."
+            guidanceAvailable = guidance != null,
+            symptoms = guidance?.symptoms ?: GENERIC_SYMPTOMS,
+            treatment = guidance?.treatment ?: GENERIC_TREATMENT,
+            prevention = guidance?.prevention ?: GENERIC_PREVENTION
         )
-    }
-
-    private fun averageGreen(bitmap: Bitmap): Float {
-        val scaledBitmap = Bitmap.createScaledBitmap(bitmap, inputSize, inputSize, true)
-        var greenSum = 0L
-        val pixelCount = inputSize * inputSize
-        for (y in 0 until inputSize) {
-            for (x in 0 until inputSize) {
-                greenSum += Color.green(scaledBitmap.getPixel(x, y))
-            }
-        }
-        if (scaledBitmap != bitmap) {
-            scaledBitmap.recycle()
-        }
-        return (greenSum / pixelCount.toFloat()) / 255.0f
-    }
-
-    private fun findLabelIndex(label: String, fallbackIndex: Int): Int {
-        val index = labels.indexOf(label)
-        if (index >= 0) {
-            return index
-        }
-        return maxOf(0, minOf(fallbackIndex, labels.size - 1))
     }
 
     private fun argmax(scores: FloatArray): Int {
@@ -193,6 +164,58 @@ class TFLiteClassifier @Throws(IOException::class) @JvmOverloads constructor(
                 bestValue = scores[index]
                 bestIndex = index
             }
+
+            private fun displayLabel(modelLabel: String): String = when (modelLabel) {
+                "Apple___Apple_scab" -> "Apple Scab"
+                "Corn___Cercospora_leaf_spot Gray_leaf_spot" -> "Corn Gray Leaf Spot"
+                "Corn___Northern_Leaf_Blight" -> "Corn Northern Leaf Blight"
+                else -> modelLabel.replace("___", " ").replace('_', ' ')
+            }
+
+            private fun loadGuidance(context: Context): Map<String, Guidance> {
+                val guidance = mutableMapOf<String, Guidance>()
+                try {
+                    val parser = android.util.Xml.newPullParser()
+                    context.assets.open("diseases.xml").use { input ->
+                        parser.setInput(input, "UTF-8")
+                        parseGuidance(parser, guidance)
+                    }
+                } catch (exception: Exception) {
+                    Log.w(TAG, "Unable to load optional disease guidance.", exception)
+                }
+                return guidance
+            }
+
+            private fun parseGuidance(parser: XmlPullParser, output: MutableMap<String, Guidance>) {
+                var name: String? = null
+                var symptoms: String? = null
+                var treatment: String? = null
+                var prevention: String? = null
+                var event = parser.eventType
+                while (event != XmlPullParser.END_DOCUMENT) {
+                    if (event == XmlPullParser.START_TAG) {
+                        when (parser.name) {
+                            "name" -> name = parser.nextText()
+                            "symptoms" -> symptoms = parser.nextText()
+                            "treatment" -> treatment = parser.nextText()
+                            "prevention" -> prevention = parser.nextText()
+                        }
+                    } else if (event == XmlPullParser.END_TAG && parser.name == "disease" && name != null) {
+                        output[name] = Guidance(symptoms.orEmpty(), treatment.orEmpty(), prevention.orEmpty())
+                        name = null
+                        symptoms = null
+                        treatment = null
+                        prevention = null
+                    }
+                    event = parser.next()
+                }
+            }
+
+            private data class Guidance(
+                val symptoms: String,
+                val treatment: String,
+                val prevention: String
+            )
         }
         return bestIndex
     }

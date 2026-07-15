@@ -91,3 +91,25 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.5.2'
     androidTestImplementation 'androidx.test:rules:1.5.0'
 }
+
+tasks.register("validateReleaseModel") {
+    doLast {
+        def modelFile = file("src/main/assets/model.tflite")
+        def labelsFile = file("src/main/assets/labels.txt")
+        if (!modelFile.isFile() || modelFile.length() < 1_000_000) {
+            throw new GradleException(
+                    "A real converted model.tflite is required for release builds. Run model/convert_model.py first.")
+        }
+        def labels = labelsFile.readLines("UTF-8").collect { it.trim() }
+                .findAll { !it.isEmpty() && !it.startsWith("#") }
+        if (labels.size() != 38 || labels.toSet().size() != 38) {
+            throw new GradleException("Release model requires exactly 38 unique labels.")
+        }
+    }
+}
+
+afterEvaluate {
+    tasks.named("preReleaseBuild").configure {
+        dependsOn("validateReleaseModel")
+    }
+}

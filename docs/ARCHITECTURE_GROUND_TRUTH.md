@@ -43,7 +43,7 @@ six, declared in both apps' `AndroidManifest.xml`. Kotlin files live in
 | `ApiService` | `com.leafguard.network` | The Retrofit interface: `@Multipart @POST("predict")` with `@Part image` returning `Call<PredictionResponse>`. |
 | `PredictionResponse` | `com.leafguard.network` | The parsed JSON reply from the server. Fields: `disease` (via `@SerializedName("disease")`), `confidence`, `symptoms`, `treatment`, `prevention`. |
 | `RetrofitClient` | `com.leafguard.network` | Builds the Retrofit instance. Default base URL **`http://10.0.2.2:8000/`** (the emulator's address for "my computer"), 30-second timeouts, logging. Kotlin: an `object` singleton. |
-| `TFLiteClassifier` | `com.leafguard.ml` | Offline (on-device) detection. Loads `assets/model.tflite` + `assets/labels.txt`, resizes the photo to **224×224**, converts to **RGB floats 0..1**, runs the model, picks the highest score. If the model asset is missing or invalid (the committed one is a **text placeholder**), it uses a green-channel **heuristic fallback** so the app still works. |
+| `TFLiteClassifier` | `com.leafguard.ml` | Offline detection. Loads `assets/model.tflite` + `assets/labels.txt`, strictly validates `[1,224,224,3]` float input and 38 outputs, supplies raw RGB floats `0..255` to the model's embedded rescaling layer, and fails clearly when the model is missing or incompatible. |
 | `NotificationHelper` | `com.leafguard.utils` | Creates the notification channel **`leafguard_scan_reminders`** and posts the scan-reminder notification (id 1001). Kotlin: an `object`. |
 
 ## 3. The API contract (authoritative)
@@ -77,7 +77,7 @@ curl -X POST "http://localhost:8000/predict" -F "image=@sample-images/healthy/he
 | Notification channel id | `leafguard_scan_reminders` |
 | Model asset | `app/src/main/assets/model.tflite` — **a text placeholder**, kept on purpose so the project builds; the classifier detects it and falls back to the heuristic. Replace with a real converted model in Week 09 (see `model/model-acquisition-guide.md`). |
 | Disease library asset | `app/src/main/assets/diseases.xml` — in **`assets/`**, not `res/`; the file is named `diseases.xml`, not `disease_library.xml`. |
-| Labels asset | `app/src/main/assets/labels.txt` — 10 labels, same order in `model/labels.txt`, both apps' `assets/labels.txt`, and both `assets/diseases.xml` `<name>` values. |
+| Labels asset | `app/src/main/assets/labels.txt` — 38 technical labels copied from canonical `model/labels-38.txt`; the 10-entry `diseases.xml` files contain the existing detailed guidance subset. |
 | TFLite preprocessing | 224×224, RGB, floats scaled 0..1, argmax over 10 outputs, heuristic fallback when the model is a placeholder. |
 
 ## 5. The 10 labels (exact order matters)

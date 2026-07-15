@@ -3,12 +3,12 @@
 ## Overview
 This guide provides complete instructions for setting up and running the FastAPI backend server for LeafGuard AI. The backend provides REST API endpoints for plant disease detection using a machine learning model, serving as an alternative or complement to on-device inference.
 
-> **✅ A complete working implementation already ships in this folder** (`main.py`,
-> `config.py`, `model_loader.py`, `requirements.txt`). You do **not** need to write any
-> code to run it — follow the [Quick Start](#quick-start) below. If no trained model file
-> is present (or TensorFlow is not installed), the server automatically starts in **mock
-> mode** and still answers every endpoint, so the Android app works end-to-end out of the
-> box. The "Implementation Guide" sections further down are a learning walkthrough that
+> **✅ The real-model integration ships in this folder** (`main.py`, `config.py`,
+> `model_loader.py`, `requirements.txt`). Follow the [Quick Start](#quick-start) below.
+> Real prediction requires the manually approved Keras artifact. If it is absent or
+> invalid, health remains available but prediction returns HTTP 503. Mock predictions are
+> enabled only when `USE_MOCK=true`; they must never be used as real inference.
+> The "Implementation Guide" sections further down are a learning walkthrough that
 > shows *how* such a server is built — treat them as study material, not setup steps.
 > For the full app + backend walkthrough, see
 > [`docs/complete-setup-and-run-guide.md`](../docs/complete-setup-and-run-guide.md).
@@ -45,8 +45,8 @@ backend-api/
 ├── Dockerfile                   # Container deployment definition
 ├── test_api.py                  # Automated API contract and upload tests
 ├── .env                         # OPTIONAL — override configuration defaults (create only if needed)
-├── models/                      # OPTIONAL — place a trained model here
-│   └── leafguard_model.keras    #   default MODEL_PATH; absent = automatic mock mode
+├── models/                      # Place the approved model here
+│   └── leafguard_model.keras    #   default MODEL_PATH; absent = prediction HTTP 503
 └── README.md                    # This file
 ```
 
@@ -86,11 +86,11 @@ You should see `(venv)` prefix in your terminal.
 # Upgrade pip
 pip install --upgrade pip
 
-# Demo/mock mode (works on Python 3.12+)
+# API/mock development mode (works on Python 3.12+)
 pip install -r requirements-base.txt
 
-# Real Keras model mode (normally requires Python 3.10/3.11)
-# pip install -r requirements.txt
+# Real Keras model mode (requires Python 3.10/3.11 for the pinned runtime)
+pip install -r requirements.txt
 ```
 
 ### 3. About the requirements files
@@ -105,10 +105,10 @@ requirements-dev.txt   # base dependencies plus API test tooling
 
 > **Note**: `tensorflow==2.14.0` requires **Python 3.9 – 3.11**. If you are on a newer
 > Python or TensorFlow fails to install, use `requirements-base.txt`.
-> The server detects the missing TensorFlow and runs in **mock mode** automatically —
-> every endpoint still works, so you can develop and demo the full app without it.
+> Missing TensorFlow disables real inference. Mock mode must be explicitly enabled with
+> `USE_MOCK=true`.
 
-### 4. (Optional) Place a Trained ML Model
+### 4. Place the Approved Trained ML Model
 
 The backend loads a **Keras** model (not `.tflite` — that format is for the Android app's
 on-device inference). If you have a trained model:
@@ -121,10 +121,10 @@ mkdir -p models
 #   models/leafguard_model.keras
 ```
 
-If the file is absent, the server logs a warning and falls back to the mock predictor.
-See [`../model/model-acquisition-guide.md`](../model/model-acquisition-guide.md) for how
-to obtain or train a model. The model's output classes must match the 10 labels in
-`main.py` (`DISEASE_INFO`) / [`../model/labels.txt`](../model/labels.txt).
+If the file is absent, the server logs an error and `/predict` returns HTTP 503.
+The model output must match the 38 labels in [`../model/labels-38.txt`](../model/labels-38.txt).
+Follow [`../docs/production-end-to-end-setup.md`](../docs/production-end-to-end-setup.md)
+for acquisition, conversion, parity testing, Android setup, signing, and release steps.
 
 ### 5. (Optional) Create Environment Variables
 

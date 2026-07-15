@@ -330,8 +330,16 @@ class ScanActivity : AppCompatActivity() {
     }
 
     private fun openResult(prediction: PredictionResponse) {
-        if (getConfidencePercentage(prediction.confidence) < getConfidenceThreshold()) {
+        val uncertain = prediction.uncertain ||
+            getConfidencePercentage(prediction.confidence) < getConfidenceThreshold()
+        if (uncertain) {
             Toast.makeText(this, R.string.low_confidence_warning, Toast.LENGTH_LONG).show()
+            val topMatch = prediction.disease ?: "Unknown"
+            prediction.disease = getString(R.string.uncertain_prediction_title, topMatch)
+            prediction.symptoms = getString(R.string.uncertain_prediction_details)
+            prediction.treatment = getString(R.string.uncertain_prediction_action)
+            prediction.prevention = getString(R.string.uncertain_prediction_prevention)
+            prediction.uncertain = true
         }
 
         val intent = Intent(this@ScanActivity, ResultActivity::class.java)

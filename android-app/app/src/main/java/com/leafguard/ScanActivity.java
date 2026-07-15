@@ -343,8 +343,16 @@ public class ScanActivity extends AppCompatActivity {
     }
 
     private void openResult(PredictionResponse prediction) {
-        if (getConfidencePercentage(prediction.getConfidence()) < getConfidenceThreshold()) {
+        boolean uncertain = prediction.isUncertain()
+                || getConfidencePercentage(prediction.getConfidence()) < getConfidenceThreshold();
+        if (uncertain) {
             Toast.makeText(this, R.string.low_confidence_warning, Toast.LENGTH_LONG).show();
+            String topMatch = prediction.getDisease() == null ? "Unknown" : prediction.getDisease();
+            prediction.setDisease(getString(R.string.uncertain_prediction_title, topMatch));
+            prediction.setSymptoms(getString(R.string.uncertain_prediction_details));
+            prediction.setTreatment(getString(R.string.uncertain_prediction_action));
+            prediction.setPrevention(getString(R.string.uncertain_prediction_prevention));
+            prediction.setUncertain(true);
         }
 
         Intent intent = new Intent(ScanActivity.this, ResultActivity.class);
