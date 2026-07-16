@@ -1,0 +1,40 @@
+LeafGuard AI — Model Provenance Record
+======================================
+
+Status: Pending manual approval and download
+
+Model name: model_4_mobilenet_finetuned.keras
+Model role: Canonical source model for FastAPI online inference and Android offline TFLite conversion
+
+Source repository: https://github.com/Muhammad-Hassan12/Plant-Disease-Detector
+Pinned source commit: f6165bd93524dfb77a9629aae70db845832d1b01
+Source artifact path: Models/model_4_mobilenet_finetuned.keras
+Pinned raw download URL: https://raw.githubusercontent.com/Muhammad-Hassan12/Plant-Disease-Detector/f6165bd93524dfb77a9629aae70db845832d1b01/Models/model_4_mobilenet_finetuned.keras
+Source repository license claim: MIT
+
+Local model path: backend-api/models/leafguard_model.keras
+Canonical label file: model/labels-38.txt
+Expected contract: RGB float32 input [1, 224, 224, 3]; float32 output [1, 38]; embedded [0,255] to [-1,1] rescaling
+
+Downloaded by: ______________________________
+Download date (YYYY-MM-DD): __________________
+Local file size (bytes): _____________________
+SHA-256: _____________________________________
+
+License reviewed personally: [ ] Yes  [ ] No
+Approved for LeafGuard academic use: [ ] Yes  [ ] No
+Approved for redistribution/release: [ ] Yes  [ ] No / [ ] Not applicable
+
+Validation evidence:
+[ ] python model/inspect_model.py passed
+[ ] python model/convert_model.py passed
+[ ] Keras/TFLite parity tests passed
+[ ] FastAPI /health reported use_mock=false, model_loaded=true, class_count=38
+[ ] Online and offline device tests passed
+
+Notes, limitations, or license-attribution requirements:
+____________________________________________________________________________
+____________________________________________________________________________
+____________________________________________________________________________
+
+Do not commit the model binary, keystore, signing passwords, or private environment values.
