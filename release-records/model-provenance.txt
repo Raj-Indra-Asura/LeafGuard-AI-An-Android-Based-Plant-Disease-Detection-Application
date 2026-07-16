@@ -16,14 +16,14 @@ Local model path: backend-api/models/leafguard_model.keras
 Canonical label file: model/labels-38.txt
 Expected contract: RGB float32 input [1, 224, 224, 3]; float32 output [1, 38]; embedded [0,255] to [-1,1] rescaling
 
-Downloaded by: ______________________________
-Download date (YYYY-MM-DD): __________________
-Local file size (bytes): _____________________
-SHA-256: _____________________________________
+Downloaded by: Raj-Indra-Asura
+Download date (YYYY-MM-DD): 16/07/2026
+Local file size (bytes): 24, 554 KB
+SHA-256: 
 
-License reviewed personally: [ ] Yes  [ ] No
-Approved for LeafGuard academic use: [ ] Yes  [ ] No
-Approved for redistribution/release: [ ] Yes  [ ] No / [ ] Not applicable
+License reviewed personally: [x] Yes  [ ] No
+Approved for LeafGuard academic use: [x] Yes  [ ] No
+Approved for redistribution/release: [x] Yes  [ ] No / [ ] Not applicable
 
 Validation evidence:
 [ ] python model/inspect_model.py passed
