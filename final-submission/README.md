@@ -2,6 +2,11 @@
 
 This folder contains all materials and instructions for packaging and submitting your complete LeafGuard AI project.
 
+For a complete production release, follow
+[`../docs/PRODUCTION_RELEASE_RUNBOOK.md`](../docs/PRODUCTION_RELEASE_RUNBOOK.md) before
+placing an APK here. A course submission build is not automatically a production-ready,
+device-tested, privately signed, monitored release.
+
 ## 📦 What Goes in This Folder
 
 ### Required Files Before Submission

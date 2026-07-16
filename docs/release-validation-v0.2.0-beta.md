@@ -1,5 +1,10 @@
 # LeafGuard AI v0.2.0-beta Release Validation
 
+> Historical record: this 2026-07-12 validation used placeholder/mock model paths.
+> It is superseded for model acceptance by
+> [`evidence/week-12/model-validation-2026-07-16.md`](evidence/week-12/model-validation-2026-07-16.md).
+> Its APK hash must not be presented as the current real-model release artifact.
+
 Validation date: 2026-07-12
 
 ## Release classification

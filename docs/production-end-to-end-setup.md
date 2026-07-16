@@ -1,5 +1,10 @@
 # Production End-to-End Setup and Acceptance Guide
 
+> This guide covers model acquisition and technical acceptance. For the controlling
+> production sequence, including legal/privacy approval, backend security and deployment,
+> device matrices, signing, CI/CD, publication, monitoring, and rollback, use
+> [`PRODUCTION_RELEASE_RUNBOOK.md`](PRODUCTION_RELEASE_RUNBOOK.md).
+
 This guide builds the Kotlin app (primary track), the Java twin, and the FastAPI service
 from the same approved Keras model. A release is not ready until every acceptance item
 below is completed on your own machine and device.
@@ -8,23 +13,31 @@ below is completed on your own machine and device.
 
 1. Review the source repository and its `LICENSE`:
    `https://github.com/Muhammad-Hassan12/Plant-Disease-Detector`
-2. Download the exact pinned artifact:
+2. The moving `main` URL may be used for the initial download, but resolve and record its
+   commit before approval:
+   `https://raw.githubusercontent.com/Muhammad-Hassan12/Plant-Disease-Detector/main/Models/model_4_mobilenet_finetuned.keras`
+3. Prefer the exact pinned artifact for repeatable builds:
    `https://raw.githubusercontent.com/Muhammad-Hassan12/Plant-Disease-Detector/f6165bd93524dfb77a9629aae70db845832d1b01/Models/model_4_mobilenet_finetuned.keras`
-3. Save it as `backend-api/models/leafguard_model.keras`.
-4. Confirm `model/labels-38.txt` matches the published class order. Do not sort it.
-5. Record the source URL, commit, download date, license decision, file size, and hash:
+4. Save it as `backend-api/models/leafguard_model.keras`.
+5. Confirm `model/labels-38.txt` matches the published class order. Do not sort it.
+6. Record the source URL, commit, download date, license decision, byte size, and hash:
 
    ```bash
+   stat -c '%s bytes' backend-api/models/leafguard_model.keras
    sha256sum backend-api/models/leafguard_model.keras
    ```
+
+The artifact verified on 2026-07-16 is 25,143,175 bytes with SHA-256
+`08f285aff6d9e1ab88d4d5b2269f1cc977714003755f8553887edbf8691b325f`.
 
 Do not commit the model unless you intentionally establish a Git LFS and redistribution
 policy. The repository ignores generated model artifacts.
 
 ## 2. Prepare Python and inspect the contract
 
-Use Python 3.10 or 3.11 because the pinned TensorFlow runtime does not support every
-newer Python release.
+Use Python 3.11 for the verified release workflow. The approved artifact was saved by
+Keras 3.10.0, so TensorFlow 2.14 cannot deserialize it; the repository pins the tested
+Keras 3-compatible TensorFlow 2.19.1 runtime.
 
 ```bash
 python3.11 -m venv .venv
@@ -34,7 +47,7 @@ python -m pip install -r backend-api/requirements.txt
 python model/inspect_model.py
 ```
 
-The inspection must report one `[1, 224, 224, 3]` float32 input, one `[1, 38]`
+The inspection must report one `[None, 224, 224, 3]` float32 Keras input, one `[None, 38]`
 float32 output, 38 labels, and embedded `[0,255]` to `[-1,1]` rescaling.
 
 ## 3. Convert the exact Keras model for offline use
@@ -53,8 +66,10 @@ artifacts to both app tracks.
 
 ## 4. Validate model parity
 
-Collect at least six known test images: tomato early blight, tomato healthy, potato
-late blight, corn gray leaf spot, apple scab, and a blurry/non-leaf image.
+Collect real, source-documented test images with known labels. The committed
+`sample-images/` files are synthetic illustrations for plumbing tests and must not be
+used to claim model accuracy. Include multiple diseases, healthy leaves, blurry images,
+and non-leaf inputs.
 
 ```bash
 python model/validate_tflite.py test-images/tomato-early-blight.jpg \
@@ -64,8 +79,10 @@ python model/parity_test.py test-images/*.jpg \
 ```
 
 Parity requires the same top class and a confidence difference no greater than 0.02 by
-default. Keep a table containing filename, known condition, Keras result, TFLite result,
-confidence values, pass/fail, and notes.
+default. Parity proves conversion equivalence, not diagnostic accuracy. Separately compare
+each top class with its known label and report per-class accuracy, failures, and the image
+source. Keep a table containing filename, known condition, Keras result, TFLite result,
+confidence values, parity pass/fail, accuracy pass/fail, and notes.
 
 ## 5. Run and verify the backend
 
@@ -104,6 +121,7 @@ release target.
 ```bash
 cd android-app-kotlin
 ./gradlew testDebugUnitTest lintDebug assembleDebug
+./gradlew assembleDebugAndroidTest
 ./gradlew assembleRelease
 ```
 
@@ -139,7 +157,8 @@ Never commit a keystore or passwords. In Android Studio choose **Build → Gener
 Bundle / APK**, select APK, create or select your private release keystore, and build the
 `release` variant. Back up the keystore securely; losing it prevents compatible updates.
 
-Before publishing:
+For this app's minimum API 24, APK Signature Scheme v2 is sufficient; v1 is only needed
+when supporting older Android releases. Before publishing:
 
 ```bash
 apksigner verify --verbose --print-certs app-release.apk
@@ -163,6 +182,7 @@ Use a version tag matching the app version, attach the signed APK and checksum, 
 - [ ] Model SHA-256 recorded
 - [ ] Inspection and conversion pass
 - [ ] Keras/TFLite parity passes on all acceptance images
+- [ ] Accuracy results are recorded separately from parity results
 - [ ] `/health` reports real model loaded, mock false, 38 classes
 - [ ] Online and offline tests pass on a physical device
 - [ ] Uncertain and unsupported-guidance states verified

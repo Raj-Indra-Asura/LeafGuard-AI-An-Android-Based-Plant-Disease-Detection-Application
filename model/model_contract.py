@@ -43,9 +43,10 @@ def validate_keras_model(model, labels: Iterable[str]) -> Tuple[Tuple[int, ...],
         raise ValueError(
             f"Keras output shape {output_shape} is incompatible with the canonical labels"
         )
-    dtype_name = getattr(model.input.dtype, "name", str(model.input.dtype))
+    input_tensor = model.inputs[0]
+    dtype_name = getattr(input_tensor.dtype, "name", str(input_tensor.dtype))
     if dtype_name != "float32":
-        raise ValueError(f"Expected Keras float32 input, got {model.input.dtype}")
+        raise ValueError(f"Expected Keras float32 input, got {input_tensor.dtype}")
     return input_shape, output_shape
 
 
@@ -62,8 +63,30 @@ def find_embedded_rescaling(model):
             ):
                 return layer
         pending.extend(getattr(layer, "layers", []))
+
+    from tensorflow import keras
+
+    for operation in getattr(model, "_operations", []):
+        if operation.__class__.__name__ != "Subtract":
+            continue
+        try:
+            probe = keras.Model(inputs=model.inputs, outputs=operation.output)
+            valid_scaling = True
+            for value, expected in ((0.0, -1.0), (127.5, 0.0), (255.0, 1.0)):
+                image = np.full(EXPECTED_INPUT_SHAPE, value, dtype=np.float32)
+                output = np.asarray(probe([image], training=False))
+                if output.shape != EXPECTED_INPUT_SHAPE or not np.allclose(
+                    output, expected, rtol=1e-6, atol=1e-6
+                ):
+                    valid_scaling = False
+                    break
+        except (AttributeError, TypeError, ValueError):
+            continue
+        if valid_scaling:
+            return operation
+
     raise ValueError(
-        "Expected an embedded Rescaling layer mapping raw RGB [0, 255] to [-1, 1]. "
+        "Expected embedded preprocessing mapping raw RGB [0, 255] to [-1, 1]. "
         "Refusing conversion because Android/backend preprocessing would not match."
     )
 

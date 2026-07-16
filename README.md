@@ -21,6 +21,11 @@
 > setup & run guide: [`docs/complete-setup-and-run-guide.md`](docs/complete-setup-and-run-guide.md)
 > — app, backend, model, verification checklist, and release build in one document.
 
+> **Preparing the complete production release?** Follow the gated
+> [`Production Release Runbook`](docs/PRODUCTION_RELEASE_RUNBOOK.md) for model approval,
+> backend deployment, Android device testing, signing, CI/CD, publication, monitoring,
+> and rollback. An unchecked release gate is a no-go.
+
 ---
 
 ## 🍴 Choose Your Track

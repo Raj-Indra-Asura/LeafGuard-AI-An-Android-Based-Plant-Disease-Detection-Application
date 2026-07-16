@@ -28,6 +28,11 @@ See the shared [glossary](../../GLOSSARY.md) for more. The key terms this week:
 > [`../../solutions/week-12/`](../../solutions/week-12/) and
 > [`../../notebooks/week-12/`](../../notebooks/week-12/).
 
+For a complete production release rather than a course-only APK build, use the
+[`Production Release Runbook`](../../docs/PRODUCTION_RELEASE_RUNBOOK.md). It is the
+controlling order for model approval, backend hardening/deployment, device acceptance,
+private signing, CI/CD, publication, monitoring, and rollback.
+
 ---
 
 ## Weekly Objective

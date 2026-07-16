@@ -1,12 +1,13 @@
 LeafGuard AI — Model Provenance Record
 ======================================
 
-Status: Pending manual approval and download
+Status: Automated model validation completed; device and production-release approval pending
 
 Model name: model_4_mobilenet_finetuned.keras
 Model role: Canonical source model for FastAPI online inference and Android offline TFLite conversion
 
 Source repository: https://github.com/Muhammad-Hassan12/Plant-Disease-Detector
+Initial main-branch URL: https://raw.githubusercontent.com/Muhammad-Hassan12/Plant-Disease-Detector/main/Models/model_4_mobilenet_finetuned.keras
 Pinned source commit: f6165bd93524dfb77a9629aae70db845832d1b01
 Source artifact path: Models/model_4_mobilenet_finetuned.keras
 Pinned raw download URL: https://raw.githubusercontent.com/Muhammad-Hassan12/Plant-Disease-Detector/f6165bd93524dfb77a9629aae70db845832d1b01/Models/model_4_mobilenet_finetuned.keras
@@ -17,24 +18,28 @@ Canonical label file: model/labels-38.txt
 Expected contract: RGB float32 input [1, 224, 224, 3]; float32 output [1, 38]; embedded [0,255] to [-1,1] rescaling
 
 Downloaded by: Raj-Indra-Asura
-Download date (YYYY-MM-DD): 16/07/2026
-Local file size (bytes): 24, 554 KB
-SHA-256: 
+Download date (YYYY-MM-DD): 2026-07-16
+Local file size (bytes): 25143175
+SHA-256: 08f285aff6d9e1ab88d4d5b2269f1cc977714003755f8553887edbf8691b325f
 
 License reviewed personally: [x] Yes  [ ] No
 Approved for LeafGuard academic use: [x] Yes  [ ] No
 Approved for redistribution/release: [x] Yes  [ ] No / [ ] Not applicable
 
 Validation evidence:
-[ ] python model/inspect_model.py passed
-[ ] python model/convert_model.py passed
-[ ] Keras/TFLite parity tests passed
-[ ] FastAPI /health reported use_mock=false, model_loaded=true, class_count=38
+[x] python model/inspect_model.py passed
+[x] python model/convert_model.py passed
+[x] Keras/TFLite parity tests passed
+[x] FastAPI /health reported use_mock=false, model_loaded=true, class_count=38
 [ ] Online and offline device tests passed
 
 Notes, limitations, or license-attribution requirements:
-____________________________________________________________________________
-____________________________________________________________________________
-____________________________________________________________________________
+- On 2026-07-16, upstream main still resolved to the pinned commit and matched this hash.
+- Canonical labels mirror the source README's published names and index order. The source
+  training notebook uses lowercase `healthy` and longer crop names at the same indices.
+- Thirty real PlantVillage images passed Keras/TFLite parity; top-1 accuracy was 28/30
+  for the three tested tomato classes. This is not a full independent accuracy study.
+- Device installation, airplane-mode inference, production signing, and GitHub Release
+  publication remain manual release gates.
 
 Do not commit the model binary, keystore, signing passwords, or private environment values.

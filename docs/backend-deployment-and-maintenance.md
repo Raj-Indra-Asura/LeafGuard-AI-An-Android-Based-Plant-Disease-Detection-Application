@@ -2,6 +2,12 @@
 
 This guide explains how to keep Cloud mode reachable from an Android phone. It complements the local setup in [complete-setup-and-run-guide.md](complete-setup-and-run-guide.md).
 
+For a production release, follow the gated
+[`Production Release Runbook`](PRODUCTION_RELEASE_RUNBOOK.md). It adds required
+readiness behavior, HTTPS, rate limiting, non-root container hardening, monitoring,
+immutable image deployment, Android signing, and rollback gates that this maintenance
+overview does not fully implement.
+
 ## 1. Choose the operating mode honestly
 
 The API exposes its current mode at both `GET /` and `GET /health`:
@@ -9,7 +15,9 @@ The API exposes its current mode at both `GET /` and `GET /health`:
 - `model_loaded: true`, `use_mock: false` — a real Keras model is loaded.
 - `model_loaded: false`, `use_mock: true` — demo/mock predictions only.
 
-The repository does not contain a trained model. Do not describe mock responses as diagnostic AI. Install and validate a trained model before a production release.
+The trained model binary is intentionally ignored by Git. The approved local artifact,
+when staged, is `backend-api/models/leafguard_model.keras`; verify its provenance and
+hash before every production build. Do not describe mock responses as diagnostic AI.
 
 ## 2. Local development
 
@@ -25,7 +33,9 @@ USE_MOCK=true uvicorn main:app --host 0.0.0.0 --port 8000
 
 Verify `http://localhost:8000/health` and submit a sample image to `POST /predict`. The Android emulator can use `http://10.0.2.2:8000`. A release installed on a physical phone should use a deployed HTTPS endpoint instead of a computer's temporary LAN address.
 
-For a real Keras model, use Python 3.10 or 3.11, install `requirements.txt`, place the model at `backend-api/models/leafguard_model.keras`, and set `USE_MOCK=false`.
+For the approved Keras 3 artifact, use the verified Python 3.11 and TensorFlow 2.19.1
+runtime from `requirements.txt`, place the model at
+`backend-api/models/leafguard_model.keras`, and set `USE_MOCK=false`.
 
 ## 3. Container deployment
 

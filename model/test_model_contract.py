@@ -1,8 +1,18 @@
 import unittest
 import xml.etree.ElementTree as ET
-from pathlib import Path
 
-from model_contract import ANDROID_ASSETS, BACKEND_LABELS, DEFAULT_LABELS, load_labels
+try:
+    import tensorflow as tf
+except ImportError:
+    tf = None
+
+from model_contract import (
+    ANDROID_ASSETS,
+    BACKEND_LABELS,
+    DEFAULT_LABELS,
+    find_embedded_rescaling,
+    load_labels,
+)
 
 
 class ModelContractTest(unittest.TestCase):
@@ -46,6 +56,23 @@ class ModelContractTest(unittest.TestCase):
                 "Tomato___Healthy",
             }.issubset(labels)
         )
+
+    @unittest.skipIf(tf is None, "TensorFlow is required for Keras preprocessing checks")
+    def test_keras_three_operation_graph_scaling_is_accepted(self):
+        inputs = tf.keras.Input(shape=(224, 224, 3))
+        model = tf.keras.Model(inputs, inputs / 127.5 - 1.0)
+
+        operation = find_embedded_rescaling(model)
+
+        self.assertEqual("Subtract", operation.__class__.__name__)
+
+    @unittest.skipIf(tf is None, "TensorFlow is required for Keras preprocessing checks")
+    def test_incorrect_operation_graph_scaling_is_rejected(self):
+        inputs = tf.keras.Input(shape=(224, 224, 3))
+        model = tf.keras.Model(inputs, inputs / 255.0 - 1.0)
+
+        with self.assertRaisesRegex(ValueError, "Expected embedded preprocessing"):
+            find_embedded_rescaling(model)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,12 @@
 # LeafGuard AI — Architecture Ground Truth
 
+> **Release warning (2026-07-16):** parts of this inventory predate the current
+> five-tab/eight-Activity UI and real 38-class TFLite integration. Do not use its old
+> placeholder-model, ten-output, or six-Activity claims for release decisions. The code,
+> [`RECONSTRUCTION_REPORT.md`](RECONSTRUCTION_REPORT.md), and
+> [`PRODUCTION_RELEASE_RUNBOOK.md`](PRODUCTION_RELEASE_RUNBOOK.md) control production
+> validation until this historical inventory is fully reconciled.
+
 > **What is this file?** This is the single, authoritative list of everything that
 > *really exists* in the LeafGuard AI code. Every other document in this repository
 > (roadmap weeks, exercises, notebooks, solutions, validation checklists) must match

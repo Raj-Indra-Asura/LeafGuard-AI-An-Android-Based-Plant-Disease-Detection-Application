@@ -11,7 +11,7 @@ ARG INSTALL_TENSORFLOW=false
 COPY requirements-base.txt requirements.txt ./
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements-base.txt \
-    && if [ "$INSTALL_TENSORFLOW" = "true" ]; then pip install --no-cache-dir tensorflow==2.14.0; fi
+    && if [ "$INSTALL_TENSORFLOW" = "true" ]; then pip install --no-cache-dir -r requirements.txt; fi
 
 COPY . .
 

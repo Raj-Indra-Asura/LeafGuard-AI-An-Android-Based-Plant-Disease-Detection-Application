@@ -29,8 +29,8 @@ def main() -> None:
         model = tf.keras.models.load_model(args.keras_model)
         input_shape, output_shape = validate_keras_model(model, labels)
         rescaling = find_embedded_rescaling(model)
-        print(f"Keras input: shape={input_shape}, dtype={model.input.dtype}")
-        print(f"Keras output: shape={output_shape}, dtype={model.output.dtype}")
+        print(f"Keras input: shape={input_shape}, dtype={model.inputs[0].dtype}")
+        print(f"Keras output: shape={output_shape}, dtype={model.outputs[0].dtype}")
         print(f"Embedded preprocessing: {rescaling.name} maps [0, 255] to [-1, 1]")
         print("Keras contract: valid")
     else:

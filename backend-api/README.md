@@ -89,7 +89,7 @@ pip install --upgrade pip
 # API/mock development mode (works on Python 3.12+)
 pip install -r requirements-base.txt
 
-# Real Keras model mode (requires Python 3.10/3.11 for the pinned runtime)
+# Real Keras model mode (verified with Python 3.11)
 pip install -r requirements.txt
 ```
 
@@ -99,12 +99,13 @@ The files are **already provided**:
 
 ```txt
 requirements-base.txt  # runnable API with mock fallback
-requirements.txt       # base dependencies plus TensorFlow 2.14
+requirements.txt       # base dependencies plus TensorFlow 2.19.1 / Keras 3 support
 requirements-dev.txt   # base dependencies plus API test tooling
 ```
 
-> **Note**: `tensorflow==2.14.0` requires **Python 3.9 – 3.11**. If you are on a newer
-> Python or TensorFlow fails to install, use `requirements-base.txt`.
+> **Note**: The approved model was saved by Keras 3.10.0 and cannot be loaded by
+> `tensorflow==2.14.0`. The real-model workflow is verified with Python 3.11 and the
+> pinned `tensorflow==2.19.1`. If TensorFlow fails to install, use `requirements-base.txt`.
 > Missing TensorFlow disables real inference. Mock mode must be explicitly enabled with
 > `USE_MOCK=true`.
 
@@ -726,8 +727,8 @@ pip install -r requirements.txt
 pip install tensorflow-macos
 pip install tensorflow-metal
 
-# For older Python versions
-pip install tensorflow==2.13.0
+# Use the repository's Keras 3-compatible pin
+pip install -r requirements.txt
 
 # For CPU-only
 pip install tensorflow-cpu
