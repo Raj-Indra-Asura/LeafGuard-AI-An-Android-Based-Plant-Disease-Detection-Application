@@ -174,6 +174,14 @@ public class TFLiteClassifier implements AutoCloseable {
                         return "Corn Gray Leaf Spot";
                     case "Corn___Northern_Leaf_Blight":
                         return "Corn Northern Leaf Blight";
+                    case "Potato___Early_blight":
+                        return "Potato Early Blight";
+                    case "Potato___Late_blight":
+                        return "Potato Late Blight";
+                    case "Tomato___Early_blight":
+                        return "Tomato Early Blight";
+                    case "Tomato___Late_blight":
+                        return "Tomato Late Blight";
                     default:
                         return modelLabel.replace("___", " ").replace('_', ' ');
                 }

@@ -168,3 +168,24 @@ Before moving to Week 04, answer:
 3. What does `TakePicture` return?
 4. What does `GetContent` return?
 5. Which later week handles backend upload?
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+### Related Roadmap Materials
+- 📖 [Week 03 README](../../roadmap/week-03-camera-gallery/README.md) — Week overview & objectives
+- 📝 [Week 03 Exercises](../../roadmap/week-03-camera-gallery/exercises.md) — Practice problems
+- 💡 [Week 03 Solutions](../../solutions/week-03/README.md) — Reference solutions
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+### Week Progression
+
+| ← Previous | 🏠 | Next → |
+|:-----------|:--:|-------:|
+| [⬅ Week 02 Notebooks](../week-02/README.md) | [Notebooks Index](../README.md) | [Week 04 Notebooks ➡](../week-04/README.md) |
+
+---

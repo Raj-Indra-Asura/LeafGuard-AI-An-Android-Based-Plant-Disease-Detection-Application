@@ -144,3 +144,37 @@ Week 03 is complete only when:
 5. Future-week behaviors are not faked.
 
 If any item is no, stay in Week 03 and fix it before moving to Week 04.
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 📚 Week 03 — Navigation
+
+### All Files In This Week (Complete In Order)
+
+| Step | File | Description |
+|------|------|-------------|
+| 1 | [README.md](README.md) | Week Overview & Objectives |
+| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
+| 3 | [exercises.md](exercises.md) | Practice Exercises |
+| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
+| **5** | **validation-checklist.md** ← *You are here* | **Validation & Verification** |
+| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
+| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
+
+---
+
+### Within-Week Navigation
+
+[← Build Implementation Guide](build-task.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Validation & Verification** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Knowledge Assessment Quiz →](quiz.md)
+
+---
+
+### Week Progression
+
+| ← Previous Week | 🏠 Home | Next Week → |
+|:----------------|:-------:|------------:|
+| [⬅ Week 02: Android Basics & UI](../week-02-android-basics-ui/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 04: FastAPI Backend ➡](../week-04-fastapi-backend/README.md) |
+
+---

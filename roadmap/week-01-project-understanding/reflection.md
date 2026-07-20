@@ -92,3 +92,37 @@ Before finishing reflection, answer yes or no:
 - [ ] I know what Week 02 should build next.
 
 If any answer is no, return to `learning-notes.md` and revise your Week 01 artifacts.
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 📚 Week 01 — Navigation
+
+### All Files In This Week (Complete In Order)
+
+| Step | File | Description |
+|------|------|-------------|
+| 1 | [README.md](README.md) | Week Overview & Objectives |
+| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
+| 3 | [exercises.md](exercises.md) | Practice Exercises |
+| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
+| 5 | [validation-checklist.md](validation-checklist.md) | Validation & Verification |
+| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
+| **7** | **reflection.md** ← *You are here* | **Reflection & Consolidation** |
+
+---
+
+### Within-Week Navigation
+
+[← Knowledge Assessment Quiz](quiz.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Reflection & Consolidation** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Week 02: Android Basics & UI (Start) →](../week-02-android-basics-ui/README.md)
+
+---
+
+### Week Progression
+
+| ← Previous Week | 🏠 Home | Next Week → |
+|:----------------|:-------:|------------:|
+| *(Start of roadmap)* | [Learning Path](../../LEARNING_PATH.md) | [Week 02: Android Basics & UI ➡](../week-02-android-basics-ui/README.md) |
+
+---

@@ -180,3 +180,24 @@ Before moving to Week 03, answer:
 3. What does an XML layout do?
 4. How does an Intent open another screen?
 5. Why should real camera/gallery behavior wait until Week 03?
+
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 🔗 Navigation
+
+### Related Roadmap Materials
+- 📖 [Week 02 README](../../roadmap/week-02-android-basics-ui/README.md) — Week overview & objectives
+- 📝 [Week 02 Exercises](../../roadmap/week-02-android-basics-ui/exercises.md) — Practice problems
+- 💡 [Week 02 Solutions](../../solutions/week-02/README.md) — Reference solutions
+- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+
+### Week Progression
+
+| ← Previous | 🏠 | Next → |
+|:-----------|:--:|-------:|
+| [⬅ Week 01 Notebooks](../week-01/README.md) | [Notebooks Index](../README.md) | [Week 03 Notebooks ➡](../week-03/README.md) |
+
+---

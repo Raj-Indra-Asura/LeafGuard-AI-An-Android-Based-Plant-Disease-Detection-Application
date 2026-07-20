@@ -173,6 +173,10 @@ class TFLiteClassifier @Throws(IOException::class) @JvmOverloads constructor(
                 "Apple___Apple_scab" -> "Apple Scab"
                 "Corn___Cercospora_leaf_spot Gray_leaf_spot" -> "Corn Gray Leaf Spot"
                 "Corn___Northern_Leaf_Blight" -> "Corn Northern Leaf Blight"
+                "Potato___Early_blight" -> "Potato Early Blight"
+                "Potato___Late_blight" -> "Potato Late Blight"
+                "Tomato___Early_blight" -> "Tomato Early Blight"
+                "Tomato___Late_blight" -> "Tomato Late Blight"
                 else -> modelLabel.replace("___", " ").replace('_', ' ')
             }
 

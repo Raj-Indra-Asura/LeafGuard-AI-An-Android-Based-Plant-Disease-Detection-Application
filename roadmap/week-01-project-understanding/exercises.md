@@ -214,3 +214,37 @@ File: `docs/evidence/week-01/exercises/exercise-06-week-growth-table.md`
 ## Completion Rule
 
 You may start `build-task.md` only after all six exercises exist and you can explain them without reading the finished app code.
+
+<!-- NAV_FOOTER_START -->
+
+---
+
+## 📚 Week 01 — Navigation
+
+### All Files In This Week (Complete In Order)
+
+| Step | File | Description |
+|------|------|-------------|
+| 1 | [README.md](README.md) | Week Overview & Objectives |
+| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
+| **3** | **exercises.md** ← *You are here* | **Practice Exercises** |
+| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
+| 5 | [validation-checklist.md](validation-checklist.md) | Validation & Verification |
+| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
+| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
+
+---
+
+### Within-Week Navigation
+
+[← Theory & Learning Notes](learning-notes.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Practice Exercises** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Build Implementation Guide →](build-task.md)
+
+---
+
+### Week Progression
+
+| ← Previous Week | 🏠 Home | Next Week → |
+|:----------------|:-------:|------------:|
+| *(Start of roadmap)* | [Learning Path](../../LEARNING_PATH.md) | [Week 02: Android Basics & UI ➡](../week-02-android-basics-ui/README.md) |
+
+---
