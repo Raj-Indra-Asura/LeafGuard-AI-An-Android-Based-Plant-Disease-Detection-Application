@@ -72,7 +72,7 @@ A **"track"** is simply *the programming language you follow the lessons in*. Th
 - 📖 [README - Week Overview](roadmap/week-01-project-understanding/README.md)
 - 📝 [Learning Notes - Deep Theory](roadmap/week-01-project-understanding/learning-notes.md)
 - 💪 [Exercises - 6 Practice Problems](roadmap/week-01-project-understanding/exercises.md)
-- 🔨 [Build Task - Create Proposal](roadmap/week-01-project-understanding/build-task.md)
+- 🔨 [Build Task - Foundation Package](roadmap/week-01-project-understanding/build-task.md)
 - ✅ [Validation Checklist](roadmap/week-01-project-understanding/validation-checklist.md)
 - 🧪 [Quiz - Test Understanding](roadmap/week-01-project-understanding/quiz.md)
 - 🤔 [Reflection Journal](roadmap/week-01-project-understanding/reflection.md)
@@ -83,11 +83,11 @@ A **"track"** is simply *the programming language you follow the lessons in*. Th
 - 💡 [Solutions Guide](solutions/week-01/) *(Available)*
 
 ### Learning Objectives
-- Understand complete LeafGuard AI project scope
-- Map CSE 2206 syllabus topics to project features
-- Analyze senior Android repositories
-- Create professional project proposal
-- Design system architecture diagram
+- Explain LeafGuard AI from the base product idea
+- Identify the target user, problem, and honest project scope
+- Write the main user journey from image input to result review
+- Sketch the first screen map and beginner-level system boxes
+- Map how the product grows through the 12 weekly slices
 
 ### Prerequisites
 - Basic programming knowledge
@@ -95,10 +95,10 @@ A **"track"** is simply *the programming language you follow the lessons in*. Th
 - Git basics
 
 ### Estimated Time
-- Reading: 3-4 hours
-- Exercises: 4-6 hours
-- Build Task: 6-8 hours
-- **Total: 15-20 hours**
+- Reading: 1-2 hours
+- Exercises: 2-3 hours
+- Build Task: 3-4 hours
+- **Total: 6-9 hours**
 
 ### Navigation
 - ⬅️ Previous: *(First Week - Start Here!)*
@@ -126,18 +126,18 @@ A **"track"** is simply *the programming language you follow the lessons in*. Th
 - 💡 [Solutions Guide — optional Java reference](solutions/week-02/) *(Available)*
 
 ### Learning Objectives
-- Setup Android Studio development environment
-- Create multi-screen Android app skeleton
-- Design XML layouts with Material Design
-- Implement Activity navigation with Intents
-- Use resource files (strings.xml, colors.xml)
+- Grow the Week 01 screen map into the first runnable Android slice
+- Understand Activity, XML layout, resource, manifest, and Gradle basics
+- Create a Home screen and honest placeholder feature screens
+- Implement Activity navigation with explicit Intents
+- Validate only the UI navigation shell before Week 03
 
 ### Prerequisites
-- Week 01 completed and validated
+- Week 01 foundation package completed and validated
 - Development tools already installed in the [pre-Week-01 setup](README.md#pre-week-01-setup-checklist-do-this-first) (Android Studio + emulator; the Java JDK ships with Android Studio)
 
 ### Estimated Time
-- **Total: 20-25 hours**
+- **Total: 8-12 hours**
 
 ### Navigation
 - ⬅️ Previous: [Week 01 - Project Understanding](#week-01)
@@ -165,19 +165,20 @@ A **"track"** is simply *the programming language you follow the lessons in*. Th
 - 💡 [Solutions Guide](solutions/week-03/) *(Available)*
 
 ### Learning Objectives
-- Implement camera intent (ACTION_IMAGE_CAPTURE)
-- Implement gallery picker (ACTION_PICK)
-- Handle runtime permissions (CAMERA, READ_EXTERNAL_STORAGE)
-- Convert URI to Bitmap
-- Resize and display images
+- Upgrade the Week 02 Scan placeholder into real image input
+- Request and handle camera permission
+- Use FileProvider for safe camera output URIs
+- Use Activity Result launchers for camera capture and gallery selection
+- Store the selected image URI and display it in an ImageView preview
+- Validate image input without backend, database, or AI behavior
 
 ### Prerequisites
-- Week 02 validated (working UI skeleton)
-- Understanding of Android Intents
-- Basic image handling concepts
+- Week 02 validated (working UI navigation shell)
+- `ScanActivity` opens from Home
+- Beginner understanding of Activity, XML layout, manifest, and Intent navigation
 
 ### Estimated Time
-- **Total: 18-22 hours**
+- **Total: 8-12 hours**
 
 ### Navigation
 - ⬅️ Previous: [Week 02 - Android Basics](#week-02)

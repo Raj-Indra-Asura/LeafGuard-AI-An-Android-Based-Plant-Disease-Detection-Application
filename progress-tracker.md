@@ -15,40 +15,41 @@ New here? This file is your weekly checklist. Each week, tick `[x]` the boxes as
 
 ---
 
-## Week 01: Project Understanding and Proposal [Start Date: ____ / End Date: ____]
+## Week 01: Product Idea and Learning Foundation [Start Date: ____ / End Date: ____]
 
 **📈 Cumulative product target: 5%** (see [PRODUCT_PROGRESS_MAP.md](PRODUCT_PROGRESS_MAP.md)) — Cumulative % achieved: [____%]
-**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary) → `android-app/` — do the identical steps in whichever track you chose.
+**Track paths:** No Android track code is written this week. Kotlin (`android-app-kotlin/`) becomes the primary build track from Week 02.
 
 ### Learning Phase
-- [ ] Read COURSE_OVERVIEW.md [____]
-- [ ] Read LEARNING_RULES.md [____]
-- [ ] Read SYLLABUS_MAPPING.md [____]
-- [ ] Read PROJECT_ARCHITECTURE.md [____]
-- [ ] Read SENIOR_REPO_ANALYSIS.md [____]
-- [ ] Read GLOSSARY.md [____]
+- [ ] Read Week 01 README.md [____]
+- [ ] Read Week 01 learning-notes.md [____]
+- [ ] Skim COURSE_OVERVIEW.md for course context [____]
+- [ ] Skim GLOSSARY.md for unfamiliar terms [____]
+- [ ] Understand that Week 01 validates the product foundation, not the finished app [____]
 
 ### Exercises
-- [ ] Complete Exercise 1: Research plant diseases [____]
-- [ ] Complete Exercise 2: Analyze 3 senior Android repos [____]
-- [ ] Complete Exercise 3: Draw system architecture diagram [____]
-- [ ] Complete Exercise 4: Write problem statement [____]
-- [ ] Complete Exercise 5: List all app screens [____]
-- [ ] Complete Exercise 6: Map features to syllabus [____]
+- [ ] Exercise 1: Explain the product in five sentences [____]
+- [ ] Exercise 2: Write the main user journey [____]
+- [ ] Exercise 3: Make feature cards [____]
+- [ ] Exercise 4: Draw/list rough screen map [____]
+- [ ] Exercise 5: Draw box-level system sketch [____]
+- [ ] Exercise 6: Make week growth table [____]
 
 ### Build Task
-- [ ] Write complete project proposal [____]
-- [ ] Create architecture diagram [____]
-- [ ] Fill SENIOR_REPO_ANALYSIS table [____]
-- [ ] Design UI mockups (paper or digital) [____]
-- [ ] Create GitHub repository (if not done) [____]
+- [ ] Create `docs/evidence/week-01/product-idea.md` [____]
+- [ ] Create `docs/evidence/week-01/user-journey.md` [____]
+- [ ] Create `docs/evidence/week-01/screen-map.md` [____]
+- [ ] Create `docs/evidence/week-01/system-sketch.md` or image [____]
+- [ ] Create `docs/evidence/week-01/week-growth-map.md` [____]
+- [ ] Create `docs/evidence/week-01/week-01-validation.md` [____]
 
 ### Validation
-- [ ] Proposal includes problem, solution, features [____]
-- [ ] Architecture diagram shows all components [____]
-- [ ] Analyzed 3+ senior repositories [____]
-- [ ] UI mockups for 5+ screens created [____]
-- [ ] All syllabus topics mapped to weeks [____]
+- [ ] Product idea is clear and honest [____]
+- [ ] User journey can be explained in under 2 minutes [____]
+- [ ] Screen map supports the journey [____]
+- [ ] System sketch uses plain boxes, not final class-level architecture [____]
+- [ ] Week growth map has a validation demo for each week [____]
+- [ ] Milestone demo completed: idea -> journey -> screen map -> sketch -> growth map [____]
 
 ### Documentation
 - [ ] Complete Week 01 reflection [____]
@@ -58,92 +59,95 @@ New here? This file is your weekly checklist. Each week, tick `[x]` the boxes as
 
 ---
 
-## Week 02: Android Basics and UI Skeleton [Start Date: ____ / End Date: ____]
+## Week 02: Android UI Navigation Shell [Start Date: ____ / End Date: ____]
 
 **📈 Cumulative product target: 15%** (see [PRODUCT_PROGRESS_MAP.md](PRODUCT_PROGRESS_MAP.md)) — Cumulative % achieved: [____%]
-**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary) → `android-app/` — do the identical steps in whichever track you chose.
+**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary/reference) → `android-app/`.
 
 ### Setup
 - [ ] Install Android Studio (done in pre-Week-01 setup) [____]
-- [ ] Confirm Java JDK is available (bundled with Android Studio) [____]
-- [ ] Install Android SDK and tools [____]
-- [ ] Create an Android emulator (AVD — a virtual phone) [____]
-- [ ] Create/open the Android project in android-app-kotlin/ (primary); android-app/ for Java [____]
+- [ ] Open or create the Kotlin Android project in `android-app-kotlin/` [____]
+- [ ] Confirm Gradle sync succeeds [____]
+- [ ] Confirm emulator or physical device is available [____]
+- [ ] Confirm the default app/build runs before adding screens [____]
 
 ### Exercises
-- [ ] Exercise 1: Create empty Activity [____]
-- [ ] Exercise 2: Design XML layout [____]
-- [ ] Exercise 3: Navigate between Activities [____]
-- [ ] Exercise 4: Use strings.xml [____]
-- [ ] Exercise 5: Add Button click listeners [____]
-- [ ] Exercise 6: Configure Gradle dependencies [____]
+- [ ] Exercise 1: Connect Week 01 screens to Android screens [____]
+- [ ] Exercise 2: Explore Android project folders [____]
+- [ ] Exercise 3: Practise string/color resources [____]
+- [ ] Exercise 4: Build one simple layout [____]
+- [ ] Exercise 5: Practise Intent navigation [____]
+- [ ] Exercise 6: Plan Week 02 evidence [____]
 
 ### Build Task
-- [ ] Create MainActivity with navigation buttons [____]
-- [ ] Create ResultActivity layout [____]
-- [ ] Create HistoryActivity layout [____]
-- [ ] Create SettingsActivity layout [____]
-- [ ] Implement navigation with Intents [____]
-- [ ] Add strings to strings.xml [____]
-- [ ] Define colors in colors.xml [____]
-- [ ] Test app runs on emulator [____]
+- [ ] Create/update `strings.xml` with Week 02 UI text [____]
+- [ ] Create/update `colors.xml` with named colors [____]
+- [ ] Build Home screen layout with navigation buttons [____]
+- [ ] Create Scan placeholder screen [____]
+- [ ] Create Result placeholder screen [____]
+- [ ] Create History placeholder screen [____]
+- [ ] Create Disease Library placeholder screen [____]
+- [ ] Create Settings/About placeholder screen [____]
+- [ ] Register Activities in `AndroidManifest.xml` [____]
+- [ ] Implement Home navigation using explicit Intents [____]
+- [ ] Build and run on emulator/device [____]
 
 ### Validation
 - [ ] App builds without errors [____]
-- [ ] All 4+ screens created [____]
-- [ ] Navigation works between screens [____]
-- [ ] No hardcoded strings in code (Kotlin/Java) [____]
-- [ ] App runs on emulator [____]
+- [ ] Home screen opens [____]
+- [ ] All required placeholder screens open [____]
+- [ ] Navigation works from Home and back safely [____]
+- [ ] Placeholder text clearly defers future behavior [____]
+- [ ] No camera/backend/database/XML/AI behavior is required or claimed [____]
 
 ### Documentation
 - [ ] Complete Week 02 reflection [____]
 - [ ] Take quiz [____]
-- [ ] Screenshots of all screens [____]
-- [ ] Save evidence [____]
+- [ ] Save screenshots of Home and placeholder screens [____]
+- [ ] Save build/run evidence in `docs/evidence/week-02/` [____]
 - [ ] Meaningful git commits [____]
 
 ---
 
-## Week 03: Camera and Gallery [Start Date: ____ / End Date: ____]
+## Week 03: ScanActivity Image Input [Start Date: ____ / End Date: ____]
 
 **📈 Cumulative product target: 25%** (see [PRODUCT_PROGRESS_MAP.md](PRODUCT_PROGRESS_MAP.md)) — Cumulative % achieved: [____%]
-**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary) → `android-app/` — do the identical steps in whichever track you chose.
+**Track paths:** Kotlin (primary) → `android-app-kotlin/` · Java (secondary/reference) → `android-app/`.
 
 ### Exercises
-- [ ] Exercise 1: Launch camera intent [____]
-- [ ] Exercise 2: Handle camera result [____]
-- [ ] Exercise 3: Launch gallery picker [____]
-- [ ] Exercise 4: Request permissions [____]
-- [ ] Exercise 5: Resize images [____]
-- [ ] Exercise 6: Display in ImageView [____]
+- [ ] Exercise 1: Trace camera and gallery image flows [____]
+- [ ] Exercise 2: Explain camera permission [____]
+- [ ] Exercise 3: Check FileProvider authority matching [____]
+- [ ] Exercise 4: Plan selected image URI state [____]
+- [ ] Exercise 5: Sketch Scan preview UI [____]
+- [ ] Exercise 6: Prepare edge-case checklist [____]
 
 ### Build Task
-- [ ] Add camera and gallery buttons [____]
-- [ ] Implement camera intent (ACTION_IMAGE_CAPTURE) [____]
-- [ ] Implement gallery intent (ACTION_PICK) [____]
-- [ ] Request CAMERA permission [____]
-- [ ] Request READ_EXTERNAL_STORAGE permission [____]
-- [ ] Handle permission grant/denial [____]
-- [ ] Convert URI to Bitmap [____]
-- [ ] Resize image to 224x224 [____]
-- [ ] Display image in ImageView [____]
-- [ ] Handle user cancellation [____]
+- [ ] Add CAMERA permission and FileProvider declaration [____]
+- [ ] Create `res/xml/file_provider_paths.xml` [____]
+- [ ] Add Week 03 strings for image input and messages [____]
+- [ ] Upgrade `activity_scan.xml` with preview, status, Take Photo, and Gallery buttons [____]
+- [ ] Add `RequestPermission`, `TakePicture`, and `GetContent` launchers in `ScanActivity` [____]
+- [ ] Create camera output URI with FileProvider [____]
+- [ ] Store selected image URI [____]
+- [ ] Display selected/captured image in ImageView [____]
+- [ ] Handle permission denial and user cancellation safely [____]
 
 ### Validation
-- [ ] Camera opens when button tapped [____]
-- [ ] Gallery opens when button tapped [____]
-- [ ] Captured image displays [____]
-- [ ] Selected image displays [____]
-- [ ] Permission request appears [____]
-- [ ] App handles permission denial [____]
-- [ ] No crash when user cancels [____]
-- [ ] Large images resized properly [____]
+- [ ] Home still opens `ScanActivity` [____]
+- [ ] Gallery picker opens and selected image previews [____]
+- [ ] Camera permission flow works [____]
+- [ ] Camera capture previews [____]
+- [ ] Permission denial does not crash [____]
+- [ ] Camera/gallery cancellation does not crash [____]
+- [ ] No backend/database/AI behavior is required or faked [____]
 
 ### Documentation
 - [ ] Complete Week 03 reflection [____]
 - [ ] Take quiz [____]
-- [ ] Screenshots: camera, gallery, permissions [____]
-- [ ] Save evidence [____]
+- [ ] Save screenshots: Scan before image, gallery preview, camera permission, camera preview [____]
+- [ ] Save cancellation/denial behavior notes [____]
+- [ ] Save evidence in `docs/evidence/week-03/` [____]
 - [ ] Meaningful git commits [____]
 
 ---

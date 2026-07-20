@@ -22,19 +22,19 @@ This document provides explicit mapping of **every single CSE 2206 syllabus topi
 | 14 | JSON parsing | Parse prediction response JSON | 05 | Gson/JSON parsing code | Data extracted |
 | 15 | RESTful API communication | Android ↔ FastAPI REST API | 05-06 | ApiService interface, endpoints | API communicates |
 | 16 | App-to-app communication | Android Share Intent for scan results | 10 | Share button, Intent.ACTION_SEND | Share dialog opens |
-| 17 | Android Intents (general) | Camera intent, gallery intent, share intent | 03, 10 | Multiple Intent usages | Intents work |
+| 17 | Android Intents and launchers | Activity navigation, camera/gallery result launchers, share intent | 02, 03, 10 | Intent and Activity Result code | Navigation/input/share work |
 | 18 | Notifications | Reminder notifications with NotificationChannel | 10 | NotificationManager code | Notification appears |
 | 19 | Notification channels | Create notification channel for reminders | 10 | NotificationChannel creation | Channel exists |
 | 20 | PendingIntent | Open app from notification | 10 | PendingIntent with activity | Tap opens app |
 | 21 | Maps and location-based applications | Optional: GPS location tagging for scans | 10 | LocationManager code attempt | Location captured or documented |
 | 22 | Location services | Request location permissions, access GPS | 10 | Location permission request | Permission granted |
-| 23 | Multimedia - Camera | Camera intent to capture leaf images | 03 | ACTION_IMAGE_CAPTURE intent | Camera opens |
-| 24 | Multimedia - Gallery | Gallery picker to select existing images | 03 | ACTION_PICK intent | Gallery opens |
-| 25 | Image handling | Bitmap loading, resizing, display | 03 | BitmapFactory, ImageView code | Image displays |
+| 23 | Multimedia - Camera | Camera capture from ScanActivity | 03 | `ActivityResultContracts.TakePicture` + FileProvider | Camera photo previews |
+| 24 | Multimedia - Gallery | Gallery/content picker to select existing images | 03 | `ActivityResultContracts.GetContent` | Gallery image previews |
+| 25 | Image handling | Store selected image URI and display preview | 03 | URI + ImageView code | Image displays |
 | 26 | Files and storage - Database | Room/SQLite database for scan history | 07 | Entity, DAO, Database classes | Data persists |
 | 27 | Files and storage - File system | Save images to app directory | 03, 07 | File I/O code | Images saved |
-| 28 | Files and storage - Assets | disease_library.xml in assets folder | 08 | assets/disease_library.xml | File accessible |
-| 29 | SharedPreferences | Optional: Store user settings | 02, 10 | SharedPreferences code | Settings persist |
+| 28 | Files and storage - Assets | diseases.xml in assets folder | 08 | assets/diseases.xml | File accessible |
+| 29 | SharedPreferences | Optional: Store user settings | 10 | SharedPreferences code | Settings persist |
 | 30 | SQLite database | Room abstraction over SQLite | 07 | Room database implementation | Queries work |
 | 31 | Database operations (CRUD) | Insert, query, delete scan records | 07 | DAO methods: @Insert, @Query, @Delete | CRUD works |
 | 32 | RecyclerView / ListView | Scan history list display | 07 | RecyclerView adapter code | List displays |
@@ -69,51 +69,53 @@ This document provides explicit mapping of **every single CSE 2206 syllabus topi
 
 ## Detailed Week-by-Week Mapping
 
-### Week 01: Project Understanding and Proposal
+### Week 01: Product Idea and Learning Foundation
 **Syllabus Topics Covered:**
 - Introduction to mobile application development
-- Platform comparison (Android / iPhone / Windows Phone)
+- Mobile problem framing and platform choice
 - Version control with Git
 
 **How Covered:**
-- Write project proposal explaining LeafGuard AI as Android app
-- Research and document Android vs iOS vs Windows Phone
-- Set up GitHub repository
-- Analyze senior Android project repositories
+- Explain LeafGuard AI from the base product idea
+- Identify the target user, problem, and honest scope
+- Write the main user journey and first screen map
+- Create a beginner system sketch and 12-week growth map
 
 **Evidence:**
-- `docs/proposal.md` completed
-- Platform comparison section in proposal
-- Git repository initialized with meaningful commits
+- `docs/evidence/week-01/product-idea.md`
+- `docs/evidence/week-01/user-journey.md`
+- `docs/evidence/week-01/screen-map.md`
+- `docs/evidence/week-01/system-sketch.md`
+- `docs/evidence/week-01/week-growth-map.md`
 
 ---
 
 ### Week 02: Android Basics and UI Skeleton
 **Syllabus Topics Covered:**
 - Development environment setup (Android Studio, SDK, Gradle)
-- Java for Android development
+- Kotlin-first Android development with Java secondary reference
 - Designing mobile applications
 - Building mobile applications
 - User interface layouts (XML)
 - Activities and navigation
-- Application lifecycle
+- Beginner Activity lifecycle entry point (`onCreate`)
 - Gradle build system
 - Resource management
 
 **How Covered:**
-- Install Android Studio, SDK, create new project
-- Design app navigation flow and UI mockups
-- Create XML layouts for Home, Result, History, Settings screens
-- Implement Activities with basic navigation using Intents
-- Set up strings.xml, colors.xml resources
-- Configure build.gradle with dependencies
+- Open or create the Kotlin Android project
+- Convert Week 01 screen map into a Home screen and placeholder screens
+- Create XML layouts for Home, Scan, Result, History, Disease Library, and Settings/About placeholders
+- Implement beginner Activity classes with `onCreate` and `setContentView`
+- Use explicit Intents for Home navigation
+- Set up `strings.xml` and `colors.xml` resources
 
 **Evidence:**
-- Android Studio screenshot showing project structure
+- Android Studio or terminal screenshot showing project build/run
 - XML layout files in `app/src/main/res/layout/`
-- Multiple Activity classes created
-- App runs and shows UI screens (screenshot)
-- Navigation between screens works (video)
+- Placeholder Activity classes created
+- App runs and shows UI shell screenshots
+- Navigation between placeholders works (video or screenshots)
 
 ---
 
@@ -121,26 +123,27 @@ This document provides explicit mapping of **every single CSE 2206 syllabus topi
 **Syllabus Topics Covered:**
 - Multimedia - Camera
 - Multimedia - Gallery
-- Image handling
-- Files and storage - File system
-- Android Intents (camera, gallery)
+- Image input and preview
+- Files and storage - app-specific camera output file
+- Activity Result launchers for camera/gallery flows
 - Permissions handling
 - Permission request flow
 
 **How Covered:**
-- Implement camera intent (ACTION_IMAGE_CAPTURE)
-- Implement gallery picker intent (ACTION_PICK)
-- Handle image URI and convert to Bitmap
-- Resize images for ML model input size
-- Request and handle CAMERA, READ_EXTERNAL_STORAGE permissions
-- Save captured/selected images to app storage
+- Upgrade `ScanActivity` from placeholder to image-input screen
+- Request and handle CAMERA permission
+- Create safe camera output URI through FileProvider
+- Use `TakePicture` launcher for camera capture
+- Use `GetContent` launcher for gallery/content image selection
+- Store selected image URI and display it in ImageView preview
+- Keep backend upload, prediction, history, and AI out of Week 03
 
 **Evidence:**
-- Camera opens when button tapped (screenshot)
-- Gallery opens when button tapped (screenshot)
-- Selected image appears in ImageView (screenshot)
-- Permission dialog appears (screenshot)
-- Logcat shows permission grant/deny (log snippet)
+- Scan screen before image screenshot
+- Gallery image preview screenshot
+- Camera permission or documented permission-state screenshot
+- Camera image preview screenshot
+- Cancellation/denial behavior note
 
 ---
 

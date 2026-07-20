@@ -394,7 +394,7 @@ You have successfully completed this roadmap when:
 ## Weekly Breakdown
 
 ### Foundation Phase (Weeks 1-3)
-- **Week 01**: Project understanding, proposal, senior repo analysis
+- **Week 01**: Product idea, user journey, screen map, learning foundation
 - **Week 02**: Android Studio setup, UI skeleton, navigation
 - **Week 03**: Camera, gallery, permissions, image handling
 

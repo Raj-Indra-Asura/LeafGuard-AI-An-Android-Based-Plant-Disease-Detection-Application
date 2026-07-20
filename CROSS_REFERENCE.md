@@ -187,10 +187,11 @@ Learning  Solutions  Notebooks   Evidence
 
 | Template | Location | Used In | Output |
 |----------|----------|---------|--------|
-| Proposal | `docs/proposal-template.md` | Week 01 | Project proposal |
+| Product foundation | `roadmap/week-01-project-understanding/build-task.md` | Week 01 | Product idea, journey, screen map, growth map |
+| Proposal | `docs/proposal-template.md` | Week 12 or instructor-specific submission | Project proposal/report appendix |
 | Final Report | `docs/final-report-template.md` | Week 12 | Submission document |
 | Presentation | `docs/presentation-outline.md` | Week 12 | Slides structure |
-| Architecture | `docs/architecture-diagram-guide.md` | Week 01, 12 | System diagrams |
+| Architecture | `docs/architecture-diagram-guide.md` | Week 12 | Final system diagrams |
 | Viva Prep | `docs/viva-questions.md` | Week 12 | Defense preparation |
 
 ---

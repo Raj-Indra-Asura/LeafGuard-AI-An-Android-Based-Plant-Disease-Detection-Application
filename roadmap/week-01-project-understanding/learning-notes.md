@@ -1,1631 +1,225 @@
-# Week 01 Learning Notes: Project Understanding & Foundation
+# Week 01 Learning Notes: Thinking Like a Beginner Product Builder
 
-## Table of Contents
-1. [What is LeafGuard AI?](#what-is-leafguard-ai)
-2. [Three-Tier Architecture Deep Dive](#three-tier-architecture-deep-dive)
-3. [MVVM Pattern Explained](#mvvm-pattern-explained)
-4. [Android Components in LeafGuard](#android-components-in-leafguard)
-5. [Networking Architecture](#networking-architecture)
-6. [Database Design](#database-design)
-7. [Machine Learning Integration](#machine-learning-integration)
-8. [XML Parsing Fundamentals](#xml-parsing-fundamentals)
-9. [Senior Repository Analysis Insights](#senior-repository-analysis-insights)
-10. [Project Documentation Best Practices](#project-documentation-best-practices)
+## Purpose
+
+These notes teach the Week 01 ideas from zero. They intentionally avoid finished-code details. You will learn how to move from a base idea to a buildable product plan.
 
 ---
 
-## What is LeafGuard AI?
+## 1. Start With the Product Idea
 
-### Problem Context
+A product idea is the simplest useful description of the final app.
 
-**Agricultural Challenge:**
-Plant diseases cause 20-40% crop yield losses globally. Farmers, especially in rural India, lack access to:
-- Plant pathologists for disease identification
-- Timely diagnosis leading to early intervention
-- Affordable diagnostic solutions
-- Educational resources on disease management
+LeafGuard AI can be described like this:
 
-**Traditional Approach:**
-- Visual inspection by experts
-- Time-consuming (days to weeks)
-- Expensive (₹500-₹2000 per consultation)
-- Limited availability in remote areas
-- Subjective (varies between experts)
+> A beginner-friendly Android app that lets a user provide a leaf image and receive a plant-disease result with helpful guidance.
 
-### Solution: LeafGuard AI
+This sentence is enough for Week 01. It tells us:
 
-**Core Concept:**
-A smartphone-based plant disease detection system that brings expert-level diagnostics to farmers' hands.
+- the platform: Android
+- the input: leaf image
+- the output: disease result and guidance
+- the user value: faster help for plant problems
 
-**How it works:**
-1. Farmer captures or selects leaf image using phone camera
-2. App analyzes image using deep learning model
-3. Disease identified with confidence score
-4. Treatment recommendations provided immediately
-5. Scan saved to history for future reference
-
-**Unique Features:**
-- **Hybrid AI:** Works both online (cloud) and offline (on-device)
-- **Local History:** All scans saved in phone database
-- **Educational:** Disease library with symptoms, treatments, prevention
-- **Fast:** Results in under 5 seconds
-- **Free:** No subscription, no hidden costs
-
-### Technical Architecture Overview
-
-```
-┌─────────────────────────────────────────────┐
-│           USER'S ANDROID PHONE              │
-│                                             │
-│  ┌────────────────────────────────────┐    │
-│  │   LeafGuard AI Application         │    │
-│  │   (6 Activities, MVVM Pattern)     │    │
-│  └───────────┬────────────────────────┘    │
-│              │                              │
-│              ├──→ Room Database (SQLite)    │
-│              │    └─ Scan History           │
-│              │                              │
-│              ├──→ TFLite Model (Assets)     │
-│              │    └─ Offline AI             │
-│              │                              │
-│              └──→ Retrofit Client           │
-│                   └─ HTTP to Backend        │
-└──────────────────────┬──────────────────────┘
-                       │ Internet
-              ┌────────▼─────────┐
-              │  FASTAPI BACKEND │
-              │  ┌─────────────┐ │
-              │  │ ML Model    │ │
-              │  │ (TensorFlow)│ │
-              │  └─────────────┘ │
-              └──────────────────┘
-```
-
-### Project Scope Summary
-
-**What LeafGuard DOES:**
-- ✅ Detect 10-15 plant diseases from leaf images
-- ✅ Provide treatment recommendations
-- ✅ Save scan history locally
-- ✅ Work offline with TensorFlow Lite
-- ✅ Work online with cloud AI for better accuracy
-- ✅ Display disease information library
-- ✅ Handle camera and gallery integration
-
-**What LeafGuard DOES NOT:**
-- ❌ User authentication (out of scope for CSE 2206)
-- ❌ Multi-language support (future enhancement)
-- ❌ Community features (forums, sharing)
-- ❌ E-commerce (selling treatments)
-- ❌ Weather integration
-- ❌ GPS disease mapping
-- ❌ Real-time video analysis
+You do not need to know the final implementation yet.
 
 ---
 
-## Three-Tier Architecture Deep Dive
+## 2. Define the User Before the Technology
 
-### What is Three-Tier Architecture?
+Technology choices should come after the user problem.
 
-**Definition:** A software architecture pattern that separates an application into three logical and physical computing tiers.
+Possible users:
 
-**Why use it?**
-- **Separation of concerns:** Each tier has distinct responsibility
-- **Maintainability:** Changes in one tier minimally affect others
-- **Scalability:** Each tier can be scaled independently
-- **Testability:** Tiers can be tested in isolation
-- **Team collaboration:** Different developers can work on different tiers
+- a student demonstrating a mobile-development project
+- a gardener checking a plant leaf
+- a small farmer who wants quick first-level guidance
+- a teacher evaluating Android concepts in CSE 2206
 
-### Tier 1: Presentation Layer (UI Layer)
+The project should be honest about its limits. It is a learning and demonstration app, not a certified agricultural diagnosis tool.
 
-**Responsibility:** Everything the user sees and interacts with.
+Good Week 01 statement:
 
-**Components in LeafGuard:**
+> LeafGuard AI gives a quick educational suggestion from a leaf image and helps the user keep scan records.
 
-1. **Activities (Screens):**
-   - `MainActivity.kt` - Home screen with scan button + image capture
-   - `ResultActivity.kt` - Display disease prediction
-   - `HistoryActivity.kt` - List of past scans
-   - `HistoryDetailActivity.kt` - Single scan details view
-   - `DiseaseLibraryActivity.kt` - Browse disease information
-   - `SettingsActivity.kt` - App preferences
+Bad Week 01 statement:
 
-2. **XML Layouts:**
-   - `activity_main.xml` - Main screen layout
-   - `activity_result.xml` - Result display layout
-   - `activity_history.xml` - History list layout
-   - `item_scan_history.xml` - Single history item layout
+> LeafGuard AI always detects every disease accurately.
 
-3. **Adapters (RecyclerView):**
-   - `HistoryAdapter.kt` - Displays list of scans
-   - `DiseaseAdapter.kt` - Displays list of diseases
-
-**Data Flow IN:** User interactions (button clicks, image selection)
-**Data Flow OUT:** Display commands to UI components
-
-**Example: MainActivity Flow**
-```kotlin
-// MainActivity.kt (Presentation Layer)
-class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater) // Load XML layout
-        setContentView(binding.root)
-
-        // Handle user interaction
-        binding.btnScan.setOnClickListener {
-            // User clicked scan button - launch camera directly
-            openCamera()
-        }
-        
-        binding.btnHistory.setOnClickListener {
-            // Navigate to HistoryActivity
-            val intent = Intent(this, HistoryActivity::class.java)
-            startActivity(intent)
-        }
-    }
-}
-```
-
-**Key Principles:**
-- Activities should NOT directly access database
-- Activities should NOT make network calls
-- Activities should only update UI based on ViewModel data
-- Activities should be thin (minimal logic)
-
-### Tier 2: Business Logic Layer (Domain Layer)
-
-**Responsibility:** Application logic, data processing, network/database services.
-
-**Components in LeafGuard:**
-
-1. **Network Services:**
-   - `ApiService.kt` - Retrofit interface for API calls
-   - `RetrofitClient.kt` - HTTP client configuration
-   - `PredictionResponse.kt` - API response model
-
-2. **ML Services:**
-   - `TFLiteClassifier.kt` - Offline model inference
-
-3. **Utility Classes:**
-   - `NotificationHelper.kt` - Push notification management
-   - `XmlParser.kt` - Parse diseases.xml file
-
-**Data Flow IN:** Requests from Activities
-**Data Flow OUT:** Processed data back to Activities, network/database operations
-
-**Example: MainActivity calling ApiService**
-```kotlin
-// MainActivity.kt - Direct API call (no ViewModel layer)
-class MainActivity : AppCompatActivity() {
-    private lateinit var apiService: ApiService
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        // Initialize Retrofit service
-        apiService = RetrofitClient.instance.create(ApiService::class.java)
-    }
-
-    // Called when user selects image
-    private fun uploadImage(imageUri: Uri) {
-        lifecycleScope.launch {
-            try {
-                // Prepare multipart request
-                val file = File(imageUri.path!!)
-                val requestBody = file.asRequestBody("image/*".toMediaTypeOrNull())
-                val imagePart = MultipartBody.Part.createFormData("image", file.name, requestBody)
-
-                // Make API call
-                val response = apiService.predict(imagePart)
-
-                if (response.isSuccessful) {
-                    val result = response.body()
-                    // Navigate to ResultActivity with result
-                    val intent = Intent(this@MainActivity, ResultActivity::class.java)
-                    intent.putExtra("disease", result?.disease)
-                    intent.putExtra("confidence", result?.confidence)
-                    startActivity(intent)
-                }
-            } catch (e: Exception) {
-                Toast.makeText(this@MainActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-}
-```
-
-**Key Principles:**
-- Activities directly call service layer (no ViewModel intermediary)
-- Network calls use Kotlin coroutines for async operations
-- Results are passed via Intent extras or saved to database
-- Simple architecture suitable for this project's scope
-
-### Tier 3: Data Layer
-
-**Responsibility:** Data storage, retrieval, and network communication.
-
-**Components in LeafGuard:**
-
-1. **Local Data Sources:**
-   - `AppDatabase.kt` - Room database definition
-   - `ScanRecord.kt` - Room entity for scan history
-   - `ScanDao.kt` - Room DAO for database operations
-   - `XmlParser.kt` - Parse diseases.xml file
-
-2. **Remote Data Sources:**
-   - `ApiService.kt` - Retrofit interface defining API endpoints
-   - `RetrofitClient.kt` - Retrofit singleton configuration
-   - `PredictionResponse.kt` - API response data class
-
-3. **Data Models:**
-   - `Disease.kt` - Disease information model
-
-**Data Flow IN:** Requests from Activities
-**Data Flow OUT:** Raw data (database records, API responses)
-
-**Example: ApiService and Database Access**
-```kotlin
-// ApiService.kt - Retrofit interface
-interface ApiService {
-    @Multipart
-    @POST("/predict")
-    suspend fun predict(
-        @Part image: MultipartBody.Part
-    ): Response<PredictionResponse>
-}
-
-// PredictionResponse.kt - API response model
-data class PredictionResponse(
-    @SerializedName("disease") val disease: String,
-    @SerializedName("confidence") val confidence: Float
-)
-
-// ScanRecord.kt - Room entity
-@Entity(tableName = "scan_history")
-data class ScanRecord(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    @ColumnInfo(name = "disease_name") val diseaseName: String,
-    @ColumnInfo(name = "confidence") val confidence: Float,
-    @ColumnInfo(name = "image_path") val imagePath: String,
-    @ColumnInfo(name = "timestamp") val timestamp: Long
-)
-
-// ScanDao.kt - Room DAO
-@Dao
-interface ScanDao {
-    @Query("SELECT * FROM scan_history ORDER BY timestamp DESC")
-    suspend fun getAllScans(): List<ScanRecord>
-
-    @Insert
-    suspend fun insert(scan: ScanRecord)
-
-    @Delete
-    suspend fun delete(scan: ScanRecord)
-}
-```
-
-**Key Principles:**
-- Activities call service layer directly (no Repository intermediary in this app)
-- Room handles local SQLite storage
-- Retrofit handles network communication
-- Coroutines manage async operations
-- Repositories handle data synchronization
-
-### Why Three Tiers for LeafGuard?
-
-**Scenario: Changing Network Library**
-
-Without tiers:
-```kotlin
-// MainActivity directly uses Retrofit - BAD!
-class MainActivity : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        // Network call in Activity - very bad!
-        RetrofitClient.apiService.uploadImage(image).enqueue(...)
-    }
-}
-```
-
-If you switch from Retrofit to Volley, you must change EVERY Activity that makes network calls.
-
-With tiers:
-```kotlin
-// MainActivity uses service layer directly
-class MainActivity : AppCompatActivity() {
-    private lateinit var apiService: ApiService
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        apiService = RetrofitClient.instance.create(ApiService::class.java)
-        // Activity calls service directly
-    }
-}
-```
-
-If you switch from Retrofit to Volley, you ONLY change `ApiService` and `RetrofitClient` in the Service Layer. Activities just need different method calls.
+The second statement promises more than a student project can safely prove.
 
 ---
 
-## Direct Architecture Pattern Explained
+## 3. Understand the Main User Journey
 
-### What is the Direct Pattern?
+A user journey is the path a user follows to achieve one goal.
 
-**LeafGuard uses a simpler, direct Activity-to-Service architecture.**
+The main LeafGuard journey is:
 
-**Purpose:** Activities directly call service layer (ApiService, ScanDao, TFLiteClassifier) without ViewModel intermediary.
-
-### Why Not MVVM for This Project?
-
-1. **Simpler for learning** - Fewer abstractions to understand
-2. **Appropriate scope** - Single-user, single-flow app
-3. **Course focus** - CSE 2206 emphasizes Android fundamentals, not advanced architecture
-4. **Faster development** - Less boilerplate code
-
-### LeafGuard Architecture Components
-
-#### 1. Model (Data Classes)
-
-**What it is:** Your data structures.
-
-**In LeafGuard:**
-- `ScanRecord.kt` - Database entity for scan history
-- `PredictionResponse.kt` - API response data class
-- `Disease.kt` - Disease information from XML
-
-**Example:**
-```kotlin
-// ScanRecord.kt (Model - Room Entity)
-@Entity(tableName = "scan_history")
-data class ScanRecord(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    @ColumnInfo(name = "disease_name") val diseaseName: String,
-    @ColumnInfo(name = "confidence") val confidence: Float,
-    @ColumnInfo(name = "image_path") val imagePath: String,
-    @ColumnInfo(name = "timestamp") val timestamp: Long
-)
+```text
+Open app
+  -> choose or capture a leaf image
+  -> request detection
+  -> see disease name and confidence
+  -> read symptoms, treatment, and prevention
+  -> optionally save or review the scan later
 ```
 
-**Responsibilities:**
-- Define data structure
-- Represent business entities
-- No UI code
-- No business logic
-
-#### 2. View (Activities)
-
-**What it is:** Your UI components (Activities and XML layouts).
-
-**In LeafGuard:**
-- `MainActivity.kt` - Handles capture and API calls directly
-- `ResultActivity.kt` - Displays result passed via Intent
-- `HistoryActivity.kt` - Loads history from database directly
-
-**Example:**
-```kotlin
-// MainActivity.kt (View - handles everything)
-class MainActivity : AppCompatActivity() {
-    private lateinit var apiService: ApiService
-    private lateinit var database: AppDatabase
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        // Initialize services
-        apiService = RetrofitClient.instance.create(ApiService::class.java)
-        database = AppDatabase.getInstance(this)
-
-        // User clicks scan button
-        binding.btnScan.setOnClickListener {
-            openCamera() // Launch camera intent
-        }
-    }
-    
-    // Camera result callback
-    private fun handleCapturedImage(imageUri: Uri) {
-        lifecycleScope.launch {
-            val result = apiService.predict(createImagePart(imageUri))
-            if (result.isSuccessful) {
-                // Navigate to ResultActivity with data
-                val intent = Intent(this@MainActivity, ResultActivity::class.java)
-                intent.putExtra("disease", result.body()?.disease)
-                startActivity(intent)
-            }
-        }
-    }
-}
-```
-
-**Responsibilities:**
-- Display UI
-- Handle user interactions (clicks, swipes)
-- Call service layer directly
-- Update UI when data arrives
-- Contains flow logic
-
-#### 3. Service Layer
-
-**What it is:** Network and database access classes.
-
-**In LeafGuard:**
-- `ApiService.kt` - Retrofit interface
-- `ScanDao.kt` - Room DAO
-- `TFLiteClassifier.kt` - ML model wrapper
-
-**Example:**
-```kotlin
-// ApiService.kt (Service - network)
-interface ApiService {
-    @Multipart
-    @POST("/predict")
-    suspend fun predict(
-        @Part image: MultipartBody.Part
-    ): Response<PredictionResponse>
-}
-
-// ScanDao.kt (Service - database)
-@Dao
-interface ScanDao {
-    @Query("SELECT * FROM scan_history ORDER BY timestamp DESC")
-    suspend fun getAllScans(): List<ScanRecord>
-
-    @Insert
-    suspend fun insert(scan: ScanRecord)
-}
-```
-
-### Direct Architecture Data Flow in LeafGuard
-
-**User scans a leaf - complete flow:**
-
-```
-1. USER INTERACTION
-   User taps "Scan" button
-   ↓
-
-2. ACTIVITY (MainActivity)
-   Button click listener triggered
-   Launches camera via ActivityResultContracts.TakePicture
-   ↓
-
-3. CAMERA RESULT
-   Image captured to FileProvider URI
-   MainActivity receives result in callback
-   ↓
-
-4. ACTIVITY (MainActivity)
-   Creates multipart request from image
-   Calls: apiService.predict(imagePart)
-   ↓
-
-5. SERVICE (ApiService via Retrofit)
-   Makes HTTP POST to backend /predict
-   Sends: Multipart image data
-   Receives: JSON response {"disease": "...", "confidence": ...}
-   ↓
-
-6. ACTIVITY (MainActivity)
-   Receives response from coroutine
-   Saves result to database via ScanDao
-   Creates Intent with result data
-   Starts ResultActivity
-   ↓
-
-7. ACTIVITY (ResultActivity)
-   Receives data from Intent extras
-   Displays disease name, confidence, treatment
-```
-
-### Trade-offs of Direct Architecture
-
-#### Advantages
-- **Simpler code** - Easier to follow and debug
-- **Less files** - No ViewModel or Repository classes
-- **Faster to implement** - Good for course projects
-- **Direct data flow** - Clear cause and effect
-
-#### Disadvantages
-- **No screen rotation handling** - Network calls may restart (mitigated with coroutine)
-- **Testing harder** - Cannot unit test without Android framework
-- **Tight coupling** - Activities depend on services directly
-
-**For LeafGuard's scope, the direct pattern is appropriate.**
+This journey is more important than class names in Week 01. If the journey is clear, future code has a direction.
 
 ---
 
-## Android Components in LeafGuard
+## 4. Break the Final Product Into Weekly Slices
 
-### Activities
+A beginner can build a large product only by slicing it into small working increments.
 
-**Definition:** A screen that users interact with.
+For this project, a good slice has three parts:
 
-**LeafGuard Activities:**
+1. A concept to learn.
+2. A product ability to build.
+3. A validation demo to prove it works.
 
-1. **MainActivity** - Home/Dashboard + Image Capture
-   - Purpose: Entry point, scan button, camera/gallery access
-   - Layout: `activity_main.xml`
-   - Key UI: Scan button, Cloud/Offline toggle, navigation buttons
-   - Navigation: ResultActivity, HistoryActivity, DiseaseLibraryActivity, SettingsActivity
+Example:
 
-2. **ResultActivity** - Display Prediction
-   - Purpose: Show disease prediction and treatment
-   - Layout: `activity_result.xml`
-   - Key UI: Disease name, confidence %, symptoms, treatment
-   - Navigation: Back to MainActivity, view in History
+| Week | Concept | Product Ability | Validation Demo |
+|---:|---|---|---|
+| 02 | Android screens and layouts | App opens and navigates between screens | Tap through the UI screens |
+| 03 | Camera and gallery | User can provide a real image | Capture and choose image |
+| 04 | Backend API | Server accepts an uploaded image | Upload image in API docs |
 
-3. **HistoryActivity** - Past Scans List
-   - Purpose: Display all previous scans
-   - Layout: `activity_history.xml` with RecyclerView
-   - Key UI: List of scans with date, disease, confidence
-   - Navigation: Click item → HistoryDetailActivity
-
-4. **HistoryDetailActivity** - Single Scan Details
-   - Purpose: Display detailed view of a past scan
-   - Layout: `activity_history_detail.xml`
-   - Key UI: Full image, disease info, timestamp, delete option
-   - Navigation: Back to HistoryActivity
-
-5. **DiseaseLibraryActivity** - Disease Encyclopedia
-   - Purpose: Browse all diseases with information
-   - Layout: `activity_disease_library.xml`
-   - Key UI: SearchView, Disease list, Detail view
-   - Navigation: Click disease → show details
-
-6. **SettingsActivity** - App Preferences
-   - Purpose: Configure app settings
-   - Layout: `activity_settings.xml` (PreferenceScreen)
-   - Key UI: Notification toggle, AI mode selection, Clear data
-   - Navigation: Back to MainActivity
-
-**Activity Lifecycle in LeafGuard:**
-```kotlin
-class MainActivity : AppCompatActivity() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        // Called when activity is first created
-        // Initialize views, services, listeners
-        setContentView(R.layout.activity_main)
-        setupServices()
-        checkCameraPermission()
-    }
-
-    override fun onStart() {
-        super.onStart()
-        // Called when activity becomes visible to user
-        // Good place to refresh data
-    }
-
-    override fun onResume() {
-        super.onResume()
-        // Called when activity starts interacting with user
-        // Register sensors, start animations
-    }
-
-    override fun onPause() {
-        super.onPause()
-        // Called when activity is partially obscured
-        // Save state, pause operations
-    }
-
-    override fun onStop() {
-        super.onStop()
-        // Called when activity is no longer visible
-        // Release resources
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        // Called before activity is destroyed
-        // Final cleanup
-    }
-}
-```
-
-### Intents
-
-**Definition:** Messaging object to request action from another component.
-
-**Types used in LeafGuard:**
-
-1. **Explicit Intents** (Navigate between app screens)
-```kotlin
-// From MainActivity to ResultActivity
-val intent = Intent(this, ResultActivity::class.java)
-intent.putExtra("disease", "Tomato Blight") // Pass data
-intent.putExtra("confidence", 0.95f)
-startActivity(intent)
-
-// In ResultActivity, receive data
-val disease = intent.getStringExtra("disease")
-val confidence = intent.getFloatExtra("confidence", 0f)
-```
-
-2. **Implicit Intents** (Request action from system)
-```kotlin
-// Modern approach: ActivityResultContracts (recommended)
-
-// Camera capture
-private val cameraLauncher = registerForActivityResult(
-    ActivityResultContracts.TakePicture()
-) { success ->
-    if (success) {
-        // Image saved to imageUri
-        processImage(imageUri)
-    }
-}
-
-// Gallery pick
-private val galleryLauncher = registerForActivityResult(
-    ActivityResultContracts.GetContent()
-) { uri ->
-    uri?.let { processImage(it) }
-}
-
-// Usage
-fun openCamera() {
-    imageUri = createImageFileUri() // FileProvider URI
-    cameraLauncher.launch(imageUri)
-}
-
-fun openGallery() {
-    galleryLauncher.launch("image/*")
-}
-```
-
-### RecyclerView
-
-**Purpose:** Efficiently display large lists.
-
-**LeafGuard Use Cases:**
-
-1. **History List:**
-```kotlin
-// HistoryAdapter.kt
-class HistoryAdapter(
-    private val scans: List<ScanRecord>,
-    private val onClick: (ScanRecord) -> Unit
-) : RecyclerView.Adapter<HistoryAdapter.ViewHolder>() {
-
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_scan_history, parent, false)
-        return ViewHolder(view)
-    }
-
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val scan = scans[position]
-        holder.bind(scan)
-        holder.itemView.setOnClickListener { onClick(scan) }
-    }
-
-    override fun getItemCount(): Int = scans.size
-
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        private val diseaseText: TextView = view.findViewById(R.id.tv_disease)
-        private val confidenceText: TextView = view.findViewById(R.id.tv_confidence)
-        private val dateText: TextView = view.findViewById(R.id.tv_date)
-
-        fun bind(scan: ScanRecord) {
-            diseaseText.text = scan.diseaseName
-            confidenceText.text = String.format("%.1f%%", scan.confidence * 100)
-            dateText.text = formatDate(scan.timestamp)
-        }
-    }
-}
-```
-
-2. **Disease Library List:**
-Similar pattern for displaying all diseases.
-
-**Why RecyclerView instead of ListView?**
-- More flexible (can show grid, list, staggered)
-- Better performance (ViewHolder pattern enforced)
-- Built-in animations
-- Easier to customize
+This is how the final product grows. Week 01 prepares this structure.
 
 ---
 
-## Networking Architecture
+## 5. Screen Map Before Android Code
 
-### Retrofit Overview
+A screen map is a rough list of screens the user may need. It is not final Android code.
 
-**What is Retrofit?**
-Type-safe HTTP client for Android. Converts HTTP API into Kotlin interface.
+Beginner screen map:
 
-**Why use Retrofit in LeafGuard?**
-- Easy to use (annotations-based)
-- Automatic JSON parsing
-- Built-in error handling
-- Coroutine support (suspend functions)
-- Well-maintained by Square
+```text
+Home screen
+  Purpose: welcome user and start scan
 
-### LeafGuard API Design
+Scan screen
+  Purpose: choose camera/gallery image and request detection
 
-**Base URL:** `http://10.0.2.2:8000/` (Android emulator to localhost) or production URL
+Result screen
+  Purpose: show disease, confidence, and guidance
 
-**Endpoints:**
+History screen
+  Purpose: show saved scans
 
-1. **/predict** - Disease detection
-   - Method: POST
-   - Body: Multipart form-data with image (field name: "image")
-   - Response: JSON with disease name and confidence
+Disease library screen
+  Purpose: browse disease information
 
-### Retrofit Implementation in LeafGuard
-
-**Step 1: Define API Interface**
-```kotlin
-// ApiService.kt
-interface ApiService {
-    @Multipart
-    @POST("/predict")
-    suspend fun predict(
-        @Part image: MultipartBody.Part
-    ): Response<PredictionResponse>
-}
-
-// PredictionResponse.kt
-data class PredictionResponse(
-    @SerializedName("disease") val disease: String,
-    @SerializedName("confidence") val confidence: Float
-)
+Settings/About screen
+  Purpose: show app information or simple settings
 ```
 
-**Step 2: Create Retrofit Client**
-```kotlin
-// RetrofitClient.kt
-object RetrofitClient {
-    private const val BASE_URL = "http://10.0.2.2:8000/"
-    
-    val instance: Retrofit by lazy {
-        // Create OkHttp client with timeouts
-        val client = OkHttpClient.Builder()
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
-            .writeTimeout(60, TimeUnit.SECONDS)
-            .build()
-
-        // Create Retrofit instance
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .client(client)
-            .addConverterFactory(GsonConverterFactory.create()) // JSON parsing
-            .build()
-    }
-}
-```
-
-**Step 3: Make API Call in Activity**
-```kotlin
-// MainActivity.kt - making the API call
-class MainActivity : AppCompatActivity() {
-    private lateinit var apiService: ApiService
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        // Initialize API service
-        apiService = RetrofitClient.instance.create(ApiService::class.java)
-    }
-
-    private fun uploadImage(imageFile: File) {
-        lifecycleScope.launch {
-            try {
-                // Prepare multipart request - field name is "image"
-                val requestBody = imageFile.asRequestBody("image/*".toMediaTypeOrNull())
-                val imagePart = MultipartBody.Part.createFormData(
-                    "image",  // API expects "image" field name
-                    imageFile.name,
-                    requestBody
-                )
-
-                // Make API call (suspend function, runs in background)
-                val response = apiService.predict(imagePart)
-
-                if (response.isSuccessful && response.body() != null) {
-                    val result = response.body()!!
-                    
-                    // Navigate to result screen
-                    val intent = Intent(this@MainActivity, ResultActivity::class.java)
-                    intent.putExtra("disease", result.disease)
-                    intent.putExtra("confidence", result.confidence)
-                    startActivity(intent)
-                } else {
-                    Toast.makeText(this@MainActivity, "API Error: ${response.code()}", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(this@MainActivity, "Network Error: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-```
-
-### Error Handling
-
-**Types of errors:**
-
-1. **Network Error** - No internet connection
-2. **Timeout Error** - Server took too long to respond
-3. **HTTP Error** - Server returned 4xx or 5xx
-4. **Parsing Error** - JSON response format unexpected
-
-**Handling in LeafGuard:**
-```kotlin
-try {
-    val response = apiService.predict(imagePart)
-    // ... handle success
-} catch (e: Exception) {
-    val errorMessage = when (e) {
-        is IOException -> "No internet connection. Please check your network."
-        is SocketTimeoutException -> "Request timed out. Server might be busy."
-        is JsonSyntaxException -> "Invalid server response."
-        else -> "Unknown error occurred: ${e.message}"
-    }
-    showError(errorMessage)
-}
-```
+In Week 02, some of these may become Android Activity classes. In Week 01, they are just product ideas.
 
 ---
 
-## Database Design
+## 6. Box-Level System Sketch
 
-### Room Database Overview
+A system sketch explains the product without technical overload.
 
-**What is Room?**
-Android's official database library, built on top of SQLite.
+Use this Week 01 level:
 
-**Benefits:**
-- Compile-time verification of SQL queries
-- Reduces boilerplate code
-- LiveData integration for reactive UI
-- Type-safe database access
-
-### LeafGuard Database Schema
-
-**Tables:**
-
-1. **scans** - Stores scan history
-2. **users** - Stores user information (if authentication added)
-3. **diseases** - Caches disease information (optional)
-
-**ER Diagram:**
-```
-┌─────────────────┐         ┌─────────────────┐
-│     users       │         │     scans       │
-├─────────────────┤         ├─────────────────┤
-│ id (PK)         │─────┐   │ id (PK)         │
-│ name            │     └──→│ user_id (FK)    │
-│ email           │         │ image_path      │
-│ password_hash   │         │ disease_name    │
-│ created_at      │         │ confidence      │
-└─────────────────┘         │ mode            │
-                            │ timestamp       │
-                            │ location_lat    │
-                            │ location_lon    │
-                            └─────────────────┘
+```text
+User
+  -> Android App
+      -> Image Input
+      -> Result Screen
+      -> Local History
+      -> Disease Library
+      -> Backend / AI Service
 ```
 
-### Room Implementation
+This is enough for Week 01. Later weeks will replace each box with real implementation details.
 
-**Step 1: Define Entity**
-```kotlin
-// ScanEntity.kt
-@Entity(tableName = "scans")
-data class ScanEntity(
-    @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    @ColumnInfo(name = "image_path") val imagePath: String,
-    @ColumnInfo(name = "disease_name") val diseaseName: String,
-    val confidence: Float,
-    val mode: String, // "cloud" or "offline"
-    val timestamp: Long,
-    @ColumnInfo(name = "location_lat") val locationLat: Double? = null,
-    @ColumnInfo(name = "location_lon") val locationLon: Double? = null
-)
-```
-
-**Step 2: Define DAO**
-```kotlin
-// ScanDao.kt
-@Dao
-interface ScanDao {
-
-    @Insert
-    suspend fun insert(scan: ScanEntity)
-
-    @Update
-    suspend fun update(scan: ScanEntity)
-
-    @Delete
-    suspend fun delete(scan: ScanEntity)
-
-    @Query("SELECT * FROM scans ORDER BY timestamp DESC")
-    fun getAllScans(): LiveData<List<ScanEntity>>
-
-    @Query("SELECT * FROM scans WHERE id = :scanId")
-    fun getScanById(scanId: Int): LiveData<ScanEntity>
-
-    @Query("SELECT * FROM scans WHERE disease_name = :diseaseName ORDER BY timestamp DESC")
-    fun getScansByDisease(diseaseName: String): LiveData<List<ScanEntity>>
-
-    @Query("DELETE FROM scans")
-    suspend fun deleteAll()
-
-    @Query("SELECT COUNT(*) FROM scans")
-    suspend fun getCount(): Int
-}
-```
-
-**Step 3: Define Database**
-```kotlin
-// AppDatabase.kt
-@Database(entities = [ScanEntity::class, UserEntity::class], version = 1, exportSchema = false)
-abstract class AppDatabase : RoomDatabase() {
-
-    abstract fun scanDao(): ScanDao
-    abstract fun userDao(): UserDao
-
-    companion object {
-        @Volatile
-        private var instance: AppDatabase? = null
-
-        // Singleton pattern
-        fun getInstance(context: Context): AppDatabase {
-            return instance ?: synchronized(this) {
-                instance ?: Room.databaseBuilder(
-                    context.applicationContext,
-                    AppDatabase::class.java,
-                    "leafguard_database"
-                )
-                    .fallbackToDestructiveMigration() // For development only
-                    .build()
-                    .also { instance = it }
-            }
-        }
-    }
-}
-```
-
-**Step 4: Use in Repository**
-```kotlin
-// ScanRepository.kt
-class ScanRepository(private val scanDao: ScanDao) {
-
-    // Get all scans (returns LiveData, updates automatically)
-    fun getAllScans(): LiveData<List<ScanEntity>> = scanDao.getAllScans()
-
-    // Insert scan (Room enforces a background thread for suspend DAO functions)
-    suspend fun insert(scan: ScanEntity) {
-        scanDao.insert(scan)
-    }
-
-    // Delete scan
-    suspend fun delete(scan: ScanEntity) {
-        scanDao.delete(scan)
-    }
-}
-```
-
-### Database Migrations (Advanced)
-
-When you change schema in production app, you need migrations:
-
-```kotlin
-// Migration from version 1 to 2: Add location columns
-val MIGRATION_1_2 = object : Migration(1, 2) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL("ALTER TABLE scans ADD COLUMN location_lat REAL")
-        database.execSQL("ALTER TABLE scans ADD COLUMN location_lon REAL")
-    }
-}
-
-// Use in database builder
-val database = Room.databaseBuilder(context, AppDatabase::class.java, "leafguard_database")
-    .addMigrations(MIGRATION_1_2)
-    .build()
-```
+Do not draw every class yet. That creates false confidence and makes the system harder for a beginner.
 
 ---
 
-## Machine Learning Integration
+## 7. What Each Future Technology Means in Plain Language
 
-### Two AI Modes in LeafGuard
+You will see these names later. Learn only the plain meaning now.
 
-#### Mode 1: Cloud AI (Server-side inference)
-
-**Workflow:**
-```
-Android App → HTTP POST → FastAPI Backend → TensorFlow Model → JSON Response → Android App
-```
-
-**Advantages:**
-- Can use large, accurate models (100+ MB)
-- Easy to update model (just update server)
-- No model size constraints
-- Better accuracy with complex models
-
-**Disadvantages:**
-- Requires internet connection
-- Slower (network latency ~2-5 seconds)
-- Server hosting cost
-- Privacy concern (image sent to server)
-
-**Implementation:**
-Already covered in Retrofit section above.
-
-#### Mode 2: On-Device AI (TensorFlow Lite)
-
-**Workflow:**
-```
-Android App → Load .tflite from assets → Preprocess image → Run inference → Get result → Display
-```
-
-**Advantages:**
-- Works offline
-- Fast (inference ~200-500ms)
-- Privacy-friendly (image stays on device)
-- No server cost
-
-**Disadvantages:**
-- Model size limited (~10-50 MB for mobile)
-- Lower accuracy than large server models
-- Harder to update (must update app)
-- Device-dependent performance
-
-**Implementation:**
-
-**Step 1: Add TFLite Dependency**
-```gradle
-// app/build.gradle
-dependencies {
-    implementation 'org.tensorflow:tensorflow-lite:2.10.0'
-    implementation 'org.tensorflow:tensorflow-lite-support:0.4.3'
-}
-```
-
-**Step 2: Add Model to Assets**
-```
-app/src/main/assets/
-├── plant_disease_model.tflite
-└── labels.txt
-```
-
-**labels.txt:**
-```
-Tomato Early Blight
-Tomato Late Blight
-Tomato Leaf Mold
-Potato Early Blight
-Potato Late Blight
-Pepper Bell Bacterial Spot
-...
-```
-
-**Step 3: TFLite Inference Class**
-```kotlin
-// TFLiteInference.kt
-class TFLiteInference(context: Context) {
-    private var tflite: Interpreter? = null
-    private val labels: List<String>
-
-    companion object {
-        private const val INPUT_SIZE = 224
-        private const val NUM_CHANNELS = 3
-    }
-
-    init {
-        try {
-            // Load model from assets
-            tflite = Interpreter(loadModelFile(context))
-        } catch (e: Exception) {
-            Log.e("TFLite", "Error loading model", e)
-        }
-        // Load labels from assets
-        labels = loadLabels(context)
-    }
-
-    private fun loadModelFile(context: Context): MappedByteBuffer {
-        val fileDescriptor = context.assets.openFd("plant_disease_model.tflite")
-        val inputStream = FileInputStream(fileDescriptor.fileDescriptor)
-        val fileChannel = inputStream.channel
-        val startOffset = fileDescriptor.startOffset
-        val declaredLength = fileDescriptor.declaredLength
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
-    }
-
-    private fun loadLabels(context: Context): List<String> {
-        return context.assets.open("labels.txt").bufferedReader().useLines { it.toList() }
-    }
-
-    fun classify(bitmap: Bitmap): DiseaseResult {
-        // Resize bitmap to model input size
-        val resizedBitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, true)
-
-        // Convert bitmap to ByteBuffer
-        val inputBuffer = convertBitmapToByteBuffer(resizedBitmap)
-
-        // Output buffer
-        val output = Array(1) { FloatArray(labels.size) }
-
-        // Run inference
-        tflite?.run(inputBuffer, output)
-
-        // Find class with highest probability
-        var maxConfidence = 0f
-        var maxIndex = 0
-        for (i in output[0].indices) {
-            if (output[0][i] > maxConfidence) {
-                maxConfidence = output[0][i]
-                maxIndex = i
-            }
-        }
-
-        val diseaseName = labels[maxIndex]
-
-        return DiseaseResult(diseaseName, maxConfidence)
-    }
-
-    private fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
-        val byteBuffer = ByteBuffer.allocateDirect(4 * INPUT_SIZE * INPUT_SIZE * NUM_CHANNELS)
-        byteBuffer.order(ByteOrder.nativeOrder())
-
-        val pixels = IntArray(INPUT_SIZE * INPUT_SIZE)
-        bitmap.getPixels(pixels, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
-
-        for (pixel in pixels) {
-            // Normalize pixel values to [0, 1] (matches model training)
-            byteBuffer.putFloat(((pixel shr 16) and 0xFF) / 255.0f) // Red
-            byteBuffer.putFloat(((pixel shr 8) and 0xFF) / 255.0f)  // Green
-            byteBuffer.putFloat((pixel and 0xFF) / 255.0f)          // Blue
-        }
-
-        return byteBuffer
-    }
-
-    fun close() {
-        tflite?.close()
-    }
-}
-```
-
-**Step 4: Use in MainActivity**
-```kotlin
-// MainActivity.kt - offline classification
-class MainActivity : AppCompatActivity() {
-    private lateinit var tfliteClassifier: TFLiteClassifier
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        tfliteClassifier = TFLiteClassifier(this)
-    }
-
-    private fun classifyOffline(bitmap: Bitmap) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val result = tfliteClassifier.classify(bitmap)
-            
-            withContext(Dispatchers.Main) {
-                // Navigate to ResultActivity with offline result
-                val intent = Intent(this@MainActivity, ResultActivity::class.java)
-                intent.putExtra("disease", result.diseaseName)
-                intent.putExtra("confidence", result.confidence)
-                startActivity(intent)
-            }
-        }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        tfliteClassifier.close()
-    }
-}
-```
+| Technology | Plain Week 01 Meaning | Main Week |
+|---|---|---:|
+| Kotlin | The programming language for the main Android app. | 02 |
+| XML layouts | Files that describe what Android screens look like. | 02 |
+| Intent | Android message used to open another screen or system app. | 02-03 |
+| Camera/gallery | Ways for the user to provide a leaf image. | 03 |
+| FastAPI | A small Python server that can receive an image and return JSON. | 04 |
+| Retrofit | Android library that talks to the backend server. | 05 |
+| JSON | Text format used for backend responses. | 05 |
+| Room | Android library for saving scan history locally. | 07 |
+| XML disease library | Local file that stores disease guidance. | 08 |
+| TensorFlow Lite | Tool for running a model on the phone offline. | 09 |
+| Notification | A phone reminder shown outside the app screen. | 10 |
+| JUnit/Espresso | Tools that test code and UI behavior. | 11 |
+| APK | Installable Android app file. | 12 |
 
 ---
 
-## XML Parsing Fundamentals
+## 8. Evidence Is Part of Learning
 
-### Why XML in LeafGuard?
+Evidence proves that you did the work gradually.
 
-**Purpose:** Store disease information (symptoms, treatments) locally without database overhead.
+Week 01 evidence should show thinking, not code:
 
-**Advantages:**
-- Easy to edit (can update disease info without code changes)
-- Human-readable
-- No database schema needed
-- Can be bundled in app assets
+- product idea notes
+- user journey
+- screen sketch
+- system sketch
+- week growth map
+- quiz score
+- reflection answers
 
-### Disease Library XML Structure
+Save these in `docs/evidence/week-01/`.
 
-**File:** `app/src/main/assets/diseases.xml`
+Good evidence answers the question:
 
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<diseases>
-    <disease>
-        <name>Tomato Early Blight</name>
-        <scientificName>Alternaria solani</scientificName>
-        <symptoms>
-            Dark brown spots with concentric rings on lower leaves.
-            Yellow halo around spots. Leaves may drop prematurely.
-            Fruit may have dark, leathery spots.
-        </symptoms>
-        <causes>
-            Fungal pathogen. Spreads in warm, humid conditions.
-            Overwatering and poor air circulation increase risk.
-        </causes>
-        <treatment>
-            Remove infected leaves immediately.
-            Apply fungicide containing chlorothalonil or mancozeb.
-            Spray every 7-10 days during humid weather.
-            Improve air circulation around plants.
-        </treatment>
-        <prevention>
-            Rotate crops every 2-3 years.
-            Use disease-resistant tomato varieties.
-            Avoid overhead watering (water at base).
-            Mulch around plants to prevent soil splash.
-            Space plants adequately for air flow.
-        </prevention>
-    </disease>
-
-    <disease>
-        <name>Tomato Late Blight</name>
-        <scientificName>Phytophthora infestans</scientificName>
-        <symptoms>
-            Water-soaked spots on leaves that turn brown.
-            White fuzzy growth on undersides of leaves.
-            Rapid leaf death and stem lesions.
-            Fruit develops brown, firm rot.
-        </symptoms>
-        <causes>
-            Oomycete pathogen. Thrives in cool, wet weather.
-            Can spread rapidly in conducive conditions.
-        </causes>
-        <treatment>
-            Apply copper-based fungicide immediately.
-            Remove and destroy all infected plants (do not compost).
-            Monitor neighboring plants closely.
-        </treatment>
-        <prevention>
-            Plant late blight-resistant varieties.
-            Ensure good air circulation.
-            Water in morning so leaves dry quickly.
-            Monitor weather for blight-favorable conditions.
-        </prevention>
-    </disease>
-
-    <!-- More diseases... -->
-</diseases>
-```
-
-### Parsing XML in Android
-
-**Using XmlPullParser:**
-
-```kotlin
-// XmlParser.kt
-object XmlParser {
-
-    fun parseDiseaseLibrary(context: Context): List<Disease> {
-        val diseases = mutableListOf<Disease>()
-
-        try {
-            // Open XML file from assets
-            val inputStream = context.assets.open("diseases.xml")
-
-            // Create parser
-            val factory = XmlPullParserFactory.newInstance()
-            val parser = factory.newPullParser()
-            parser.setInput(inputStream, "UTF-8")
-
-            var currentDisease: Disease? = null
-            var currentTag: String? = null
-            var eventType = parser.eventType
-
-            // Parse XML
-            while (eventType != XmlPullParser.END_DOCUMENT) {
-                when (eventType) {
-                    XmlPullParser.START_TAG -> {
-                        currentTag = parser.name
-                        if (currentTag == "disease") {
-                            currentDisease = Disease()
-                        }
-                    }
-
-                    XmlPullParser.TEXT -> {
-                        val text = parser.text.trim()
-                        if (currentDisease != null && text.isNotEmpty()) {
-                            when (currentTag) {
-                                "name" -> currentDisease.name = text
-                                "scientificName" -> currentDisease.scientificName = text
-                                "symptoms" -> currentDisease.symptoms = text
-                                "causes" -> currentDisease.causes = text
-                                "treatment" -> currentDisease.treatment = text
-                                "prevention" -> currentDisease.prevention = text
-                            }
-                        }
-                    }
-
-                    XmlPullParser.END_TAG -> {
-                        if (parser.name == "disease" && currentDisease != null) {
-                            diseases.add(currentDisease)
-                            currentDisease = null
-                        }
-                    }
-                }
-                eventType = parser.next()
-            }
-
-            inputStream.close()
-        } catch (e: Exception) {
-            Log.e("XmlParser", "Error parsing disease library", e)
-        }
-
-        return diseases
-    }
-
-    // Find disease by name
-    fun findDiseaseByName(context: Context, name: String): Disease? {
-        val diseases = parseDiseaseLibrary(context)
-        return diseases.find { it.name.equals(name, ignoreCase = true) }
-    }
-}
-```
-
-**Using in ViewModel:**
-```kotlin
-// DiseaseViewModel.kt
-class DiseaseViewModel : ViewModel() {
-    private val diseases = MutableLiveData<List<Disease>>()
-
-    fun loadDiseases(context: Context) {
-        // Load in background thread
-        viewModelScope.launch(Dispatchers.IO) {
-            val diseaseList = XmlParser.parseDiseaseLibrary(context)
-            diseases.postValue(diseaseList)
-        }
-    }
-
-    fun getDiseases(): LiveData<List<Disease>> = diseases
-}
-```
+> What did I understand this week that I did not understand before?
 
 ---
 
-## Senior Repository Analysis Insights
+## 9. Common Week 01 Mistakes
 
-### Key Learnings from Analyzing Android Projects
+### Mistake 1: Trying to understand all final code immediately
 
-**Repository 1: PlantVillage Android App**
+Do not do this. You will learn the code as each slice is built.
 
-**What they did well:**
-1. **Clear package structure:** Organized by feature (ui/scan/, data/repository/, ml/inference/)
-2. **Comprehensive README:** Installation steps, screenshots, architecture diagram
-3. **Error handling:** Try-catch blocks with user-friendly error messages
+### Mistake 2: Drawing a very detailed architecture too early
 
-**What they did poorly:**
-1. **No ViewModels:** Activities directly access database (tight coupling)
-2. **Hard-coded strings:** URLs and messages in Kotlin code instead of strings.xml
-3. **Large activities:** MainActivity has 800+ lines (should be split)
+Use a box-level sketch. Detailed architecture belongs later.
 
-**Adopt in LeafGuard:**
-- Feature-based package organization
-- Comprehensive README with screenshots
-- Detailed error messages
+### Mistake 3: Treating planning as less important than coding
 
-**Avoid in LeafGuard:**
-- Direct database access from Activities
-- Hard-coded strings
-- Monolithic activities
+Planning is the first 5% of the product. Without it, later weeks become disconnected tasks.
 
-**Repository 2: CNN-PlantDiseaseDetection**
+### Mistake 4: Copying a senior project structure
 
-**What they did well:**
-1. **TFLite integration:** Clean inference code with proper preprocessing
-2. **Model documentation:** Explained model architecture, input/output format
-3. **Performance optimizations:** Image compression before upload
+You can learn from examples later, but Week 01 should focus on your own product idea and journey.
 
-**What they did poorly:**
-1. **No offline mode:** Completely dependent on network
-2. **No history:** Does not save past predictions
-3. **Basic UI:** Minimal design, not user-friendly
+### Mistake 5: Validating future features
 
-**Adopt in LeafGuard:**
-- TFLite inference approach
-- Image compression for faster uploads
-- Model documentation
-
-**Avoid in LeafGuard:**
-- Network-only approach (implement both cloud and offline)
-- Lack of history feature
-- Basic UI (use Material Design)
-
-### Common Patterns Observed
-
-**Good Patterns:**
-1. **Singleton Pattern:** For Retrofit client and Room database
-2. **Repository Pattern:** Abstracting data sources
-3. **Observer Pattern:** Using LiveData for reactive UI
-4. **Adapter Pattern:** RecyclerView adapters for lists
-
-**Bad Patterns:**
-1. **God Object:** One class doing everything
-2. **Magic Numbers:** Hard-coded values without constants
-3. **Callback Hell:** Nested callbacks making code unreadable
-4. **No Error Handling:** Assuming network/database operations always succeed
+Week 01 validation checks only Week 01 artifacts. It does not check camera, backend, model, or database behavior.
 
 ---
 
-## Project Documentation Best Practices
+## 10. Week 01 Understanding Checklist
 
-### Types of Documentation
+Before starting the build task, make sure you can answer:
 
-1. **Code Documentation:**
-   - Inline comments explaining WHY, not WHAT
-   - KDoc for public functions (Kotlin's documentation format)
-   - README for each module
+- What problem does LeafGuard AI try to solve?
+- Who is the target user?
+- What is the main user journey?
+- Which screens might the final app need?
+- What will Week 02 add that Week 01 does not have?
+- What evidence proves Week 01 is complete?
 
-2. **User Documentation:**
-   - User manual with screenshots
-   - Installation guide
-   - Troubleshooting section
-
-3. **Developer Documentation:**
-   - Architecture overview
-   - API documentation
-   - Setup instructions
-
-4. **Academic Documentation:**
-   - Project proposal
-   - Final report
-   - Presentation slides
-
-### Writing Effective Comments
-
-**Bad Comment (explains WHAT):**
-```kotlin
-// Set text to disease name
-textView.text = disease.name
-```
-
-**Good Comment (explains WHY):**
-```kotlin
-// Display disease name in red if confidence is low to alert user
-if (result.confidence < 0.6) {
-    textView.setTextColor(Color.RED)
-}
-textView.text = disease.name
-```
-
-**KDoc Example:**
-```kotlin
-/**
- * Uploads an image to the backend API for disease detection.
- *
- * This function compresses the image before upload to reduce bandwidth usage.
- * The API call is a suspend function and the result is returned to the caller.
- *
- * @param imagePath Absolute path to the image file
- * @throws IllegalArgumentException if imagePath is blank
- */
-suspend fun detectDisease(imagePath: String): DiseaseResult {
-    // Implementation
-}
-```
-
-### README Template
-
-```markdown
-# LeafGuard AI
-
-![App Screenshot](screenshots/home_screen.png)
-
-## Overview
-LeafGuard AI is an Android application for plant disease detection using deep learning.
-
-## Features
-- 📸 Image capture and selection
-- 🤖 AI-powered disease detection
-- 💾 Local scan history
-- 📚 Disease information library
-- ✈️ Offline mode with TensorFlow Lite
-
-## Technology Stack
-- **Android:** Kotlin, direct Activity-to-Service architecture
-- **Networking:** Retrofit 2.9
-- **Database:** Room 2.5
-- **Backend:** FastAPI
-- **ML:** TensorFlow Lite
-
-## Installation
-1. Clone repository: `git clone https://github.com/yourusername/leafguard-ai.git`
-2. Open in Android Studio
-3. Build and run on device/emulator
-
-## Architecture
-[Include architecture diagram]
-
-## API Documentation
-See [API_DOCS.md](docs/API_DOCS.md)
-
-## License
-MIT License
-
-## Contact
-[Your Name] - [your.email@example.com]
-```
-
----
-
-## Summary and Next Steps
-
-### Week 01 Key Takeaways
-
-1. **LeafGuard AI is a hybrid cloud-offline plant disease detection app**
-2. **Two-tier architecture:** Presentation Layer (Activities) → Service/Data Layer
-3. **Direct pattern:** Activities call services directly (ApiService, ScanDao, TFLiteClassifier)
-4. **6 Activities:** MainActivity, ResultActivity, HistoryActivity, HistoryDetailActivity, DiseaseLibraryActivity, SettingsActivity
-5. **Networking:** Retrofit for REST API communication with FastAPI backend (POST /predict)
-6. **Database:** Room for local scan history storage (ScanRecord entity)
-7. **ML Integration:** Cloud AI (backend) and Offline AI (TFLite on device)
-8. **XML Parsing:** Disease information stored in diseases.xml
-
-### Preparation for Week 02
-
-**What you will do:**
-- Install Android Studio
-- Create LeafGuard project
-- Set up package structure
-- Create 6 empty activities
-- Design XML layouts for each activity
-- Implement basic navigation with Intents
-
-**Prerequisites:**
-- Android Studio installed
-- Basic Kotlin knowledge refreshed
-- Understanding of this week's concepts
-
-**Resources to review:**
-- Android Developer Guide: Activities
-- Material Design Guidelines
-- XML Layouts Tutorial
-
----
-
-**You have completed Week 01 theoretical foundation. You now understand WHAT you are building, WHY you are building it, and HOW all components connect. Week 02 begins hands-on Android development.**
-
-
-<!-- NAV_FOOTER_START -->
-
----
-
-## 📚 Week 01 — Navigation
-
-### All Files In This Week (Complete In Order)
-
-| Step | File | Description |
-|------|------|-------------|
-| 1 | [README.md](README.md) | Week Overview & Objectives |
-| **2** | **learning-notes.md** ← *You are here* | **Theory & Learning Notes** |
-| 3 | [exercises.md](exercises.md) | Practice Exercises |
-| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
-| 5 | [validation-checklist.md](validation-checklist.md) | Validation & Verification |
-| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
-| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
-
----
-
-### Within-Week Navigation
-
-[← Week Overview & Objectives](README.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Theory & Learning Notes** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Practice Exercises →](exercises.md)
-
----
-
-### Week Progression
-
-| ← Previous Week | 🏠 Home | Next Week → |
-|:----------------|:-------:|------------:|
-| *(First week — no previous)* | [Learning Path](../../LEARNING_PATH.md) | [Week 02: Android Basics & UI ➡](../week-02-android-basics-ui/README.md) |
-
----
+If you can answer these in your own words, continue to `exercises.md`.

@@ -12,116 +12,118 @@ This document provides a comprehensive validation checklist spanning all 12 week
 
 ---
 
-## Week 01: Project Understanding and Proposal
+## Week 01: Product Idea and Learning Foundation
 
-### Understanding
-- [ ] Read and understand the CSE 2206 course syllabus completely
-- [ ] List all 15+ syllabus topics that must be covered
-- [ ] Explain in writing why this is a mobile app project, not just an AI project
+### Product Idea
+- [ ] Wrote `docs/evidence/week-01/product-idea.md`
+- [ ] Explained the target user and plant-disease problem in beginner language
+- [ ] Explained why a mobile Android app is a suitable course project
+- [ ] Listed honest in-scope and out-of-scope boundaries
 
-### Senior Repo Analysis
-- [ ] Found and analyzed at least 3 senior Android project repositories
-- [ ] Filled in SENIOR_REPO_ANALYSIS.md comparison table
-- [ ] Documented at least 5 patterns to copy and 5 mistakes to avoid
+### User Journey and Screens
+- [ ] Wrote `docs/evidence/week-01/user-journey.md`
+- [ ] Main journey starts with opening the app and ends with result review or saving
+- [ ] Wrote `docs/evidence/week-01/screen-map.md`
+- [ ] Screen map includes Home, Scan, Result, History, Disease Library, and Settings/About ideas
 
-### Architecture
-- [ ] Drew system architecture diagram showing: Android app, Retrofit, FastAPI, ML model, Room database
-- [ ] Identified all data flows: camera → app → cloud API → response → UI
-- [ ] Identified offline mode flow: camera → app → TFLite → response → UI
-- [ ] Explained difference between cloud and offline inference modes
+### Beginner System Sketch
+- [ ] Created `docs/evidence/week-01/system-sketch.md` or image
+- [ ] Sketch uses plain boxes: User, Android App, Image Input, Detection Result, Local History, Disease Library, Backend or AI Service
+- [ ] Sketch does not require final class names, database schema, or networking code
 
-### Proposal
-- [ ] Completed proposal using docs/proposal-template.md
-- [ ] Included problem statement, objectives, methodology, timeline
-- [ ] Listed all features explicitly with syllabus topic mapping
-- [ ] Identified risks and mitigation strategies
+### Weekly Growth Plan
+- [ ] Wrote `docs/evidence/week-01/week-growth-map.md`
+- [ ] Rows cover Weeks 01 through 12
+- [ ] Each week lists learning focus, product increment, and validation demo
+- [ ] Week 01 demo validates only the foundation package
 
 ### Evidence Saved
-- [ ] Architecture diagram image saved to `docs/evidence/week-01/architecture.png`
-- [ ] Senior repo analysis notes saved
-- [ ] Proposal PDF saved to `docs/evidence/week-01/proposal.pdf`
+- [ ] Exercise outputs saved under `docs/evidence/week-01/exercises/`
+- [ ] Reflection answers saved to `docs/evidence/week-01/reflection-answers.md`
+- [ ] Completed validation saved to `docs/evidence/week-01/week-01-validation.md`
 
 ---
 
-## Week 02: Android Basics and UI Skeleton
+## Week 02: Android UI Navigation Shell
+
+### Week 01 Connection
+- [ ] Reviewed Week 01 product idea, user journey, and screen map
+- [ ] Mapped Week 01 screen ideas to Android placeholder screens
+- [ ] Can explain what Week 02 adds beyond Week 01
 
 ### Environment Setup
-- [ ] Android Studio installed (latest stable version)
-- [ ] Android SDK installed with API 21+ (Lollipop minimum)
-- [ ] Created new Android project with Empty Activity
-- [ ] Project builds successfully without errors
-- [ ] Can run app on emulator or physical device
+- [ ] Android Studio or Gradle environment can open `android-app-kotlin/`
+- [ ] Gradle sync/build succeeds
+- [ ] App launches on emulator or physical device
 
 ### Project Structure Understanding
-- [ ] Explained purpose of: app/, gradle/, AndroidManifest.xml, build.gradle files
-- [ ] Identified where Java source code goes (app/src/main/java/)
-- [ ] Identified where XML layouts go (app/src/main/res/layout/)
-- [ ] Identified where assets go (app/src/main/assets/)
+- [ ] Explained purpose of Kotlin source files
+- [ ] Explained purpose of `res/layout/`
+- [ ] Explained purpose of `res/values/strings.xml` and `colors.xml`
+- [ ] Explained purpose of `AndroidManifest.xml`
 
-### UI Screens Created
-- [ ] MainActivity (home screen with options)
-- [ ] CaptureActivity or fragment (camera/gallery selection)
-- [ ] ResultActivity (shows prediction result)
-- [ ] HistoryActivity (shows scan history list)
-- [ ] All screens have basic XML layouts with placeholder UI
+### UI Shell Created
+- [ ] Home screen exists and displays title/navigation buttons
+- [ ] Scan placeholder exists and honestly defers image input to Week 03
+- [ ] Result placeholder exists and honestly defers predictions to later weeks
+- [ ] History placeholder exists and honestly defers persistence to Week 07
+- [ ] Disease Library placeholder exists and honestly defers XML parsing to Week 08
+- [ ] Settings/About placeholder exists
 
 ### Navigation
-- [ ] Can navigate from MainActivity to CaptureActivity
-- [ ] Can pass data between activities using Intent extras
-- [ ] Can return to previous activity using back button
-- [ ] Tested navigation flow manually on device
-
-### Gradle and Build
-- [ ] Explained what Gradle does
-- [ ] Identified dependencies section in build.gradle
-- [ ] Successfully ran Build → Rebuild Project
-- [ ] Understood difference between debug and release builds
+- [ ] Home opens each placeholder screen using explicit Intents
+- [ ] Back button returns safely or exits without crash
+- [ ] No screen requires camera, backend, database, XML parsing, or AI behavior this week
 
 ### Evidence Saved
-- [ ] Screenshot of all 4 UI screens saved to `docs/evidence/week-02/`
-- [ ] Screenshot of successful build log
-- [ ] Screenshot of app running on device/emulator
+- [ ] Build success evidence saved to `docs/evidence/week-02/`
+- [ ] Screenshots of Home and placeholder screens saved
+- [ ] Quiz and reflection answers saved
 
 ---
 
-## Week 03: Camera and Gallery
+## Week 03: ScanActivity Image Input
 
-### Camera Intent
-- [ ] Implemented camera capture using `MediaStore.ACTION_IMAGE_CAPTURE`
-- [ ] Can launch camera app from your app
-- [ ] Captured image returned successfully to your app
-- [ ] Displayed captured image in ImageView
+### Week 02 Connection
+- [ ] Week 02 navigation shell still works
+- [ ] Home opens `ScanActivity`
+- [ ] Image input code lives in `ScanActivity`, not `MainActivity`
+
+### Camera and FileProvider
+- [ ] CAMERA permission declared
+- [ ] FileProvider declared with `${applicationId}.fileprovider`
+- [ ] `res/xml/file_provider_paths.xml` exists
+- [ ] Camera output URI is created with FileProvider
+- [ ] Camera permission grant path launches camera
+- [ ] Camera permission denial path shows a helpful message
+- [ ] Captured image displays in ImageView preview
+- [ ] Cancelling camera does not crash
 
 ### Gallery Picker
-- [ ] Implemented gallery picker using `Intent.ACTION_PICK` or `Intent.ACTION_GET_CONTENT`
-- [ ] Can open gallery from your app
-- [ ] Selected image returned successfully to your app
-- [ ] Displayed selected image in ImageView
+- [ ] Gallery/content picker opens from Scan screen
+- [ ] Selected image URI is received
+- [ ] Selected image displays in ImageView preview
+- [ ] Cancelling gallery does not crash
 
-### Runtime Permissions
-- [ ] Added CAMERA permission to AndroidManifest.xml
-- [ ] Implemented runtime permission request for CAMERA (Android 6.0+)
-- [ ] Handled permission granted scenario
-- [ ] Handled permission denied scenario with user-friendly message
-- [ ] Tested on Android 6.0+ device
+### URI and State
+- [ ] Selected image URI is stored in a variable
+- [ ] Preview updates through a clear helper function
+- [ ] URI is preserved through simple Activity recreation or limitation is documented
+- [ ] Null URI cases are handled safely
 
-### URI and Bitmap Handling
-- [ ] Converted URI to Bitmap correctly
-- [ ] Explained difference between content:// URI and file:// URI
-- [ ] Handled large images without OutOfMemoryError
-
-### Image Preview and Resizing
-- [ ] Displayed selected/captured image before sending to prediction
-- [ ] Implemented image resizing to reduce file size (e.g., max 1024x1024)
-- [ ] Saved resized image to temporary file if needed
-- [ ] Tested with very large images (5MB+) without crashes
+### Future Boundary
+- [ ] No backend upload is required in Week 03
+- [ ] No disease prediction is faked in Week 03
+- [ ] No Room history save is required in Week 03
+- [ ] No XML disease lookup is required in Week 03
+- [ ] No TensorFlow Lite inference is required in Week 03
 
 ### Evidence Saved
-- [ ] Screenshot showing camera intent in action
-- [ ] Screenshot showing gallery picker
-- [ ] Screenshot showing permission request dialog
-- [ ] Screenshot showing selected image preview
-- [ ] Saved code snippet of bitmap resizing logic
+- [ ] Screenshot showing Scan screen before image
+- [ ] Screenshot showing gallery image preview
+- [ ] Screenshot showing camera permission or documented permission state
+- [ ] Screenshot showing camera image preview
+- [ ] Cancellation/denial behavior note saved
 
 ---
 

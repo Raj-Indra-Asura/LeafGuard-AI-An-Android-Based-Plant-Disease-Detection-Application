@@ -1,404 +1,161 @@
-# Week 02 Quiz: Android Studio Setup & UI Skeleton
+# Week 02 Quiz: Android UI Navigation Shell
 
 ## Instructions
 
-- **Total Questions:** 15 (mix of multiple choice, true/false, short answer)
-- **Passing Score:** 12/15 (80%)
-- **Time Limit:** None (take your time, understand concepts)
-- **Open Book:** You may refer to learning materials
-- **Purpose:** Verify understanding, not memorization
+Answer after completing the learning notes and build task. This quiz checks Week 02 understanding only.
 
-**Save your answers in `evidence/week-02/quiz-answers.md`**
+Passing score: 14 out of 18.
 
 ---
 
-## Section 1: Multiple Choice (1 point each)
+## Multiple Choice
 
-### Question 1
+### 1. What does Week 02 build?
 
-What is the purpose of the `onCreate()` method in an Activity?
+A) A complete disease detector
+B) A runnable Android UI navigation shell
+C) A FastAPI backend
+D) A Room database
 
-A) To handle button clicks
-B) To initialize the activity, inflate layout, and set up views
-C) To destroy the activity when user leaves
-D) To save activity state during rotation
+Answer: ____
 
-**Your Answer:** ___
+### 2. What is an Activity?
 
----
+A) A Gradle dependency
+B) One Android screen
+C) A database table
+D) A model label
 
-### Question 2
+Answer: ____
 
-Which XML attribute makes a view's width fill its parent in ConstraintLayout?
+### 3. What does `setContentView(R.layout.activity_main)` do?
 
-A) `android:layout_width="match_parent"`
-B) `android:layout_width="wrap_content"`
-C) `android:layout_width="0dp"` with start and end constraints
-D) `android:layout_width="fill_parent"`
+A) Deletes the layout file
+B) Connects the Activity to the XML layout
+C) Builds the APK
+D) Opens the backend
 
-**Your Answer:** ___
+Answer: ____
 
----
+### 4. Where should user-visible strings usually go?
 
-### Question 3
+A) `strings.xml`
+B) `colors.xml`
+C) `settings.gradle`
+D) `labels.txt`
 
-What is the correct way to declare an Activity in AndroidManifest.xml?
+Answer: ____
 
-A) `<activity android:name="MainActivity" />`
-B) `<activity android:name=".MainActivity" android:exported="true" />`
-C) `<component type="activity" class="MainActivity" />`
-D) Activities are automatically detected, no declaration needed
+### 5. What does an explicit Intent do in Week 02?
 
-**Your Answer:** ___
+A) Opens another Activity in the app
+B) Trains the AI model
+C) Creates a database row
+D) Uploads a file
 
----
+Answer: ____
 
-### Question 4
+### 6. Which file declares Activities to Android?
 
-What happens when a user rotates the device screen?
+A) `AndroidManifest.xml`
+B) `README.md`
+C) `colors.xml`
+D) `model.tflite`
 
-A) Nothing, the activity continues unchanged
-B) The activity is paused temporarily
-C) The activity is destroyed and recreated with new configuration
-D) The activity saves state automatically with no code needed
+Answer: ____
 
-**Your Answer:** ___
+### 7. Which behavior belongs in Week 03, not Week 02?
 
----
+A) Home button opens Scan placeholder
+B) Activity loads XML layout
+C) Real camera/gallery image input
+D) App launches on emulator
 
-### Question 5
+Answer: ____
 
-Which Gradle file contains app-specific configuration like minSdk and dependencies?
+### 8. Why are placeholder screens useful?
 
-A) `settings.gradle`
-B) `build.gradle` (Project level)
-C) `build.gradle` (App level)
-D) `gradle.properties`
+A) They pretend the app is finished
+B) They prove navigation and screen structure before real features are added
+C) They replace future implementation work
+D) They make Gradle unnecessary
 
-**Your Answer:** ___
-
----
-
-### Question 6
-
-What is the purpose of externalizing strings to `strings.xml`?
-
-A) To make the app larger
-B) To support internationalization and centralized management
-C) It is required by Android, hardcoded strings cause errors
-D) To improve app performance
-
-**Your Answer:** ___
+Answer: ____
 
 ---
 
-### Question 7
+## True or False
 
-How do you pass a String from MainActivity to ResultActivity?
+### 9. Week 02 should validate backend upload.
 
-A) `intent.putExtra("key", "value"); startActivity(intent);`
-B) `intent.setString("key", "value");`
-C) `ResultActivity.setValue("key", "value");`
-D) Strings cannot be passed between activities
+Answer: ____
 
-**Your Answer:** ___
+### 10. A layout file describes what a screen looks like.
 
----
+Answer: ____
 
-### Question 8
+### 11. `MainActivity` should be the only Activity with the launcher intent filter.
 
-What is the purpose of the `TAG` constant used with Log statements?
+Answer: ____
 
-A) To tag the activity for deletion
-B) To filter Logcat messages by activity or class
-C) To set the activity title
-D) It is required syntax for Log.d()
+### 12. Hardcoded visible text is preferred because it is easier to translate.
 
-**Your Answer:** ___
+Answer: ____
+
+### 13. Internal screens usually use `android:exported="false"`.
+
+Answer: ____
 
 ---
 
-## Section 2: True/False (1 point each)
+## Short Answer
 
-### Question 9
+### 14. In one sentence, explain how Week 02 grows from Week 01.
 
-**Statement:** All activities must have `android:exported="true"` in the manifest.
+Answer:
 
-**Your Answer:** True / False
+### 15. Name three files or folders used in Week 02 and explain their purpose.
 
-**Explanation (if False):** ___
+Answer:
 
----
+### 16. Explain this code in your own words:
 
-### Question 10
-
-**Statement:** ConstraintLayout allows for flat view hierarchies, reducing nested layouts.
-
-**Your Answer:** True / False
-
-**Explanation:** ___
-
----
-
-### Question 11
-
-**Statement:** `minSdk 24` means the app will run on devices with Android 7.0 and higher.
-
-**Your Answer:** True / False
-
-**Explanation:** ___
-
----
-
-### Question 12
-
-**Statement:** When `onDestroy()` is called, the activity instance can be reused later.
-
-**Your Answer:** True / False
-
-**Explanation (if False):** ___
-
----
-
-## Section 3: Short Answer (2 points each)
-
-### Question 13
-
-**Question:** Explain the difference between `compileSdk`, `minSdk`, and `targetSdk`. Why are three different SDK versions needed?
-
-**Your Answer (4-6 sentences):**
+```kotlin
+startActivity(Intent(this, ScanActivity::class.java))
 ```
 
+Answer:
 
+### 17. Name three things Week 02 must not implement yet.
 
+Answer:
 
+### 18. What evidence proves Week 02 is complete?
 
-
-
-
-```
-
----
-
-### Question 14
-
-**Question:** You navigate from MainActivity → MainActivity → ResultActivity. The user presses the Back button twice. Describe the activity stack at each step and which lifecycle methods are called.
-
-**Your Answer:**
-```
-Initial State: [MainActivity]
-
-After navigating to MainActivity:
-Stack: ___
-MainActivity lifecycle: ___
-MainActivity lifecycle: ___
-
-After navigating to ResultActivity:
-Stack: ___
-MainActivity lifecycle: ___
-ResultActivity lifecycle: ___
-
-After first Back button press:
-Stack: ___
-ResultActivity lifecycle: ___
-MainActivity lifecycle: ___
-
-After second Back button press:
-Stack: ___
-MainActivity lifecycle: ___
-MainActivity lifecycle: ___
-```
+Answer:
 
 ---
 
-### Question 15
-
-**Question:** Why does LeafGuard use 5 separate activities instead of one activity with multiple screens (views)? What are the advantages and disadvantages of this approach?
-
-**Your Answer (5-7 sentences):**
-```
-
-
-
-
-
-
-
-
-
-
-```
-
----
-
-## Section 4: Code Analysis (2 points)
-
-### Question 16
-
-**Given this code, identify and explain the error:**
-
-```java
-public class MainActivity extends AppCompatActivity {
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        Button btnScan = findViewById(R.id.btnScan);
-        btnScan.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, MainActivity.class);
-            startActivity(intent);
-        });
-
-        setContentView(R.layout.activity_main);
-    }
-}
-```
-
-**What is wrong? How to fix it?**
-
-**Your Answer:**
-```
-Error:
-
-
-Why this causes a problem:
-
-
-Fix:
-```
-
----
-
-### Question 17
-
-**Given this layout code, what constraint is missing for proper positioning?**
-
-```xml
-<androidx.constraintlayout.widget.ConstraintLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent">
-
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Welcome"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
-</androidx.constraintlayout.widget.ConstraintLayout>
-```
-
-**Your Answer:**
-```
-Missing constraint:
-
-
-Why it's needed:
-
-
-Fixed code:
-```
-
----
-
-## Bonus Question (+2 points)
-
-### Question 18
-
-**Bonus Question:** Explain how ViewBinding (enabled in build.gradle) improves upon `findViewById()`. What are two advantages?
-
-**Your Answer:**
-```
-
-
-
-
-```
-
----
-
-## Answer Key Location
-
-**Do not look at answers until you complete the quiz.**
-
-Answers will be provided separately in `quiz-answer-key.md` for self-grading.
-
----
-
-## Self-Grading
-
-After completing the quiz:
-
-1. Check your answers against the answer key
-2. Calculate your score: ___/17 (or ___/19 with bonus)
-3. If score < 12/15 (80%), review weak areas and retake quiz
-4. If score ≥ 12/15, you may proceed to Week 03
-
-**Passing Score:** 12/15 (80%)
-
-**Your Score:** ___/17
-
-**Pass/Retake:** ___
-
----
-
-## Score Interpretation
-
-- **15-17 (88-100%):** Excellent understanding, ready for Week 03
-- **12-14 (71-82%):** Good understanding, review flagged topics, proceed to Week 03
-- **9-11 (53-65%):** Partial understanding, review learning notes, retake quiz
-- **0-8 (<53%):** Insufficient understanding, redo Week 02 exercises and learning notes
-
----
-
-## Reflection on Quiz
-
-After completing the quiz, answer:
-
-**Which question was hardest?** ___
-
-**Why?** ___
-
-**Which concept needs more review?** ___
-
-**Action plan:** ___
-
----
-
-**Submit `evidence/week-02/quiz-answers.md` with your answers. Commit with message: "Week 02: Complete quiz"**
-
-
-<!-- NAV_FOOTER_START -->
-
----
-
-## 📚 Week 02 — Navigation
-
-### All Files In This Week (Complete In Order)
-
-| Step | File | Description |
-|------|------|-------------|
-| 1 | [README.md](README.md) | Week Overview & Objectives |
-| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
-| 3 | [exercises.md](exercises.md) | Practice Exercises |
-| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
-| 5 | [validation-checklist.md](validation-checklist.md) | Validation & Verification |
-| **6** | **quiz.md** ← *You are here* | **Knowledge Assessment Quiz** |
-| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
-
----
-
-### Within-Week Navigation
-
-[← Validation & Verification](validation-checklist.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Knowledge Assessment Quiz** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Reflection & Consolidation →](reflection.md)
-
----
-
-### Week Progression
-
-| ← Previous Week | 🏠 Home | Next Week → |
-|:----------------|:-------:|------------:|
-| [⬅ Week 01: Project Understanding](../week-01-project-understanding/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 03: Camera & Gallery ➡](../week-03-camera-gallery/README.md) |
-
----
+## Answer Key
+
+Check after answering.
+
+1. B
+2. B
+3. B
+4. A
+5. A
+6. A
+7. C
+8. B
+9. False
+10. True
+11. True
+12. False
+13. True
+
+Short answers may vary. They should mention the Week 01 screen map, Android files, Intent navigation, future-week boundaries, and evidence of a runnable navigation shell.
+
+## Readiness Rule
+
+If you score below 14, reread `learning-notes.md`, revisit the build task, and retake the quiz before moving to Week 03.

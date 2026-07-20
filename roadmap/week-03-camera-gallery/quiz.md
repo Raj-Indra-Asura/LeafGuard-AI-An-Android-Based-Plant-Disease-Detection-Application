@@ -1,258 +1,157 @@
-# Week 03 Quiz: Camera, Gallery & Image Handling
+# Week 03 Quiz: Camera, Gallery, URI, and Preview
 
 ## Instructions
 
-- **Total Questions:** 12
-- **Passing Score:** 10/12 (83%)
-- **Open Book:** Yes, refer to materials
-- **Save answers in:** `evidence/week-03/quiz-answers.md`
+Answer after completing the learning notes and build task. This quiz checks Week 03 understanding only.
+
+Passing score: 14 out of 18.
 
 ---
 
-## Multiple Choice (1 point each)
+## Multiple Choice
 
-### Question 1
+### 1. What does Week 03 add to the app?
 
-Which permission is required for camera access?
+A) Backend prediction
+B) Image input and preview in ScanActivity
+C) Room database history
+D) Final APK signing
 
-A) android.permission.WRITE_EXTERNAL_STORAGE
-B) android.permission.CAMERA
-C) android.permission.READ_MEDIA_IMAGES
-D) No permission needed, camera is always available
+Answer: ____
 
-**Your Answer:** ___
+### 2. Which permission is needed before using the camera?
 
----
+A) `android.permission.CAMERA`
+B) `android.permission.INTERNET`
+C) `android.permission.ACCESS_FINE_LOCATION`
+D) No permission is ever needed
 
-### Question 2
+Answer: ____
 
-What is the purpose of FileProvider?
+### 3. What is a URI in Week 03?
 
-A) To provide files over HTTP
-B) To wrap file URIs as secure content URIs
-C) To cache files for faster access
-D) To compress images before sharing
+A) A Gradle plugin
+B) A safe reference/address for an image
+C) A database table
+D) A disease label
 
-**Your Answer:** ___
+Answer: ____
 
----
+### 4. Why is FileProvider used for camera capture?
 
-### Question 3
+A) To train the model
+B) To convert app-owned files into safe `content://` URIs
+C) To upload images to FastAPI
+D) To save Room records
 
-What does `inSampleSize = 4` do when loading a bitmap?
+Answer: ____
 
-A) Loads every 4th pixel
-B) Reduces width and height to 1/4 (memory = 1/16)
-C) Increases image quality by 4x
-D) Loads image 4 times faster
+### 5. What does `ActivityResultContracts.TakePicture()` do?
 
-**Your Answer:** ___
+A) Opens camera and writes the captured photo to a provided URI
+B) Opens the backend server
+C) Reads disease labels
+D) Creates an Activity layout
 
----
+Answer: ____
 
-### Question 4
+### 6. What does `ActivityResultContracts.GetContent()` do in this week?
 
-Which is the modern way to handle activity results?
+A) Opens a picker so the user can choose an image
+B) Saves scan history
+C) Runs TensorFlow Lite
+D) Builds the APK
 
-A) onActivityResult()
-B) startActivityForResult()
-C) ActivityResultLauncher with contracts
-D) setResult() and getResult()
+Answer: ____
 
-**Your Answer:** ___
+### 7. Where should the Week 03 image input logic live after Week 02?
 
----
+A) `MainActivity`
+B) `ScanActivity`
+C) `HistoryActivity`
+D) `backend-api/main.py`
 
-### Question 5
+Answer: ____
 
-Where should camera-captured images be saved in LeafGuard?
+### 8. Which behavior must wait for a future week?
 
-A) /storage/emulated/0/DCIM/
-B) getExternalFilesDir(Environment.DIRECTORY_PICTURES)
-C) /sdcard/Pictures/
-D) Environment.getExternalStorageDirectory()
+A) Showing selected image preview
+B) Handling camera cancellation
+C) Faking a disease prediction
+D) Storing selected URI in a variable
 
-**Your Answer:** ___
-
----
-
-### Question 6
-
-What is scoped storage (Android 10+)?
-
-A) Storage limited to 100MB
-B) Apps have unrestricted access to shared storage
-C) Apps have limited access to shared storage, full access to app-specific directory
-D) All storage requires permission
-
-**Your Answer:** ___
+Answer: ____
 
 ---
 
-## True/False (1 point each)
+## True or False
 
-### Question 7
+### 9. If the user cancels the gallery picker, the app should crash so the bug is visible.
 
-**Statement:** Photo Picker requires READ_MEDIA_IMAGES permission on Android 11+.
+Answer: ____
 
-**Your Answer:** True / False
+### 10. The FileProvider authority in code and manifest must match.
 
-**Explanation:** ___
+Answer: ____
 
----
+### 11. `selectedImageUri` can be null before the user chooses or captures an image.
 
-### Question 8
+Answer: ____
 
-**Statement:** File URIs (file://) are deprecated and cause FileUriExposedException on Android 7+.
+### 12. Week 03 should validate backend image upload.
 
-**Your Answer:** True / False
+Answer: ____
 
----
+### 13. Image preview proves that the app received image input.
 
-## Short Answer (2 points each)
-
-### Question 9
-
-**Question:** Explain why you must scale large bitmaps before loading. What happens if you don't? Provide example memory calculation.
-
-**Your Answer (5-7 sentences):**
-```
-
-
-
-
-
-
-
-
-```
+Answer: ____
 
 ---
 
-### Question 10
+## Short Answer
 
-**Question:** Describe the complete flow from user tapping "Camera" button to image displayed in ImageView. Include permission check, file creation, capture, and display steps.
+### 14. Explain the camera flow from button tap to preview in 4 to 6 steps.
 
-**Your Answer:**
-```
-Step 1:
+Answer:
 
+### 15. Explain the gallery flow from button tap to preview in 3 to 5 steps.
 
-Step 2:
+Answer:
 
+### 16. Why is FileProvider safer than a raw `file://` path?
 
-Step 3:
+Answer:
 
+### 17. Name three edge cases Week 03 should handle.
 
-Step 4:
+Answer:
 
+### 18. Name three things Week 03 should not implement yet.
 
-Step 5:
-
-
-Step 6:
-```
+Answer:
 
 ---
 
-## Code Analysis (2 points each)
+## Answer Key
 
-### Question 11
+Check after answering.
 
-**Given this code, identify the error:**
+1. B
+2. A
+3. B
+4. B
+5. A
+6. A
+7. B
+8. C
+9. False
+10. True
+11. True
+12. False
+13. True
 
-```java
-private void openCamera() {
-    Intent intent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-    File imageFile = new File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "image.jpg");
-    Uri imageUri = Uri.fromFile(imageFile);
-    intent.putExtra(MediaStore.EXTRA_OUTPUT, imageUri);
-    startActivity(intent);
-}
-```
+Short answers may vary. They should mention permission check, FileProvider camera URI, gallery URI, preview update, cancellation/denial handling, and future-week boundaries.
 
-**What's wrong? How to fix?**
+## Readiness Rule
 
-**Your Answer:**
-```
-Error:
-
-
-Why this causes a problem:
-
-
-Fix:
-```
-
----
-
-### Question 12
-
-**What is missing in this permission check?**
-
-```java
-private void checkCameraPermission() {
-    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-        openCamera();
-    } else {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.CAMERA}, 100);
-    }
-}
-```
-
-**Your Answer:**
-```
-Missing:
-
-
-Why it's important:
-
-
-Improved code:
-```
-
----
-
-## Self-Grading
-
-Check answers, calculate score: ___/14
-
-**Pass (10+/12):** Proceed to Week 04
-**Retake (<10/12):** Review weak areas, retake quiz
-
-**Submit `evidence/week-03/quiz-answers.md` and commit: "Week 03: Complete quiz"**
-
-
-<!-- NAV_FOOTER_START -->
-
----
-
-## 📚 Week 03 — Navigation
-
-### All Files In This Week (Complete In Order)
-
-| Step | File | Description |
-|------|------|-------------|
-| 1 | [README.md](README.md) | Week Overview & Objectives |
-| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
-| 3 | [exercises.md](exercises.md) | Practice Exercises |
-| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
-| 5 | [validation-checklist.md](validation-checklist.md) | Validation & Verification |
-| **6** | **quiz.md** ← *You are here* | **Knowledge Assessment Quiz** |
-| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
-
----
-
-### Within-Week Navigation
-
-[← Validation & Verification](validation-checklist.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Knowledge Assessment Quiz** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Reflection & Consolidation →](reflection.md)
-
----
-
-### Week Progression
-
-| ← Previous Week | 🏠 Home | Next Week → |
-|:----------------|:-------:|------------:|
-| [⬅ Week 02: Android Basics & UI](../week-02-android-basics-ui/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 04: FastAPI Backend ➡](../week-04-fastapi-backend/README.md) |
-
----
+If you score below 14, reread `learning-notes.md`, revisit the build task, and retake the quiz before moving to Week 04.

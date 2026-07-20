@@ -2,45 +2,40 @@
 
 This directory contains solutions for Week 02 exercises.
 
-## 📝 Available Solutions
+## Available Solutions
 
-Solutions will be added here as the week progresses. Check back regularly for updates.
+Use solutions only after you attempt the Week 02 exercises and build task yourself.
 
 ### Exercise Solutions
-- Exercise 01 - *(Coming Soon)*
-- Exercise 02 - *(Coming Soon)*
-- Exercise 03 - *(Coming Soon)*
-- Exercise 04 - *(Coming Soon)*
-- Exercise 05 - *(Coming Soon)*
-- Exercise 06 - *(Coming Soon)*
+- [Android UI Navigation Shell](android-ui-solution.md)
 
-## ⚠️ Important
+## Important
 
 Remember to attempt each exercise yourself before checking solutions. Solutions are learning aids, not shortcuts!
 
-## 🔗 Navigation
+## Navigation
 
-- 📚 [Back to Week 02 Exercises](../../roadmap/week-02-android-basics-ui/exercises.md)
-- 🏠 [Solutions Index](../README.md)
-- 📖 [Learning Path](../../LEARNING_PATH.md)
+- [Back to Week 02 Exercises](../../roadmap/week-02-android-basics-ui/exercises.md)
+- [Solutions Index](../README.md)
+- [Learning Path](../../LEARNING_PATH.md)
 
 
 <!-- NAV_FOOTER_START -->
 
 ---
 
-## 🔗 Navigation
+## Navigation
 
 ### Back to Roadmap Week
-- 📖 [Week 02 README](../../roadmap/week-02-android-basics-ui/README.md) — Week overview
-- 📝 [Week 02 Exercises](../../roadmap/week-02-android-basics-ui/exercises.md) — Practice problems to solve first
-- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
-- 📚 [Solutions Index](../README.md) — All week solutions
+- [Week 02 README](../../roadmap/week-02-android-basics-ui/README.md) - Week overview
+- [Week 02 Exercises](../../roadmap/week-02-android-basics-ui/exercises.md) - Practice problems to solve first
+- [Learning Path](../../LEARNING_PATH.md) - Full course overview
+- [Solutions Index](../README.md) - All week solutions
 
 ### Week Progression
 
-| ← Previous | 🏠 | Next → |
+| Previous | Home | Next |
 |:-----------|:--:|-------:|
-| [⬅ Week 01 Solutions](../week-01/README.md) | [Solutions Index](../README.md) | [Week 03 Solutions ➡](../week-03/README.md) |
+| [Week 01 Solutions](../week-01/README.md) | [Solutions Index](../README.md) | [Week 03 Solutions](../week-03/README.md) |
 
 ---

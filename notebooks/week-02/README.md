@@ -1,488 +1,182 @@
-# Week 02 Interactive Notebook
+# Week 02 Notebook: Android UI Navigation Shell
 
-## Building LeafGuard AI's User Interface
+This Markdown notebook is an optional companion to the Week 02 roadmap. The Kotlin roadmap remains the primary learning path:
 
-> **Optional Java reference material.** This notebook is written entirely in Java as a
-> secondary/reference walkthrough. Kotlin is the primary track for Android code in this
-> repository — most students should follow `android-app-kotlin/` and
-> [`roadmap/week-02-android-basics-ui/README.md`](../../roadmap/week-02-android-basics-ui/README.md)
-> instead. Use this notebook only if you are intentionally following the Java twin
-> (`android-app/`).
+```text
+roadmap/week-02-android-basics-ui/
+```
 
-> This README acts like a Markdown notebook for CSE 2206. Read one cell at a time, run the code, and write your own notes after each checkpoint.
-
-### How to use this notebook
-
-- Follow the cells in order.
-- Run code blocks in Android Studio, Terminal, or a Python shell as indicated.
-- Keep LeafGuard AI open in Android Studio while you work.
-- Save screenshots for your evidence folder after each big milestone.
-- Kotlin is the primary track for Android code in this repository; a complete Java twin lives in `android-app/`. Pick one track and stay consistent.
-
-### Weekly outcomes
-
-- Trace the Activity lifecycle with log messages.
-- Build a Java `MainActivity` with Camera, Gallery, History, and Disease Library actions (Java reference — Kotlin is the primary track).
-- Navigate between activities using intents.
-- Apply Material Design styling, an icon, and a splash theme.
-
-### Repository references
-
-- `android-app/app/src/main/AndroidManifest.xml`
-- `roadmap/week-02-android-basics-ui/`
-- `solutions/week-02/`
+Use this file to review concepts in small cells. Week 02 builds only a runnable UI shell with placeholder screens.
 
 ---
 
-## Notebook Cell 1 — Observe the Activity lifecycle
+## Cell 1: Connect Week 01 to Week 02
 
 ### Explanation
 
-- Lifecycle methods tell you when an Activity is created, started, resumed, paused, stopped, or destroyed.
-- Logging lifecycle transitions helps you understand rotation, app switching, and back navigation.
+Week 01 created the product idea and screen map. Week 02 turns that screen map into Android screens.
 
-### Code to Read / Run
+### Try This
 
-```java
-package com.leafguard;
+Write this mapping in your notebook or evidence file:
 
-import android.os.Bundle;
-import android.util.Log;
+| Week 01 Screen Idea | Android Activity | Status in Week 02 |
+|---|---|---|
+| Home | MainActivity | Real navigation screen |
+| Scan | ScanActivity | Placeholder only |
+| Result | ResultActivity | Placeholder only |
+| History | HistoryActivity | Placeholder only |
+| Disease Library | DiseaseLibraryActivity | Placeholder only |
+| Settings/About | SettingsActivity | Placeholder only |
 
-import androidx.appcompat.app.AppCompatActivity;
+### Checkpoint
 
-public class LifecycleDemoActivity extends AppCompatActivity {
-    private static final String TAG = "LeafGuardLifecycle";
+Can you explain why placeholder screens are useful before camera, backend, database, and AI are implemented?
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        Log.d(TAG, "onCreate called");
-        setContentView(R.layout.activity_main);
-    }
+---
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        Log.d(TAG, "onStart called");
-    }
+## Cell 2: Activity Loads a Layout
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.d(TAG, "onResume called");
-    }
+### Explanation
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.d(TAG, "onPause called");
-    }
+An Activity is one Android screen. The layout file controls what the screen looks like.
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.d(TAG, "onStop called");
-    }
+### Kotlin Example
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.d(TAG, "onDestroy called");
+```kotlin
+class ScanActivity : AppCompatActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_scan)
     }
 }
 ```
 
-### 🔵 Try This
+### Line Notes
 
-- Run the app, press Home, then reopen it and watch Logcat.
-- Rotate the emulator and note which lifecycle methods re-run.
+| Line | Meaning |
+|---|---|
+| `class ScanActivity` | Names the screen. |
+| `AppCompatActivity()` | Gives the screen Android Activity behavior. |
+| `onCreate` | Runs when the screen is created. |
+| `setContentView` | Connects the screen to XML UI. |
 
-### Expected Output
+### Checkpoint
 
-- Logcat shows lifecycle messages in order.
+What layout file does `R.layout.activity_scan` point to?
 
-### ✅ Checkpoint
+---
 
-- Can you explain when `onPause` happens compared with `onStop`?
-
-### ⚠️ Common Mistake
-
-- Do not put expensive work directly in `onResume` unless necessary.
-
-### 📌 Key Point
-
-- Lifecycle awareness is essential before you touch camera, networking, or location.
-
-## Notebook Cell 2 — Create the main layout step by step
+## Cell 3: Simple Placeholder Layout
 
 ### Explanation
 
-- The main screen should clearly present the four core user actions of LeafGuard AI.
-- ConstraintLayout keeps the design responsive across different screen sizes.
+A Week 02 placeholder must be honest. It should say what future behavior will be added later.
 
-### Code to Read / Run
+### XML Example
 
 ```xml
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:padding="24dp">
 
     <TextView
-        android:id="@+id/titleText"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="LeafGuard AI"
-        android:textAlignment="center"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:text="Scan" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/cameraButton"
-        android:layout_width="0dp"
+    <TextView
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="Camera"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/titleText" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/galleryButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Gallery"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cameraButton" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/historyButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="History"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/galleryButton" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/libraryButton"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Disease Library"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/historyButton" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:text="Image input will be added in Week 03." />
+</LinearLayout>
 ```
 
-### 🔵 Try This
+### Checkpoint
 
-- Change button text to sentence case or uppercase and see which feels more professional.
-- Add a subtitle below the title describing the app as a plant disease detector.
+Why is this better than pretending the camera already works?
 
-### Expected Output
+---
 
-- You see four stacked Material buttons centered on screen.
-
-### ✅ Checkpoint
-
-- Why is it better to define these buttons in XML instead of creating them entirely in Java?
-
-### ⚠️ Common Mistake
-
-- Do not hardcode every color inline if you can move them to `colors.xml`.
-
-### 📌 Key Point
-
-- XML describes the visual structure while Java handles behavior.
-
-## Notebook Cell 3 — Add navigation between activities
+## Cell 4: Home Navigation With Intent
 
 ### Explanation
 
-- Intents are Android messages used to move from one Activity to another.
-- Even placeholder screens are useful because they let you test navigation early.
+An Intent opens another screen. In Week 02, the Home screen uses buttons to open placeholder screens.
 
-> **Note about the real app:** `ScanActivity`/`GalleryActivity` below are practice placeholders for learning navigation. The shipped app has no `ScanActivity` — capture happens in `MainActivity`. The real screens are `MainActivity`, `ResultActivity`, `HistoryActivity`, `HistoryDetailActivity`, `DiseaseLibraryActivity`, and `SettingsActivity`.
+### Kotlin Example
 
-### Code to Read / Run
-
-```java
-Intent cameraIntent = new Intent(MainActivity.this, ScanActivity.class);
-startActivity(cameraIntent);
-
-Intent galleryIntent = new Intent(MainActivity.this, GalleryActivity.class);
-startActivity(galleryIntent);
-
-Intent historyIntent = new Intent(MainActivity.this, HistoryActivity.class);
-startActivity(historyIntent);
-
-Intent libraryIntent = new Intent(MainActivity.this, DiseaseLibraryActivity.class);
-startActivity(libraryIntent);
-```
-
-### 🔵 Try This
-
-- Create empty placeholder activities for all four destinations.
-- Add each activity to the manifest and test the navigation flow.
-
-### Expected Output
-
-- Tapping each button opens a different screen without crashing.
-
-### ✅ Checkpoint
-
-- Can you explain what data could later be passed through these intents?
-
-### ⚠️ Common Mistake
-
-- If Android cannot find the target Activity, check the manifest declaration.
-
-### 📌 Key Point
-
-- Navigation testing can happen before the real business logic is finished.
-
-## Notebook Cell 4 — Use Material Design styling
-
-### Explanation
-
-- Material Design helps the app feel modern and consistent.
-- A small number of well-chosen brand colors is better than many unrelated colors.
-
-### Code to Read / Run
-
-```xml
-<resources>
-    <color name="leaf_primary">#2E7D32</color>
-    <color name="leaf_primary_dark">#1B5E20</color>
-    <color name="leaf_accent">#81C784</color>
-    <color name="white">#FFFFFF</color>
-</resources>
-```
-
-### 🔵 Try This
-
-- Set the status bar and primary theme colors to a plant-friendly palette.
-
-### Expected Output
-
-- The app feels consistent instead of using default random colors.
-
-### ✅ Checkpoint
-
-- Why should a disease detection app use readable contrast and clear spacing?
-
-### ⚠️ Common Mistake
-
-- Avoid low-contrast text because it hurts accessibility and demo quality.
-
-### 📌 Key Point
-
-- Good UI is part of engineering quality, not just decoration.
-
-## Notebook Cell 5 — Add app icon and splash screen
-
-### Explanation
-
-- A launcher icon and splash screen make the project feel like a complete product instead of a classroom prototype.
-
-### Code to Read / Run
-
-```xml
-<style name="Theme.LeafGuardAI.Splash" parent="Theme.SplashScreen">
-    <item name="windowSplashScreenBackground">@color/leaf_primary</item>
-    <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
-    <item name="postSplashScreenTheme">@style/Theme.LeafGuardAI</item>
-</style>
-```
-
-### 🔵 Try This
-
-- Generate a simple plant-themed launcher icon with Android Studio Image Asset.
-
-### Expected Output
-
-- The app shows a branded splash theme briefly on startup.
-
-### ✅ Checkpoint
-
-- Can you explain the difference between the launcher icon and the splash theme?
-
-### ⚠️ Common Mistake
-
-- Do not put a very detailed image into the app icon; it becomes unreadable at small size.
-
-### 📌 Key Point
-
-- Small branding details make your Week 12 demo stronger.
-
-## Notebook Cell 6 — Use the complete MainActivity.java
-
-### Explanation
-
-- This class wires the four buttons to their destinations and keeps the code readable.
-- The example is intentionally simple and uses Java only.
-
-### Code to Read / Run
-
-```java
-package com.leafguard;
-
-import android.content.Intent;
-import android.os.Bundle;
-
-import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.android.material.button.MaterialButton;
-
-public class MainActivity extends AppCompatActivity {
-
-    private MaterialButton cameraButton;
-    private MaterialButton galleryButton;
-    private MaterialButton historyButton;
-    private MaterialButton libraryButton;
-
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        cameraButton = findViewById(R.id.cameraButton);
-        galleryButton = findViewById(R.id.galleryButton);
-        historyButton = findViewById(R.id.historyButton);
-        libraryButton = findViewById(R.id.libraryButton);
-
-        cameraButton.setOnClickListener(view -> {
-            Intent intent = new Intent(MainActivity.this, ScanActivity.class);
-            startActivity(intent);
-        });
-
-        galleryButton.setOnClickListener(view -> {
-            Intent intent = new Intent(MainActivity.this, GalleryActivity.class);
-            startActivity(intent);
-        });
-
-        historyButton.setOnClickListener(view -> {
-            Intent intent = new Intent(MainActivity.this, HistoryActivity.class);
-            startActivity(intent);
-        });
-
-        libraryButton.setOnClickListener(view -> {
-            Intent intent = new Intent(MainActivity.this, DiseaseLibraryActivity.class);
-            startActivity(intent);
-        });
-    }
+```kotlin
+findViewById<Button>(R.id.buttonOpenScan).setOnClickListener {
+    startActivity(Intent(this, ScanActivity::class.java))
 }
 ```
 
-### 🔵 Try This
+### Line Notes
 
-- Replace lambda expressions with anonymous inner classes if your lecturer wants to compare styles.
+| Code | Meaning |
+|---|---|
+| `findViewById<Button>` | Finds a Button from the current layout. |
+| `R.id.buttonOpenScan` | The ID created in XML. |
+| `setOnClickListener` | Runs code after a tap. |
+| `Intent(this, ScanActivity::class.java)` | Names the destination screen. |
+| `startActivity` | Opens the destination screen. |
 
-### Expected Output
+### Checkpoint
 
-- The main screen launches every placeholder activity correctly.
+What would happen if `ScanActivity` was not declared in the manifest?
 
-### ✅ Checkpoint
+---
 
-- Can you explain why button lookup happens in `onCreate`?
-
-### ⚠️ Common Mistake
-
-- If a button is null, check whether the view ID in XML matches the ID used in Java.
-
-### 📌 Key Point
-
-- Keep `MainActivity` focused on navigation instead of mixing in camera or networking code.
-
-## Notebook Cell 7 — Validate the running UI
+## Cell 5: Manifest Declaration
 
 ### Explanation
 
-- Validation means more than a pretty screenshot; every button should do something predictable.
+Android must know which screens exist.
 
-### Step-by-Step
+### XML Example
 
-1. Run the app on the emulator.
-2. Tap Camera, Gallery, History, and Disease Library.
-3. Press Back from each destination and return to the main menu.
-4. Rotate the device once and make sure the UI still renders well.
+```xml
+<activity
+    android:name=".ScanActivity"
+    android:exported="false" />
+```
 
-### 🔵 Try This
+### Checkpoint
 
-- Write down one improvement you want to make to spacing, typography, or colors.
-
-### Expected Output
-
-- The app starts on MainActivity and all navigation works.
-
-### ✅ Checkpoint
-
-- Can you explain why testing orientation changes is useful even for a simple screen?
-
-### ⚠️ Common Mistake
-
-- Do not claim the screen is finished if you only tested one button.
-
-### 📌 Key Point
-
-- A stable home screen is the launch pad for all future LeafGuard AI features.
-
-## Lab Reflection
-
-- Write down one concept that felt easy.
-- Write down one concept that felt confusing.
-- Describe one bug you saw and how you fixed it.
-- State which file changed the most during this notebook.
-- Explain how this week supports the final LeafGuard AI submission.
-
-## Mini Quiz
-
-- What problem does this week solve inside LeafGuard AI?
-- Which Java class or Android component did you touch first?
-- Which file path in this repository is most relevant to this week?
-- What would break if you skipped the validation step?
-- How does this week connect to the three-tier architecture?
-
-## Evidence Checklist
-
-- [ ] Capture a screenshot of the completed screen or terminal output.
-- [ ] Save one code snippet that proves the feature is wired correctly.
-- [ ] Write two sentences in your progress log about what you learned.
-- [ ] Record at least one bug and the exact fix you applied.
-- [ ] Commit working changes before moving to the next week.
-
-## Next Step
-
-- After this notebook, continue to **[Week 03: Camera & Gallery](../../roadmap/week-03-camera-gallery/README.md)** and connect today's work to the next subsystem.
-
-
-<!-- NAV_FOOTER_START -->
+Why is `MainActivity` exported but internal screens usually are not?
 
 ---
 
-## 🔗 Navigation
+## Cell 6: Evidence Checklist
 
-### Related Roadmap Materials
-- 📖 [Week 02 README](../../roadmap/week-02-android-basics-ui/README.md) — Week overview & objectives
-- 📝 [Week 02 Exercises](../../roadmap/week-02-android-basics-ui/exercises.md) — Practice problems
-- 💡 [Week 02 Solutions](../../solutions/week-02/README.md) — Reference solutions
-- 🏠 [Learning Path](../../LEARNING_PATH.md) — Full course overview
+Save evidence under:
 
-### Week Progression
+```text
+docs/evidence/week-02/
+```
 
-| ← Previous | 🏠 | Next → |
-|:-----------|:--:|-------:|
-| [⬅ Week 01 Notebooks](../week-01/README.md) | [Notebooks Index](../README.md) | [Week 03 Notebooks ➡](../week-03/README.md) |
+Evidence should show:
+
+- build success
+- Home screen
+- Scan placeholder
+- Result placeholder
+- History placeholder
+- Disease Library placeholder
+- Settings/About placeholder
+- short note: which future week completes each placeholder
 
 ---
+
+## Final Notebook Check
+
+Before moving to Week 03, answer:
+
+1. What did Week 02 add to Week 01?
+2. What does an Activity do?
+3. What does an XML layout do?
+4. How does an Intent open another screen?
+5. Why should real camera/gallery behavior wait until Week 03?

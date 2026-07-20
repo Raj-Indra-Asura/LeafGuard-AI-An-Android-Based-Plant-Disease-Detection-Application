@@ -80,7 +80,7 @@ LeafGuard AI is designed as the **perfect CSE 2206 course project** because it i
 | CSE 2206 Topic | LeafGuard AI Implementation | Evidence Location |
 |----------------|----------------------------|-------------------|
 | **Introduction to Mobile Application Development** | Complete native Android app built from scratch | Week 01, Final APK |
-| **Platform Comparison (Android/iOS/Windows Phone)** | Report section comparing platforms for plant disease detection apps | Week 01 proposal, Final report |
+| **Platform Comparison (Android/iOS/Windows Phone)** | Beginner platform-choice note in the product foundation; final comparison in the report | Week 01 foundation, Final report |
 | **Development Environment Setup** | Android Studio, SDK, Gradle, AVD setup; Python FastAPI backend setup | Week 02 |
 | **Java for Android Development** | Android codebase written primarily in Kotlin, with a behavior-identical Java twin | Weeks 02-12 |
 | **Designing and Building Applications** | Multi-screen UI: Home, Camera, Result, History, Settings, Disease Library | Weeks 02-03 |

@@ -46,73 +46,55 @@ copy each into the matching package under
 
 ## 1. UI and Layouts (Week 2)
 
-### Exercise 1.1: Create MainActivity Layout
+### Exercise 1.1: Map Week 01 Screens to Android Files
 
-**Goal:** Build the LeafGuard AI home screen with Material Design buttons.
+**Goal:** Connect the Week 01 screen map to the Android files you will create or inspect.
 
 **Tasks:**
-1. Open `res/layout/activity_main.xml`
-2. Use `ConstraintLayout` as root
-3. Add an `ImageView` for the app logo (top, centered)
-4. Add a `TextView` for the app tagline: "Scan. Detect. Protect."
-5. Add four `MaterialButton` components:
-   - "📷 Take Photo" → opens ScanActivity with camera
-   - "🖼️ Choose from Gallery" → opens ScanActivity with gallery
-   - "📋 View Scan History" → opens HistoryActivity
-   - "📚 Disease Library" → opens DiseaseLibraryActivity
-6. Constrain buttons to center vertically with 16dp spacing
+1. Open your Week 01 screen map.
+2. Create a table with columns: screen idea, Activity name, layout file, and future week.
+3. Include Home, Scan, Result, History, Disease Library, and Settings/About.
+4. Mark Scan, Result, History, and Disease Library as placeholders for now.
 
 **Verification:**
-- [ ] Layout renders without overlap in Layout Editor
-- [ ] All four buttons visible and readable on a 5-inch screen preview
-- [ ] No lint errors about missing constraints
+- [ ] Every screen idea has an Activity name
+- [ ] Every Activity has a layout file name
+- [ ] No future behavior is assigned to Week 02 by accident
 
 ---
 
-### Exercise 1.2: Design ScanActivity Layout
+### Exercise 1.2: Create MainActivity Layout
 
-**Goal:** Create the image capture/display screen.
+**Goal:** Build the Home screen for the Week 02 navigation shell.
 
 **Tasks:**
-1. Create `res/layout/activity_scan.xml`
-2. Add an `ImageView` (placeholder: `@drawable/ic_leaf_placeholder`) — takes 60% of screen height
-3. Add a `ProgressBar` (initially GONE, shown during analysis)
-4. Add two buttons at the bottom: "Camera" and "Gallery"
-5. Add an "Analyze Image" button (initially DISABLED, enabled after image selected)
-
-**Java code in ScanActivity.java:**
-```java
-// Enable button when image is loaded
-private void onImageReady(Uri imageUri) {
-    this.currentImageUri = imageUri;
-    imageView.setImageURI(imageUri);
-    btnAnalyze.setEnabled(true);
-}
-```
+1. Open `res/layout/activity_main.xml`.
+2. Add a title TextView.
+3. Add a short subtitle TextView.
+4. Add buttons for Scan, Result, History, Disease Library, and Settings/About.
+5. Use `@string/...` references for visible text.
 
 **Verification:**
-- [ ] ImageView fills most of the screen
-- [ ] Analyze button starts disabled
-- [ ] Layout looks correct on API 24 and API 33 previews
+- [ ] Layout renders without overlap
+- [ ] Buttons are visible on a phone preview
+- [ ] Visible text uses string resources
 
 ---
 
-### Exercise 1.3: Design ResultActivity Layout
+### Exercise 1.3: Create Placeholder Layouts
 
-**Goal:** Display disease detection results clearly.
+**Goal:** Create honest placeholder screens for future features.
 
 **Tasks:**
-1. Create `res/layout/activity_result.xml`
-2. Add: disease name (large `TextView`), confidence percentage, leaf image thumbnail
-3. Add expandable section for Symptoms (use `TextView` with toggle)
-4. Add expandable section for Treatment
-5. Add expandable section for Prevention
-6. Add two action buttons: "Save to History" and "Share Result"
+1. Create simple layouts for Scan, Result, History, Disease Library, and Settings/About.
+2. Each screen should have a title.
+3. Each screen should have a message explaining what future week adds the real feature.
+4. Do not add camera preview, backend result, database list, or XML parser behavior yet.
 
 **Verification:**
-- [ ] All text fields visible with appropriate font sizes
-- [ ] Action buttons at the bottom, not overlapping content
-- [ ] Scrollable if content is long (`ScrollView` wrapping content)
+- [ ] Every placeholder layout renders
+- [ ] Every placeholder is honest about future work
+- [ ] No placeholder pretends the future feature is complete
 
 ---
 
@@ -120,21 +102,15 @@ private void onImageReady(Uri imageUri) {
 
 ### Exercise 2.1: Implement Activity Navigation
 
-**Goal:** Wire up all button clicks in MainActivity to navigate correctly.
+**Goal:** Wire Home buttons to placeholder Activities.
 
 ```java
 // In MainActivity.java
-btnCamera.setOnClickListener(v -> {
-    Intent intent = new Intent(this, ScanActivity.class);
-    intent.putExtra("source", "camera");
-    startActivity(intent);
-});
+btnScan.setOnClickListener(v ->
+    startActivity(new Intent(this, ScanActivity.class)));
 
-btnGallery.setOnClickListener(v -> {
-    Intent intent = new Intent(this, ScanActivity.class);
-    intent.putExtra("source", "gallery");
-    startActivity(intent);
-});
+btnResult.setOnClickListener(v ->
+    startActivity(new Intent(this, ResultActivity.class)));
 
 btnHistory.setOnClickListener(v ->
     startActivity(new Intent(this, HistoryActivity.class)));
@@ -150,77 +126,62 @@ btnDiseaseLibrary.setOnClickListener(v ->
 
 ---
 
-### Exercise 2.2: Pass Data Between Activities
+### Exercise 2.2: Explain the Intent Code
 
-**Goal:** Send disease result from ScanActivity to ResultActivity.
+**Goal:** Understand navigation before passing real data.
 
 ```java
-// In ScanActivity.java — after receiving prediction result
-private void showResult(String diseaseName, double confidence, String imagePath) {
-    Intent intent = new Intent(this, ResultActivity.class);
-    intent.putExtra("disease_name", diseaseName);
-    intent.putExtra("confidence", confidence);
-    intent.putExtra("image_path", imagePath);
-    startActivity(intent);
-}
-
-// In ResultActivity.java — onCreate
-String diseaseName = getIntent().getStringExtra("disease_name");
-double confidence = getIntent().getDoubleExtra("confidence", 0.0);
-String imagePath = getIntent().getStringExtra("image_path");
-
-tvDiseaseName.setText(diseaseName);
-tvConfidence.setText(String.format("%.1f%% confidence", confidence * 100));
-Glide.with(this).load(imagePath).into(ivLeafImage);
+Intent intent = new Intent(this, ScanActivity.class);
+startActivity(intent);
 ```
 
+Write one sentence explaining each line.
+
 **Verification:**
-- [ ] Disease name appears correctly in ResultActivity
-- [ ] Confidence shows as a percentage (e.g., "87.3% confidence")
-- [ ] Image loads from path without crashing
+- [ ] You can explain `Intent`
+- [ ] You can explain `this`
+- [ ] You can explain `ScanActivity.class`
+- [ ] You can explain `startActivity`
 
 ---
 
-### Exercise 2.3: Result Handling (ActivityResultLauncher)
+### Exercise 2.3: Register Activities in Manifest
 
-**Goal:** Use modern ActivityResult API for returning data from sub-activities.
+**Goal:** Make sure Android knows every Week 02 screen exists.
 
-```java
-// In ScanActivity.java
-private final ActivityResultLauncher<Intent> cameraLauncher =
-    registerForActivityResult(new ActivityResultContracts.TakePicture(),
-        success -> {
-            if (success) {
-                onImageReady(currentPhotoUri);
-            } else {
-                Toast.makeText(this, "Camera cancelled", Toast.LENGTH_SHORT).show();
-            }
-        });
+```xml
+<activity android:name=".ScanActivity" android:exported="false" />
 ```
 
+Add equivalent entries for every placeholder Activity.
+
 **Verification:**
-- [ ] Camera cancelled → no crash, toast shown
-- [ ] Camera success → image displays in ScanActivity
-- [ ] Method uses ActivityResultLauncher (not deprecated startActivityForResult)
+- [ ] All placeholder Activities are declared
+- [ ] Only MainActivity has the launcher intent filter
+- [ ] Navigation works without ActivityNotFoundException
 
 ---
 
 ## 3. Camera and Gallery Integration (Week 3)
 
-### Exercise 3.1: Configure FileProvider
+### Exercise 3.1: Configure Camera Permission and FileProvider
 
-**Goal:** Set up FileProvider so camera can write to app-specific storage.
+**Goal:** Set up only the permission and FileProvider pieces needed for Week 03 camera capture.
 
-**Step 1 — Add to `res/xml/file_paths.xml`** (create the file if it doesn't exist):
+**Step 1 - Add to `res/xml/file_provider_paths.xml`** (create the file if it does not exist):
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<paths>
-    <external-files-path name="my_images" path="Pictures/" />
-    <cache-path name="shared_images" path="images/" />
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-files-path name="leaf_images" path="Pictures/" />
 </paths>
 ```
 
-**Step 2 — Add to `AndroidManifest.xml`** inside `<application>`:
+**Step 2 - Add camera permission above `<application>`:**
+```xml
+<uses-permission android:name="android.permission.CAMERA" />
+```
+
+**Step 3 - Add to `AndroidManifest.xml`** inside `<application>`:
 ```xml
 <provider
     android:name="androidx.core.content.FileProvider"
@@ -229,19 +190,20 @@ private final ActivityResultLauncher<Intent> cameraLauncher =
     android:grantUriPermissions="true">
     <meta-data
         android:name="android.support.FILE_PROVIDER_PATHS"
-        android:resource="@xml/file_paths" />
+        android:resource="@xml/file_provider_paths" />
 </provider>
 ```
 
 **Verification:**
 - [ ] Project builds without "Missing provider" warnings
-- [ ] Camera capture works without `FileUriExposedException`
+    - [ ] Provider authority ends with `.fileprovider`
+    - [ ] You can explain why raw file paths are avoided
 
 ---
 
 ### Exercise 3.2: Implement Camera Capture
 
-**Goal:** Full camera capture flow using TakePicture contract.
+    **Goal:** Capture a photo from `ScanActivity` using the `TakePicture` contract.
 
 ```java
 private Uri currentPhotoUri;
@@ -281,114 +243,61 @@ private File createImageFile() throws IOException {
 - [ ] Camera app opens when button tapped
 - [ ] Captured photo appears in ImageView
 - [ ] File exists in app's external pictures directory
+- [ ] Cancelling camera does not crash
 
 ---
 
-### Exercise 3.3: Implement Gallery Picker (Cross-Version)
+### Exercise 3.3: Implement Gallery Picker With GetContent
 
-**Goal:** Open gallery with Photo Picker on Android 13+ and legacy picker on older versions.
+**Goal:** Choose an existing image and preview it in `ScanActivity`.
 
 ```java
-// Modern Photo Picker (Android 13+ / API 33+)
-private final ActivityResultLauncher<PickVisualMediaRequest> photoPickerLauncher =
-    registerForActivityResult(new ActivityResultContracts.PickVisualMedia(),
+private final ActivityResultLauncher<String> galleryLauncher =
+    registerForActivityResult(new ActivityResultContracts.GetContent(),
         uri -> {
             if (uri != null) {
                 onImageReady(uri);
-            }
-        });
-
-// Legacy gallery picker (Android 6–12)
-private final ActivityResultLauncher<Intent> legacyGalleryLauncher =
-    registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
-        result -> {
-            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                Uri uri = result.getData().getData();
-                if (uri != null) {
-                    onImageReady(uri);
-                }
+            } else {
+                Toast.makeText(this, "Gallery cancelled", Toast.LENGTH_SHORT).show();
             }
         });
 
 private void openGallery() {
-    if (ActivityResultContracts.PickVisualMedia.isPhotoPickerAvailable(this)) {
-        photoPickerLauncher.launch(
-            new PickVisualMediaRequest.Builder()
-                .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
-                .build()
-        );
-    } else {
-        Intent intent = new Intent(Intent.ACTION_PICK,
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        legacyGalleryLauncher.launch(intent);
-    }
+    galleryLauncher.launch("image/*");
 }
 ```
 
 **Verification:**
-- [ ] On API 33 emulator: Photo Picker appears (system UI)
-- [ ] On API 28 emulator: Legacy gallery picker appears
+- [ ] Gallery/content picker opens
 - [ ] Selected image displays in ImageView
+- [ ] Cancelling gallery does not crash
 
 ---
 
-### Exercise 3.4: URI to Bitmap Conversion (Memory Safe)
+### Exercise 3.4: Store URI and Preview Image
 
-**Goal:** Convert gallery/camera URI to Bitmap without OutOfMemoryError.
+**Goal:** Keep the selected URI and update one preview helper.
 
 ```java
-private static final int TARGET_WIDTH = 224;
-private static final int TARGET_HEIGHT = 224;
+private Uri selectedImageUri;
 
-public Bitmap loadScaledBitmap(Uri imageUri) throws IOException {
-    // Step 1: Get image dimensions without loading full bitmap
-    BitmapFactory.Options options = new BitmapFactory.Options();
-    options.inJustDecodeBounds = true;
-    try (InputStream is = getContentResolver().openInputStream(imageUri)) {
-        BitmapFactory.decodeStream(is, null, options);
-    }
-
-    // Step 2: Calculate safe sample size
-    options.inSampleSize = calculateInSampleSize(
-        options, TARGET_WIDTH, TARGET_HEIGHT);
-    options.inJustDecodeBounds = false;
-
-    // Step 3: Load scaled bitmap
-    try (InputStream is = getContentResolver().openInputStream(imageUri)) {
-        Bitmap scaled = BitmapFactory.decodeStream(is, null, options);
-        // Step 4: Scale to exact target size
-        return Bitmap.createScaledBitmap(scaled, TARGET_WIDTH, TARGET_HEIGHT, true);
-    }
-}
-
-private int calculateInSampleSize(BitmapFactory.Options options,
-                                  int reqWidth, int reqHeight) {
-    int height = options.outHeight;
-    int width = options.outWidth;
-    int inSampleSize = 1;
-
-    if (height > reqHeight || width > reqWidth) {
-        int halfHeight = height / 2;
-        int halfWidth = width / 2;
-        while ((halfHeight / inSampleSize) >= reqHeight
-                && (halfWidth / inSampleSize) >= reqWidth) {
-            inSampleSize *= 2;
-        }
-    }
-    return inSampleSize;
+private void onImageReady(Uri imageUri) {
+    selectedImageUri = imageUri;
+    imagePreview.setImageURI(imageUri);
+    textImageStatus.setText("Image selected. Detection will be added later.");
 }
 ```
 
 **Verification:**
-- [ ] Large image (e.g. 4000×3000) loads without crash
-- [ ] Logcat shows no OutOfMemoryError
-- [ ] Returned bitmap is exactly 224×224
+- [ ] One helper updates both camera and gallery previews
+- [ ] URI is stored for later weeks
+- [ ] Preview appears after image selection
 
 ---
 
-### Exercise 3.5: Handle Permissions for Camera and Gallery
+### Exercise 3.5: Handle Permission and Cancellation Safely
 
-**Goal:** Request CAMERA and storage permissions with proper rationale.
+**Goal:** Make denial and cancellation safe, visible states.
 
 ```java
 private final ActivityResultLauncher<String> cameraPermissionLauncher =
@@ -397,45 +306,18 @@ private final ActivityResultLauncher<String> cameraPermissionLauncher =
             if (granted) {
                 launchCamera();
             } else {
-                showPermissionDeniedMessage("Camera");
+                Toast.makeText(this,
+                    "Camera permission denied. You can still choose from gallery.",
+                    Toast.LENGTH_SHORT).show();
             }
         });
-
-private void checkCameraPermission() {
-    if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-            == PackageManager.PERMISSION_GRANTED) {
-        launchCamera();
-    } else if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
-        // Show explanation dialog first
-        new AlertDialog.Builder(this)
-            .setTitle("Camera Permission Required")
-            .setMessage("LeafGuard AI needs camera access to capture leaf images for disease detection.")
-            .setPositiveButton("Grant", (d, w) ->
-                cameraPermissionLauncher.launch(Manifest.permission.CAMERA))
-            .setNegativeButton("Cancel", null)
-            .show();
-    } else {
-        cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
-    }
-}
-
-private void showPermissionDeniedMessage(String permission) {
-    Snackbar.make(binding.getRoot(),
-        permission + " permission denied. Enable in Settings.",
-        Snackbar.LENGTH_LONG)
-        .setAction("Settings", v -> {
-            Intent intent = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                Uri.fromParts("package", getPackageName(), null));
-            startActivity(intent);
-        })
-        .show();
-}
 ```
 
 **Verification:**
-- [ ] First launch: permission dialog appears
-- [ ] Denied: Snackbar with Settings link appears
-- [ ] Granted: camera opens immediately
+- [ ] Denied permission does not crash
+- [ ] Cancelled camera does not crash
+- [ ] Cancelled gallery does not crash
+- [ ] User receives clear feedback
 
 ---
 

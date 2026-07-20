@@ -303,7 +303,7 @@ bb57b80 - Weeks 09-12: Complete all remaining roadmap files (28 files total)
    - bug, question, documentation, enhancement
 
 2. Create GitHub milestones manually:
-   - Week 01: Project Understanding and Proposal
+   - Week 01: Product Idea and Learning Foundation
    - Week 02: Android Basics and UI Skeleton
    - ... (all 12 weeks)
 
