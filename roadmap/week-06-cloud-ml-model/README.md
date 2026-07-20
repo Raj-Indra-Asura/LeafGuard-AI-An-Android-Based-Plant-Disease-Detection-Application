@@ -1083,6 +1083,49 @@ Week 06 established your core AI functionality. Everything from here builds on t
 - **Your app still cannot…** remember past scans, show treatment advice, or work without internet. Week 07 adds persistent scan history.
 - **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
 
+### Cumulative Repository State After Week 06
+
+This snapshot includes the Week 01-05 client-server flow and adds the backend model contract. The real trained model may remain local, but the repository must document exactly where it belongs and how labels/preprocessing work.
+
+```text
+LeafGuard-AI/
+|-- README.md
+|-- START_HERE.md
+|-- LEARNING_PATH.md
+|-- PRODUCT_PROGRESS_MAP.md
+|-- progress-tracker.md
+|-- roadmap/
+|   |-- week-01-project-understanding/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-02-android-basics-ui/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-03-camera-gallery/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-04-fastapi-backend/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-05-android-networking/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   `-- week-06-cloud-ml-model/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- docs/evidence/{week-01/, week-02/, week-03/, week-04/, week-05/, week-06/}
+|-- android-app-kotlin/ (Week 05 Android networking client)
+|-- android-app/        (Java mirror of the Week 05 Android networking client)
+|-- backend-api/
+|   |-- main.py
+|   |-- model_loader.py
+|   |-- config.py
+|   |-- labels.py
+|   |-- labels-38.txt
+|   |-- requirements-base.txt
+|   |-- requirements-dev.txt
+|   |-- requirements.txt
+|   |-- test_api.py
+|   |-- README.md
+|   `-- models/leafguard_model.keras (expected local model path when approved)
+`-- model/
+    |-- README.md
+    |-- model-notes.md
+    |-- labels-38.txt
+    |-- model_contract.py
+    |-- test_model_contract.py
+    |-- inspect_model.py
+    `-- model-acquisition-guide.md
+```
+
 ---
 
 ## 📚 Week 06 — Navigation

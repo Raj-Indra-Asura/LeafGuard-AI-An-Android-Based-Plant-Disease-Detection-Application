@@ -992,6 +992,40 @@ Write your own code. Understand every line.
 - **Your app still cannot…** give real AI answers (predictions are still mock), remember past scans, or work offline. Week 06 integrates the real model.
 - **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
 
+### Cumulative Repository State After Week 05
+
+This snapshot includes all Week 01-04 files and adds the Android networking bridge. From this point, the Android client and FastAPI backend must stay aligned on the `/predict` JSON contract.
+
+```text
+LeafGuard-AI/
+|-- README.md
+|-- START_HERE.md
+|-- LEARNING_PATH.md
+|-- PRODUCT_PROGRESS_MAP.md
+|-- progress-tracker.md
+|-- roadmap/
+|   |-- week-01-project-understanding/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-02-android-basics-ui/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-03-camera-gallery/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-04-fastapi-backend/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   `-- week-05-android-networking/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- docs/evidence/{week-01/, week-02/, week-03/, week-04/, week-05/}
+|-- backend-api/{main.py, config.py, model_loader.py, labels.py, labels-38.txt, requirements*.txt, test_api.py, README.md, models/}
+|-- android-app-kotlin/
+|   |-- app/build.gradle
+|   `-- app/src/main/
+|       |-- AndroidManifest.xml
+|       |-- java/com/leafguard/{MainActivity.kt, ScanActivity.kt, ResultActivity.kt, HistoryActivity.kt, DiseaseLibraryActivity.kt, SettingsActivity.kt, AnalyticsActivity.kt}
+|       |-- java/com/leafguard/network/{ApiService.kt, RetrofitClient.kt, PredictionResponse.kt}
+|       `-- res/
+|           |-- layout/{activity_scan.xml, activity_result.xml, activity_main.xml, activity_history.xml, activity_disease_library.xml, activity_settings.xml, activity_analytics.xml}
+|           |-- values/{strings.xml, colors.xml, themes.xml}
+|           |-- xml/{file_provider_paths.xml, network_security_config.xml}
+|           |-- drawable/{bg_dashed_upload.xml, bg_feature_row.xml, ic_nav_*.xml}
+|           `-- menu/bottom_nav_menu.xml
+`-- android-app/ (Java mirror with Retrofit/OkHttp networking files)
+```
+
 ---
 
 ## 📚 Week 05 — Navigation

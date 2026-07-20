@@ -231,6 +231,38 @@ After this, update the main progress tracker and move to Week 02.
 - **Your app still cannot…** run at all — no Android code exists yet. Week 02 creates the first runnable app shell.
 - **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
 
+### Cumulative Repository State After Week 01
+
+This is the complete Week 01 repository state to understand or update. Later-week code may already exist in the full repository, but it is not part of the Week 01 handled state yet.
+
+```text
+LeafGuard-AI/
+|-- README.md
+|-- START_HERE.md
+|-- LEARNING_PATH.md
+|-- PRODUCT_PROGRESS_MAP.md
+|-- progress-tracker.md
+|-- roadmap/week-01-project-understanding/
+|   |-- README.md
+|   |-- learning-notes.md
+|   |-- exercises.md
+|   |-- build-task.md
+|   |-- validation-checklist.md
+|   |-- quiz.md
+|   `-- reflection.md
+|-- docs/evidence/week-01/
+|   |-- product-idea.md
+|   |-- user-journey.md
+|   |-- screen-map.md
+|   |-- system-sketch.md or system-sketch.png
+|   |-- week-growth-map.md
+|   `-- week-01-validation.md
+|-- android-app-kotlin/  (future primary Android track)
+|-- android-app/         (future Java comparison track)
+|-- backend-api/         (future backend landmark)
+`-- model/               (future ML landmark)
+```
+
 ---
 
 ## 📚 Week 01 — Navigation

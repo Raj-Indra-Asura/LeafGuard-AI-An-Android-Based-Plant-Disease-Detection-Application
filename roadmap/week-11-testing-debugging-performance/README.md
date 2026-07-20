@@ -320,6 +320,43 @@ Collect 5+ measurements for each mode (cloud / offline) and average them for the
 - **Your app still cannot…** be installed from a signed release APK with final documentation. Week 12 delivers that.
 - **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
 
+### Cumulative Repository State After Week 11
+
+This snapshot includes all Week 01-10 product files and adds validation proof: automated tests, manual test evidence, debugging notes, and performance measurements.
+
+```text
+LeafGuard-AI/
+|-- README.md
+|-- START_HERE.md
+|-- LEARNING_PATH.md
+|-- PRODUCT_PROGRESS_MAP.md
+|-- progress-tracker.md
+|-- VALIDATION-REPORT.md
+|-- roadmap/week-01-project-understanding/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-02-android-basics-ui/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-03-camera-gallery/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-04-fastapi-backend/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-05-android-networking/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-06-cloud-ml-model/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-07-room-sqlite-history/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-08-xml-disease-library/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-09-tensorflow-lite-offline-ai/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-10-notifications-share-location/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-11-testing-debugging-performance/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- docs/evidence/{week-01/, week-02/, week-03/, week-04/, week-05/, week-06/, week-07/, week-08/, week-09/, week-10/, week-11/}
+|-- exercises/testing/
+|-- solutions/week-11/
+|-- notebooks/week-11/
+|-- backend-api/{main.py, model_loader.py, config.py, labels.py, labels-38.txt, requirements*.txt, test_api.py, README.md, models/}
+|-- model/{README.md, model-notes.md, labels-38.txt, model_contract.py, test_model_contract.py, inspect_model.py, convert_model.py, validate_tflite.py, parity_test.py, model-acquisition-guide.md}
+|-- android-app-kotlin/
+|   |-- app/build.gradle
+|   |-- app/src/main/{AndroidManifest.xml, assets/, java/com/leafguard/, res/}
+|   |-- app/src/test/java/com/leafguard/network/PredictionResponseTest.kt
+|   `-- app/src/androidTest/java/com/leafguard/MainActivityTest.kt
+`-- android-app/ (Java mirror with equivalent unit and instrumentation tests when maintained)
+```
+
 ---
 
 ## 📚 Week 11 — Navigation

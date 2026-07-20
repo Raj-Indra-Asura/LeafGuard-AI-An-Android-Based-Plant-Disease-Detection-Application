@@ -1314,6 +1314,39 @@ You will implement:
 - **Your app still cannot…** connect the app to the server — the Android app doesn't talk to it yet. Week 05 wires them together with Retrofit.
 - **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
 
+### Cumulative Repository State After Week 04
+
+This snapshot includes the Week 01-03 Android work and adds the standalone backend. Android should still only preview images; the backend is tested separately this week.
+
+```text
+LeafGuard-AI/
+|-- README.md
+|-- START_HERE.md
+|-- LEARNING_PATH.md
+|-- PRODUCT_PROGRESS_MAP.md
+|-- progress-tracker.md
+|-- roadmap/
+|   |-- week-01-project-understanding/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-02-android-basics-ui/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-03-camera-gallery/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   `-- week-04-fastapi-backend/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- docs/evidence/{week-01/, week-02/, week-03/, week-04/}
+|-- android-app-kotlin/ (Week 02-03 app shell with camera/gallery preview)
+|-- android-app/        (Java mirror of the same Android state)
+`-- backend-api/
+    |-- main.py
+    |-- config.py
+    |-- model_loader.py
+    |-- labels.py
+    |-- labels-38.txt
+    |-- requirements-base.txt
+    |-- requirements-dev.txt
+    |-- requirements.txt
+    |-- test_api.py
+    |-- README.md
+    `-- models/
+```
+
 ---
 
 ## 📚 Week 04 — Navigation

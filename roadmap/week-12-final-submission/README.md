@@ -198,6 +198,65 @@ Practice answering:
 - **Your app still cannot…** nothing in scope — the product is 100% complete. 🎉
 - **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
 
+### Cumulative Repository State After Week 12
+
+This is the complete course-submission repository state. It includes every handled folder from Weeks 01-11 plus APK packaging, report, presentation, demo, and final validation materials.
+
+```text
+LeafGuard-AI/
+|-- README.md
+|-- START_HERE.md
+|-- LEARNING_PATH.md
+|-- PRODUCT_PROGRESS_MAP.md
+|-- progress-tracker.md
+|-- VALIDATION-REPORT.md
+|-- PROJECT_ARCHITECTURE.md
+|-- COURSE_OVERVIEW.md
+|-- SYLLABUS_MAPPING.md
+|-- roadmap/
+|   |-- week-01-project-understanding/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-02-android-basics-ui/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-03-camera-gallery/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-04-fastapi-backend/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-05-android-networking/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-06-cloud-ml-model/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-07-room-sqlite-history/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-08-xml-disease-library/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-09-tensorflow-lite-offline-ai/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-10-notifications-share-location/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-11-testing-debugging-performance/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   `-- week-12-final-submission/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- docs/
+|   |-- evidence/{week-01/, week-02/, week-03/, week-04/, week-05/, week-06/, week-07/, week-08/, week-09/, week-10/, week-11/, week-12/}
+|   |-- ARCHITECTURE_GROUND_TRUTH.md
+|   |-- complete-setup-and-run-guide.md
+|   |-- environment-setup.md
+|   |-- final-report-template.md
+|   |-- presentation-outline.md
+|   |-- model-correctness-validation-guide.md
+|   |-- PRODUCTION_RELEASE_RUNBOOK.md
+|   |-- production-end-to-end-setup.md
+|   |-- release-validation-v0.2.0-beta.md
+|   `-- viva-questions.md
+|-- android-app-kotlin/
+|   |-- build.gradle
+|   |-- settings.gradle
+|   `-- app/
+|       |-- build.gradle
+|       |-- src/main/{AndroidManifest.xml, assets/, java/com/leafguard/, res/}
+|       |-- src/test/java/com/leafguard/network/PredictionResponseTest.kt
+|       |-- src/androidTest/java/com/leafguard/MainActivityTest.kt
+|       `-- build/outputs/apk/ (generated debug or release APK after build)
+|-- android-app/ (Java comparison track with matching source, assets, resources, and tests when maintained)
+|-- backend-api/{main.py, model_loader.py, config.py, labels.py, labels-38.txt, requirements-base.txt, requirements-dev.txt, requirements.txt, test_api.py, README.md, Dockerfile, .env.example, models/}
+|-- model/{README.md, model-notes.md, labels-38.txt, model_contract.py, test_model_contract.py, inspect_model.py, convert_model.py, validate_tflite.py, parity_test.py, model-acquisition-guide.md}
+|-- exercises/{android/, android-kotlin/, backend/, database/, ml/, testing/}
+|-- solutions/{week-04/, week-05/, week-06/, week-07/, week-08/, week-09/, week-10/, week-11/, week-12/}
+|-- notebooks/{week-01/, week-02/, week-03/, week-04/, week-05/, week-06/, week-07/, week-08/, week-09/, week-10/, week-11/, week-12/}
+|-- final-submission/{README.md, submission-checklist.md, demo-video-script.md, final-report.pdf, presentation-slides.pptx, demo-video.mp4}
+`-- release-records/
+```
+
 ---
 
 ## 📚 Week 12 — Navigation

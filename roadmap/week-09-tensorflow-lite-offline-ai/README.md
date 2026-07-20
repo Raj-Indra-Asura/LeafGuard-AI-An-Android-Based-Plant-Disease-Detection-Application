@@ -179,6 +179,39 @@ The repo ships `app/src/main/assets/model.tflite` as a **text placeholder** so t
 - **Your app still cannot…** notify the user, share results, or tag scans with location; it is also not yet hardened or packaged. Weeks 10–12 finish the job.
 - **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
 
+### Cumulative Repository State After Week 09
+
+This snapshot includes all Week 01-08 files and adds the on-device TensorFlow Lite path. Keep the model asset, labels, backend labels, and XML disease names aligned.
+
+```text
+LeafGuard-AI/
+|-- README.md
+|-- START_HERE.md
+|-- LEARNING_PATH.md
+|-- PRODUCT_PROGRESS_MAP.md
+|-- progress-tracker.md
+|-- roadmap/week-01-project-understanding/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-02-android-basics-ui/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-03-camera-gallery/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-04-fastapi-backend/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-05-android-networking/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-06-cloud-ml-model/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-07-room-sqlite-history/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-08-xml-disease-library/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- roadmap/week-09-tensorflow-lite-offline-ai/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- docs/evidence/{week-01/, week-02/, week-03/, week-04/, week-05/, week-06/, week-07/, week-08/, week-09/}
+|-- backend-api/{main.py, model_loader.py, config.py, labels.py, labels-38.txt, requirements*.txt, test_api.py, README.md, models/}
+|-- model/{README.md, model-notes.md, labels-38.txt, model_contract.py, test_model_contract.py, inspect_model.py, convert_model.py, validate_tflite.py, parity_test.py, model-acquisition-guide.md}
+|-- android-app-kotlin/app/src/main/
+|   |-- assets/{diseases.xml, labels.txt, model.tflite}
+|   |-- java/com/leafguard/ml/TFLiteClassifier.kt
+|   |-- java/com/leafguard/{ScanActivity.kt, ResultActivity.kt, HistoryActivity.kt, HistoryDetailActivity.kt, DiseaseLibraryActivity.kt, MainActivity.kt}
+|   |-- java/com/leafguard/database/{ScanRecord.kt, ScanDao.kt, AppDatabase.kt}
+|   |-- java/com/leafguard/network/{ApiService.kt, RetrofitClient.kt, PredictionResponse.kt}
+|   `-- res/layout/{activity_scan.xml, activity_result.xml, activity_history.xml, activity_history_detail.xml, activity_disease_library.xml, item_disease_library.xml, item_scan_history.xml}
+`-- android-app/ (Java mirror with TFLiteClassifier.java and matching assets)
+```
+
 ---
 
 ## 📚 Week 09 — Navigation

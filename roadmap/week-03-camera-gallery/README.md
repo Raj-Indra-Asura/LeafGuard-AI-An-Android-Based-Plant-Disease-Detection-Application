@@ -194,6 +194,38 @@ Move to Week 04 only after the image-input demo passes.
 - **Your app still cannot…** analyze, upload, save, or diagnose the image yet. Week 04 starts the backend prediction service.
 - **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
 
+### Cumulative Repository State After Week 03
+
+This snapshot includes Weeks 01-02 and adds the image-input files. The Java track should keep the same behavior under `android-app/` with `.java` Activity files.
+
+```text
+LeafGuard-AI/
+|-- README.md
+|-- START_HERE.md
+|-- LEARNING_PATH.md
+|-- PRODUCT_PROGRESS_MAP.md
+|-- progress-tracker.md
+|-- roadmap/
+|   |-- week-01-project-understanding/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   |-- week-02-android-basics-ui/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   `-- week-03-camera-gallery/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- docs/evidence/
+|   |-- week-01/{planning evidence files}
+|   |-- week-02/{launch and navigation evidence}
+|   `-- week-03/{README.md, camera proof, gallery proof, permission-denial proof, cancellation proof}
+|-- android-app-kotlin/
+|   `-- app/src/main/
+|       |-- AndroidManifest.xml
+|       |-- java/com/leafguard/{MainActivity.kt, ScanActivity.kt, ResultActivity.kt, HistoryActivity.kt, DiseaseLibraryActivity.kt, SettingsActivity.kt, AnalyticsActivity.kt}
+|       `-- res/
+|           |-- layout/{activity_main.xml, activity_scan.xml, activity_result.xml, activity_history.xml, activity_disease_library.xml, activity_settings.xml, activity_analytics.xml}
+|           |-- values/{strings.xml, colors.xml, themes.xml}
+|           |-- xml/file_provider_paths.xml
+|           |-- drawable/{bg_dashed_upload.xml, bg_feature_row.xml, ic_nav_*.xml}
+|           `-- menu/bottom_nav_menu.xml
+`-- android-app/ (Java mirror with camera/gallery support)
+```
+
 ---
 
 ## 📚 Week 03 — Navigation

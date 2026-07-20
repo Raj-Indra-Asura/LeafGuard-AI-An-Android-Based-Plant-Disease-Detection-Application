@@ -212,6 +212,39 @@ After this, update the progress tracker and move to Week 03 only after validatio
 - **Your app still cannot…** take photos, analyze images, call a backend, save history, or run AI. Week 03 adds image input.
 - **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
 
+### Cumulative Repository State After Week 02
+
+This cumulative snapshot includes Week 01 planning plus the first runnable Android shell. Kotlin primary paths are shown; mirror the same structure in `android-app/` when maintaining the Java track.
+
+```text
+LeafGuard-AI/
+|-- README.md
+|-- START_HERE.md
+|-- LEARNING_PATH.md
+|-- PRODUCT_PROGRESS_MAP.md
+|-- progress-tracker.md
+|-- roadmap/
+|   |-- week-01-project-understanding/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|   `-- week-02-android-basics-ui/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
+|-- docs/evidence/
+|   |-- week-01/{product-idea.md, user-journey.md, screen-map.md, system-sketch.*, week-growth-map.md, week-01-validation.md}
+|   `-- week-02/{README.md, launch screenshots, navigation screenshots, validation notes}
+|-- android-app-kotlin/
+|   |-- build.gradle
+|   |-- settings.gradle
+|   `-- app/
+|       |-- build.gradle
+|       `-- src/main/
+|           |-- AndroidManifest.xml
+|           |-- java/com/leafguard/{MainActivity.kt, ScanActivity.kt, ResultActivity.kt, HistoryActivity.kt, DiseaseLibraryActivity.kt, SettingsActivity.kt, AnalyticsActivity.kt}
+|           `-- res/
+|               |-- layout/{activity_main.xml, activity_scan.xml, activity_result.xml, activity_history.xml, activity_disease_library.xml, activity_settings.xml, activity_analytics.xml}
+|               |-- values/{strings.xml, colors.xml, themes.xml}
+|               |-- drawable/{bg_feature_row.xml, ic_nav_home.xml, ic_nav_scan.xml, ic_nav_library.xml, ic_nav_analytics.xml, ic_nav_about.xml}
+|               `-- menu/bottom_nav_menu.xml
+`-- android-app/ (Java mirror of the same Week 02 Android shell)
+```
+
 ---
 
 ## 📚 Week 02 — Navigation
