@@ -43,6 +43,45 @@ By the end of Week 03, the app should:
 
 ---
 
+## Repository State After Week 03
+
+Week 03 keeps the Week 02 navigation shell and upgrades the Scan screen into the first real user-input feature. The repository should now show where image input lives, but prediction logic is still outside this week.
+
+### Structure to browse after this week
+
+- `android-app-kotlin/app/src/main/java/com/leafguard/ScanActivity.kt` owns camera, gallery, URI, and preview behavior.
+- `android-app-kotlin/app/src/main/res/layout/activity_scan.xml` contains the image preview and camera/gallery buttons.
+- `android-app-kotlin/app/src/main/AndroidManifest.xml` includes camera permission and the FileProvider declaration when camera capture writes to an app file.
+- `android-app-kotlin/app/src/main/res/xml/file_provider_paths.xml` defines which app file paths can be shared with the camera app.
+- `android-app-kotlin/app/src/main/res/values/strings.xml` contains user-facing permission, cancel, and image-input text.
+- The Java twin under `android-app/` should contain the same camera/gallery behavior in Java.
+
+### Files you should create or update this week
+
+- `ScanActivity.kt` or its Java twin.
+- `activity_scan.xml`.
+- `AndroidManifest.xml`.
+- `res/xml/file_provider_paths.xml`.
+- `strings.xml` for camera, gallery, preview, and error messages.
+- `docs/evidence/week-03/` screenshots or screen recordings for camera, gallery, denial, and cancellation.
+
+### What this repository state can do
+
+- Open the Scan screen from the app shell.
+- Ask for camera permission only when needed.
+- Launch camera capture and gallery selection.
+- Store the selected image URI long enough to preview it in the Scan screen.
+- Recover from permission denial or user cancellation without crashing.
+
+### What this repository state cannot do
+
+- It cannot analyze the selected image.
+- It cannot upload the image to a server.
+- It cannot save the scan to history.
+- It cannot show treatment advice or run a TensorFlow Lite model.
+
+---
+
 ## New Words This Week
 
 | Term | Beginner Definition |

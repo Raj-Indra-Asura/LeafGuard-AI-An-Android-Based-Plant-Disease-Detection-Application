@@ -21,6 +21,42 @@ See the full [glossary](../../GLOSSARY.md) for more terms.
 - Notebooks: [../../notebooks/week-04/](../../notebooks/week-04/)
 - Glossary: [../../GLOSSARY.md](../../GLOSSARY.md)
 
+## Repository State After Week 04
+
+Week 04 keeps the Android app as a local image-input shell and adds a separate backend service. The repository now has two parts to browse: the Android client from Weeks 02-03 and the FastAPI server that will later receive images from that client.
+
+### Structure to browse after this week
+
+- `backend-api/main.py` defines the FastAPI app and routes such as `/`, `/health`, `/diseases`, and `/predict`.
+- `backend-api/requirements-base.txt`, `backend-api/requirements-dev.txt`, and `backend-api/requirements.txt` describe Python dependencies.
+- `backend-api/config.py`, `backend-api/model_loader.py`, and `backend-api/labels.py` prepare the backend for later model work.
+- `backend-api/README.md` explains backend setup and run commands.
+- `backend-api/test_api.py` is the backend test entry point.
+- `backend-api/models/` is where a real trained backend model will be placed later.
+- The Android folders still exist, but they should not call this backend until Week 05.
+
+### Files you should create or update this week
+
+- `backend-api/main.py` for FastAPI routes and mock prediction JSON.
+- `backend-api/requirements-base.txt` or `requirements.txt` for server dependencies.
+- `backend-api/README.md` or Week 04 evidence notes for local IP, run steps, and API test results.
+- `docs/evidence/week-04/` screenshots from `/docs`, `/health`, and `/predict` tests.
+
+### What this repository state can do
+
+- Run a local FastAPI backend.
+- Accept a multipart upload named `image` at `/predict`.
+- Return a structured JSON prediction response for testing.
+- Prove the server side independently with FastAPI docs, curl, Postman, or backend tests.
+
+### What this repository state cannot do
+
+- The Android app still cannot call the backend.
+- Backend predictions are still mock or placeholder unless a real model is explicitly wired.
+- The repository still cannot save scan history or work offline.
+
+---
+
 ## Weekly Objective
 
 By the end of Week 04, you will:

@@ -21,6 +21,47 @@ This week you teach the app to *remember* things. Right now every scan disappear
 - Worked answers: [`../../solutions/week-07/`](../../solutions/week-07/)
 - Notebook walkthrough: [`../../notebooks/week-07/`](../../notebooks/week-07/)
 
+## Repository State After Week 07
+
+Week 07 keeps the working cloud prediction flow and adds local persistence. The repository now contains the database layer that lets scan results survive app restarts.
+
+### Structure to browse after this week
+
+- `android-app-kotlin/app/build.gradle` includes Room dependencies and Kotlin annotation processing through `kapt`.
+- `android-app-kotlin/app/src/main/java/com/leafguard/database/ScanRecord.kt` defines the `scan_history` table.
+- `android-app-kotlin/app/src/main/java/com/leafguard/database/ScanDao.kt` defines insert, read, recent, and delete queries.
+- `android-app-kotlin/app/src/main/java/com/leafguard/database/AppDatabase.kt` creates the Room database named `leafguard.db`.
+- `android-app-kotlin/app/src/main/java/com/leafguard/HistoryActivity.kt` shows the saved scan list.
+- `android-app-kotlin/app/src/main/java/com/leafguard/HistoryDetailActivity.kt` shows one saved scan in detail.
+- `android-app-kotlin/app/src/main/res/layout/activity_history.xml`, `activity_history_detail.xml`, and `item_scan_history.xml` define the history UI.
+- `ScanActivity.kt` or `ResultActivity.kt` is updated so each successful prediction becomes a saved `ScanRecord`.
+
+### Files you should create or update this week
+
+- `database/ScanRecord.kt`.
+- `database/ScanDao.kt`.
+- `database/AppDatabase.kt`.
+- `HistoryActivity.kt` and `HistoryDetailActivity.kt`.
+- `activity_history.xml`, `activity_history_detail.xml`, and `item_scan_history.xml`.
+- `app/build.gradle` for Room dependencies.
+- Matching Java-track database and history files if maintaining `android-app/`.
+- `docs/evidence/week-07/` showing save, reopen, view, and delete behavior.
+
+### What this repository state can do
+
+- Save each successful scan into an on-device SQLite database through Room.
+- Display a persistent scan history list.
+- Open a saved scan detail screen.
+- Delete a scan and update the UI.
+- Prove that scan data survives app restart.
+
+### What this repository state cannot do
+
+- It cannot yet enrich every result from the XML disease library.
+- It cannot run the prediction fully offline.
+- It cannot yet notify, share, or attach location unless those features are added later.
+- It still needs testing and performance evidence in Week 11.
+
 ---
 
 ## Weekly Objective

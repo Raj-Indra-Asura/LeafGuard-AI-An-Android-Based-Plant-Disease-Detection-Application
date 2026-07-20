@@ -33,6 +33,46 @@ For a complete production release rather than a course-only APK build, use the
 controlling order for model approval, backend hardening/deployment, device acceptance,
 private signing, CI/CD, publication, monitoring, and rollback.
 
+## Repository State After Week 12
+
+Week 12 is the final submission state. The repository should now be browsable as a complete course project: source code, backend, model notes, evidence, final documents, and an installable APK all point to the same finished LeafGuard AI product.
+
+### Structure to browse after this week
+
+- `android-app-kotlin/` is the primary Android source used to build the submission APK.
+- `android-app/` is the Java comparison track, if maintained for the course.
+- `backend-api/` contains the FastAPI backend, model-loading path, dependencies, tests, and deployment notes.
+- `model/` contains model contract notes, label files, conversion helpers, validation helpers, and acquisition guidance.
+- `docs/` contains architecture, setup, release, validation, report, presentation, viva, and deployment material.
+- `docs/evidence/week-01/` through `docs/evidence/week-12/` contain week-by-week proof.
+- `final-submission/` contains the final checklist, demo-video script, and submission packaging notes.
+- `release-records/` and production runbooks record release decisions when used.
+
+### Files you should create or update this week
+
+- The debug or release APK generated from `android-app-kotlin/`.
+- `final-submission/submission-checklist.md`.
+- `final-submission/demo-video-script.md`.
+- Final report files based on `docs/final-report-template.md`.
+- Presentation slides based on `docs/presentation-outline.md`.
+- `docs/evidence/week-12/` with APK build, install, and final demo proof.
+- Main `README.md` setup/run notes if anything changed during packaging.
+- `progress-tracker.md` with Week 12 complete.
+
+### What this repository state can do
+
+- Build an installable Android APK from the primary Kotlin track.
+- Demonstrate camera/gallery input, cloud prediction, offline prediction, history, disease library, notifications, sharing, and optional location.
+- Explain setup, architecture, model limitations, testing, and release steps from repository documents.
+- Support final report writing, presentation, demo video, and viva preparation.
+
+### What this repository state cannot do
+
+- It cannot claim production readiness unless the production release runbook is also completed.
+- It cannot hide model limitations, mock-mode behavior, or unsupported crops.
+- It cannot replace a live final install test on a fresh emulator or device.
+- It cannot be considered complete if evidence, report, slides, APK, and demo video are missing.
+
 ---
 
 ## Weekly Objective

@@ -26,6 +26,45 @@ See the full [glossary](../../GLOSSARY.md) for more terms.
 - Notebooks: [../../notebooks/week-05/](../../notebooks/week-05/)
 - Glossary: [../../GLOSSARY.md](../../GLOSSARY.md)
 
+## Repository State After Week 05
+
+Week 05 connects the Week 03 Android image input to the Week 04 backend. The repository now shows a real client-server boundary: Android prepares a multipart request, FastAPI returns JSON, and the app displays that response.
+
+### Structure to browse after this week
+
+- `android-app-kotlin/app/build.gradle` includes Retrofit, Gson converter, and OkHttp dependencies.
+- `android-app-kotlin/app/src/main/AndroidManifest.xml` includes `INTERNET` permission and any local-network configuration needed for development.
+- `android-app-kotlin/app/src/main/res/xml/network_security_config.xml` allows local HTTP testing when required.
+- `android-app-kotlin/app/src/main/java/com/leafguard/network/ApiService.kt` defines the multipart `/predict` call.
+- `android-app-kotlin/app/src/main/java/com/leafguard/network/RetrofitClient.kt` builds the Retrofit instance.
+- `android-app-kotlin/app/src/main/java/com/leafguard/network/PredictionResponse.kt` models the JSON response.
+- `android-app-kotlin/app/src/main/java/com/leafguard/ScanActivity.kt` uploads the selected image.
+- `android-app-kotlin/app/src/main/java/com/leafguard/ResultActivity.kt` displays disease, confidence, symptoms, treatment, and prevention values returned by the backend.
+- `backend-api/` must still be runnable because Android needs it during the demo.
+
+### Files you should create or update this week
+
+- `app/build.gradle` for networking dependencies.
+- `AndroidManifest.xml` and optionally `network_security_config.xml`.
+- `network/ApiService.kt`, `network/RetrofitClient.kt`, and `network/PredictionResponse.kt`.
+- `ScanActivity.kt` for upload, loading state, and failure handling.
+- `ResultActivity.kt` and `activity_result.xml` for displaying returned data.
+- Matching Java-track files under `android-app/` if you maintain both tracks.
+- `docs/evidence/week-05/` for successful upload and backend-unavailable error proof.
+
+### What this repository state can do
+
+- Capture or choose an image, upload it to the running backend, parse JSON, and show a result screen.
+- Handle slow network, server failure, or missing backend with a visible error instead of a crash.
+- Demonstrate Android networking, JSON parsing, and asynchronous callbacks.
+
+### What this repository state cannot do
+
+- It still cannot guarantee real AI accuracy if the backend is returning mock predictions.
+- It cannot remember scan results after the app closes.
+- It cannot provide a complete offline diagnosis.
+- It cannot yet browse a full disease reference library.
+
 ---
 
 ## Weekly Objective

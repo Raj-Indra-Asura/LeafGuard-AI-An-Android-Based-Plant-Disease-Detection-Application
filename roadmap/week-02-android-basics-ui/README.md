@@ -45,6 +45,45 @@ By the end of Week 02, the app should:
 
 ---
 
+## Repository State After Week 02
+
+Week 02 keeps the Week 01 planning evidence and adds the first runnable Android app shell. From this point onward, the repository is no longer only a learning plan; it also contains a buildable mobile project.
+
+### Structure to browse after this week
+
+- `android-app-kotlin/` is the primary app project to open in Android Studio.
+- `android-app/` is the Java twin that should mirror the same feature set.
+- `android-app-kotlin/app/build.gradle`, `settings.gradle`, and root `build.gradle` define the Android build.
+- `android-app-kotlin/app/src/main/AndroidManifest.xml` declares the app and its Activities.
+- `android-app-kotlin/app/src/main/java/com/leafguard/` contains screen classes such as `MainActivity`, `ScanActivity`, `ResultActivity`, `HistoryActivity`, `DiseaseLibraryActivity`, `SettingsActivity`, and optionally `AnalyticsActivity`.
+- `android-app-kotlin/app/src/main/res/layout/` contains the matching XML layouts such as `activity_main.xml`, `activity_scan.xml`, `activity_result.xml`, `activity_history.xml`, `activity_disease_library.xml`, and `activity_settings.xml`.
+- `android-app-kotlin/app/src/main/res/values/` contains shared resources such as `strings.xml`, `colors.xml`, and `themes.xml`.
+
+### Files you should create or update this week
+
+- Android Activity files for the planned placeholder screens.
+- XML layout files for each placeholder screen.
+- `AndroidManifest.xml` so every Activity can open.
+- `strings.xml`, `colors.xml`, and `themes.xml` so visible text and styling are managed as resources.
+- `docs/evidence/week-02/` screenshots showing launch and navigation.
+- `progress-tracker.md` after the Week 02 validation passes.
+
+### What this repository state can do
+
+- Build and launch the Android app on an emulator or device.
+- Show a Home screen and planned placeholder screens.
+- Navigate between screens using explicit Intents.
+- Prove the project structure, Gradle setup, resources, and Activity registration work.
+
+### What this repository state cannot do
+
+- It cannot use real camera or gallery input.
+- It cannot send an image to a backend.
+- It cannot display a real prediction.
+- It cannot save history, parse the disease library, or run offline AI.
+
+---
+
 ## New Words This Week
 
 | Term | Beginner Definition |

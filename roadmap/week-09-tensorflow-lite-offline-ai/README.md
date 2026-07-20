@@ -19,6 +19,44 @@ This week you make the app diagnose a leaf **without any internet**, by running 
 - Worked answers: [`../../solutions/week-09/`](../../solutions/week-09/)
 - Notebook walkthrough: [`../../notebooks/week-09/`](../../notebooks/week-09/)
 
+## Repository State After Week 09
+
+Week 09 keeps the cloud path, history, and disease library, then adds on-device inference. The repository now has both prediction modes: backend cloud mode and Android offline mode.
+
+### Structure to browse after this week
+
+- `android-app-kotlin/app/src/main/assets/model.tflite` is the on-device model asset. In this repository it may be a placeholder until replaced with a real trained model.
+- `android-app-kotlin/app/src/main/assets/labels.txt` defines the output label order for the Android classifier.
+- `android-app-kotlin/app/src/main/java/com/leafguard/ml/TFLiteClassifier.kt` loads the model, preprocesses the bitmap, runs inference, maps labels, and provides fallback behavior.
+- `ScanActivity.kt` chooses between cloud upload and offline prediction, then sends the result to the same result/history flow.
+- `ResultActivity.kt`, `HistoryActivity.kt`, and the Room files should work for both cloud and offline predictions.
+- `model/model-acquisition-guide.md`, `model/convert_model.py`, `model/validate_tflite.py`, and `model/model_contract.py` support model preparation and validation.
+- The Java track should include the same assets and equivalent classifier behavior if both tracks are maintained.
+
+### Files you should create or update this week
+
+- `app/src/main/assets/model.tflite`.
+- `app/src/main/assets/labels.txt`.
+- `ml/TFLiteClassifier.kt`.
+- `ScanActivity.kt` for offline mode selection and inference routing.
+- `app/build.gradle` for TensorFlow Lite dependency if not already present.
+- `model/model-notes.md` with the final on-device model contract.
+- `docs/evidence/week-09/` showing airplane-mode prediction and cloud/offline comparison.
+
+### What this repository state can do
+
+- Run a complete prediction flow without internet when a valid TFLite model is present.
+- Keep the same result, history, and disease-guidance screens for both cloud and offline predictions.
+- Compare backend latency with on-device latency.
+- Continue to run with a documented fallback if the checked-in model asset is only a placeholder.
+
+### What this repository state cannot do
+
+- It cannot guarantee medically or agriculturally reliable results without an approved trained model and validation images.
+- It cannot yet notify the user or share a result through other apps.
+- It cannot attach GPS location to scans unless Week 10 is implemented.
+- It is not yet fully tested, hardened, or packaged for submission.
+
 ---
 
 ## Weekly Objective

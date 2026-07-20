@@ -19,6 +19,43 @@ This week you build an offline encyclopedia of the 10 plant diseases the app kno
 - Worked answers: [`../../solutions/week-08/`](../../solutions/week-08/)
 - Notebook walkthrough: [`../../notebooks/week-08/`](../../notebooks/week-08/)
 
+## Repository State After Week 08
+
+Week 08 keeps the saved scan history and adds an offline disease knowledge base. The repository now contains structured reference data that the app can browse and use to explain predictions.
+
+### Structure to browse after this week
+
+- `android-app-kotlin/app/src/main/assets/diseases.xml` contains the disease library packaged with the app.
+- `android-app-kotlin/app/src/main/assets/labels.txt` must stay aligned with the disease names when prediction labels are used for lookup.
+- `android-app-kotlin/app/src/main/java/com/leafguard/DiseaseLibraryActivity.kt` parses and displays the disease library.
+- `android-app-kotlin/app/src/main/res/layout/activity_disease_library.xml` defines the library screen.
+- `android-app-kotlin/app/src/main/res/layout/item_disease_library.xml` defines one disease row or card.
+- `ResultActivity.kt` and `HistoryDetailActivity.kt` can use the parsed library to show symptoms, treatment, and prevention.
+- The Java twin should include the same `assets/diseases.xml` and equivalent parser behavior.
+
+### Files you should create or update this week
+
+- `app/src/main/assets/diseases.xml`.
+- `DiseaseLibraryActivity.kt`.
+- `activity_disease_library.xml` and `item_disease_library.xml`.
+- `ResultActivity.kt` or `HistoryDetailActivity.kt` if prediction results are enriched from XML.
+- `strings.xml` for library labels, empty states, and search text.
+- `docs/evidence/week-08/` screenshots showing library browsing, search, and result guidance.
+
+### What this repository state can do
+
+- Bundle disease information inside the app without needing internet.
+- Parse XML using Android file I/O and `XmlPullParser`.
+- Show a browsable disease library.
+- Connect prediction labels to symptoms, treatment, and prevention text when names match.
+
+### What this repository state cannot do
+
+- It cannot run the ML model on the phone yet.
+- It cannot diagnose without the backend unless Week 09 offline AI is added.
+- It cannot notify, share, or attach location yet.
+- It still depends on correct label-to-disease name matching.
+
 ---
 
 ## Weekly Objective

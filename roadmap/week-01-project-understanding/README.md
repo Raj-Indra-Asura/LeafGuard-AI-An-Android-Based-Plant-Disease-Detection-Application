@@ -48,6 +48,45 @@ That is correct for Week 01. Do not pretend the app is built yet.
 
 ---
 
+## Repository State After Week 01
+
+Week 01 is the repository setup and orientation state. The current repository may already contain later-week code, but when you study Week 01 you should browse it as a planned project, not as a finished app.
+
+### Structure to recognize
+
+- `README.md`, `START_HERE.md`, `LEARNING_PATH.md`, `PRODUCT_PROGRESS_MAP.md`, and `progress-tracker.md` explain the learning system and the 12-week path.
+- `roadmap/week-01-project-understanding/` contains this week's README, learning notes, exercises, build task, validation checklist, quiz, and reflection.
+- `docs/evidence/week-01/` is where Week 01 proof belongs.
+- `android-app-kotlin/` is the primary future Android track.
+- `android-app/` is the secondary Java comparison track.
+- `backend-api/` and `model/` are future backend and machine-learning landmarks only.
+
+### Files you should create or update this week
+
+- `docs/evidence/week-01/product-idea.md`
+- `docs/evidence/week-01/user-journey.md`
+- `docs/evidence/week-01/screen-map.md`
+- `docs/evidence/week-01/system-sketch.md` or `docs/evidence/week-01/system-sketch.png`
+- `docs/evidence/week-01/week-growth-map.md`
+- `docs/evidence/week-01/week-01-validation.md`
+- `progress-tracker.md` after validation is complete
+
+### What this repository state can do
+
+- Show the learning roadmap and the boundaries of each week.
+- Explain where Android, backend, model, documentation, exercises, notebooks, and evidence will live.
+- Store beginner planning evidence before any coding starts.
+- Help you answer: "What are we building, and what is intentionally out of scope right now?"
+
+### What this repository state cannot do
+
+- It cannot prove Android runtime behavior.
+- It cannot show a working screen, camera flow, backend request, database record, XML parser, or AI prediction.
+- It cannot be submitted as a finished app.
+- It should not be used to claim later-week features are already understood.
+
+---
+
 ## New Words This Week
 
 | Term | Beginner Definition |

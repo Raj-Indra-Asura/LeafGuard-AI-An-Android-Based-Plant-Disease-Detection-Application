@@ -14,6 +14,45 @@ See the shared [glossary](../../GLOSSARY.md) for more. The key terms this week:
 - **Share intent** — an `Intent` with action `ACTION_SEND` that asks Android to show the list of apps you can share to.
 - **Location / GPS** — the phone's position on Earth, given as two numbers: latitude and longitude.
 
+## Repository State After Week 10
+
+Week 10 keeps the complete core diagnosis flow and adds Android system integrations. The repository now shows how LeafGuard communicates with the operating system, other apps, and optional device location services.
+
+### Structure to browse after this week
+
+- `android-app-kotlin/app/src/main/java/com/leafguard/utils/NotificationHelper.kt` creates the notification channel and posts scan reminders.
+- `android-app-kotlin/app/src/main/AndroidManifest.xml` includes notification and location permissions when required by the target Android version.
+- `MainActivity.kt` or another startup point creates the notification channel before posting notifications.
+- `ResultActivity.kt` and `HistoryDetailActivity.kt` include share-intent behavior for diagnosis text or image results.
+- `ScanActivity.kt` may request location and attach latitude/longitude to a scan.
+- `database/ScanRecord.kt`, `ScanDao.kt`, and related history UI may include latitude and longitude fields.
+- `strings.xml` contains user-facing notification, share, and permission messages.
+- The Java track should mirror the same system-integration behavior.
+
+### Files you should create or update this week
+
+- `utils/NotificationHelper.kt`.
+- `AndroidManifest.xml` for `POST_NOTIFICATIONS`, location permissions, and any required system declarations.
+- `MainActivity.kt` for channel setup or reminder entry points.
+- `ResultActivity.kt` and `HistoryDetailActivity.kt` for share actions.
+- `ScanActivity.kt` and Room files if saving optional location with scans.
+- `strings.xml` for notification, share, and location text.
+- `docs/evidence/week-10/` showing notification, share sheet, and optional location proof.
+
+### What this repository state can do
+
+- Post a reminder notification through a proper Android notification channel.
+- Open the Android share sheet with a scan result.
+- Optionally request location and save coordinates with a scan.
+- Demonstrate app-to-system and app-to-app communication.
+
+### What this repository state cannot do
+
+- It cannot prove long-term stability until Week 11 testing is complete.
+- It cannot be considered final submission packaging yet.
+- It should not request permissions silently; denial paths still need testing evidence.
+- It still needs a release build and final documentation in Week 12.
+
 ---
 
 ## Weekly Objective

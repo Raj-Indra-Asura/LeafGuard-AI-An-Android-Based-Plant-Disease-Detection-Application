@@ -22,6 +22,44 @@ See the shared [glossary](../../GLOSSARY.md) for more. The key terms this week:
 > [`../../solutions/week-11/`](../../solutions/week-11/) and the practice files live in
 > [`../../exercises/testing/`](../../exercises/testing/).
 
+## Repository State After Week 11
+
+Week 11 keeps every feature from Weeks 01-10 and adds proof. The repository should now contain automated tests, manual test evidence, debugging notes, and performance measurements that show the app is reliable enough to package.
+
+### Structure to browse after this week
+
+- `android-app-kotlin/app/src/test/java/com/leafguard/network/PredictionResponseTest.kt` checks JSON parsing with JUnit.
+- `android-app-kotlin/app/src/androidTest/java/com/leafguard/MainActivityTest.kt` checks visible UI behavior with Espresso.
+- The Java twin under `android-app/app/src/test/` and `android-app/app/src/androidTest/` should contain equivalent tests if both tracks are maintained.
+- `android-app-kotlin/app/build.gradle` includes test dependencies and instrumentation runner configuration.
+- `docs/evidence/week-11/` should contain test screenshots, Logcat snippets, performance tables, and manual test results.
+- `exercises/testing/`, `solutions/week-11/`, and `notebooks/week-11/` contain practice and worked testing material.
+- `VALIDATION-REPORT.md` or final documentation can summarize the verified state.
+
+### Files you should create or update this week
+
+- Unit tests under `app/src/test/`.
+- Instrumented UI tests under `app/src/androidTest/`.
+- `app/build.gradle` if test libraries or runners are missing.
+- A Week 11 manual test table in evidence or report notes.
+- Debugging notes with at least the important Logcat findings and fixes.
+- Performance notes comparing cloud and offline latency.
+- `progress-tracker.md` after all Week 11 validation passes.
+
+### What this repository state can do
+
+- Run automated unit tests for response parsing and other isolated logic.
+- Run UI tests on an emulator or device.
+- Provide manual evidence for edge cases such as no internet, permission denial, wrong image, empty history, and backend failure.
+- Show latency measurements for cloud and offline prediction paths.
+
+### What this repository state cannot do
+
+- It cannot replace manual final-device acceptance testing.
+- It cannot prove release packaging until a Week 12 APK is built and installed.
+- It cannot make an inaccurate model accurate; it can only prove the app handles the model output correctly.
+- It should not be submitted without final report, APK, slides, and demo video packaging.
+
 ---
 
 ## Weekly Objective

@@ -28,6 +28,46 @@ See the full [glossary](../../GLOSSARY.md) for more terms.
 - Notebooks: [Week 06 notebooks](../../notebooks/week-06/)
 - Glossary: [GLOSSARY.md](../../GLOSSARY.md)
 
+## Repository State After Week 06
+
+Week 06 keeps the Week 05 client-server flow and upgrades the backend prediction path from a simple mock response toward model-driven inference. The repository should now show the backend model contract clearly, even if the real trained model file is supplied outside Git.
+
+### Structure to browse after this week
+
+- `backend-api/main.py` still owns the `/predict` route and response shape Android consumes.
+- `backend-api/model_loader.py` owns model loading, preprocessing, prediction, and mock fallback behavior.
+- `backend-api/config.py` defines values such as `MODEL_PATH`, `LABELS_PATH`, `IMAGE_SIZE`, and `USE_MOCK`.
+- `backend-api/labels.py` loads and formats class labels.
+- `backend-api/models/` is the expected local folder for the approved backend model, commonly `leafguard_model.keras`.
+- `model/model-notes.md` documents the model contract: input size, normalization, labels, output shape, and limitations.
+- `model/labels-38.txt` or the configured backend label file defines the class order used by the model.
+- Android networking files from Week 05 should not change their JSON field names unless the backend contract changes too.
+
+### Files you should create or update this week
+
+- `backend-api/model_loader.py` for real-model loading and fallback rules.
+- `backend-api/config.py` for model path, image size, and mock-mode configuration.
+- `backend-api/main.py` for readiness and prediction responses.
+- `model/model-notes.md` with the exact model input/output contract.
+- `backend-api/README.md` or Week 06 evidence notes with real-model setup instructions.
+- `docs/evidence/week-06/` with backend readiness, model-loaded state, and prediction proof.
+
+### What this repository state can do
+
+- Run cloud prediction through a defined backend inference pipeline.
+- Report whether the backend is using a real model or mock fallback.
+- Keep Android and backend aligned through a stable `/predict` JSON contract.
+- Explain model limitations and preprocessing requirements from repository documentation.
+
+### What this repository state cannot do
+
+- It cannot save predictions locally in the Android app.
+- It cannot show the XML disease encyclopedia yet.
+- It cannot run TensorFlow Lite on the phone yet.
+- It cannot be considered accurate unless the approved real model is present and validated.
+
+---
+
 ## 1. Overview
 
 This week marks the critical transition from placeholder/mock predictions to a correctly wired inference pipeline in your FastAPI backend. You will integrate a convolutional neural network (CNN) model trained for plant disease detection, implement proper image preprocessing pipelines, decode model outputs using label mapping, and return confidence scores to your Android client. This transforms LeafGuard AI from a proof-of-concept into a functional disease detection system.
