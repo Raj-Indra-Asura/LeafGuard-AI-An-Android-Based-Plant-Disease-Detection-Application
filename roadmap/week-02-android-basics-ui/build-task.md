@@ -102,12 +102,20 @@ Minimal example:
     <string name="open_history">Open History</string>
     <string name="open_library">Open Disease Library</string>
     <string name="open_settings">Open Settings</string>
+    <string name="scan_title">Scan</string>
+    <string name="result_title">Result</string>
+    <string name="history_title">History</string>
+    <string name="library_title">Disease Library</string>
+    <string name="settings_title">Settings and About</string>
     <string name="placeholder_scan">Image input will be added in Week 03.</string>
     <string name="placeholder_result">Real prediction results will be added after networking and model work.</string>
     <string name="placeholder_history">Saved scan history will be added in Week 07.</string>
     <string name="placeholder_library">The XML disease library will be added in Week 08.</string>
+    <string name="placeholder_settings">Course project shell. Settings options will grow in later weeks.</string>
 </resources>
 ```
+
+The finished Week 02 `strings.xml` holds 20 strings. The full file, and every other Week 02 file, is listed with exact code and line counts in [`learning-notes.md` section 10](learning-notes.md#10-end-of-week-02-file-inventory-exact-files-exact-code-exact-size).
 
 ### Why this code exists
 
@@ -246,18 +254,21 @@ Example `activity_scan.xml`:
     android:background="@color/screen_background">
 
     <TextView
+        android:id="@+id/textScanTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Scan"
+        android:text="@string/scan_title"
         android:textColor="@color/text_primary"
         android:textSize="24sp" />
 
     <TextView
+        android:id="@+id/textScanPlaceholder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
         android:text="@string/placeholder_scan"
-        android:textColor="@color/text_secondary" />
+        android:textColor="@color/text_secondary"
+        android:textSize="16sp" />
 </LinearLayout>
 ```
 
