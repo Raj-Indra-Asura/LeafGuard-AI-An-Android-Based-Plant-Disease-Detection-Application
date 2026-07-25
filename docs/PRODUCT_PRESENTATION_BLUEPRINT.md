@@ -1745,7 +1745,8 @@ WHAT IS NOT YET DONE — STATED PLAINLY
   ✗ Accuracy measured on only 3 of 38 classes (30 tomato images), not leaf-group separated
   ✗ No production signing key; release APKs are unsigned or debug-signed
   ✗ The published v0.2.0-beta GitHub Release asset is the HISTORICAL PLACEHOLDER build
-      (SHA-256 020c1c25…1abf, containing a 77-byte assets/model.tflite with no TFL3 header)
+      (SHA-256 abbreviated for the slide as 020c1c25…1abf — full value in the appendix,
+       containing a 77-byte assets/model.tflite with no TFL3 header)
       → it must be replaced or withdrawn; the validation run did not modify it
   ✗ Cloud mode has no authentication, rate limiting, or HTTPS deployment
   ✗ Guidance text exists for 10 of 38 classes
@@ -2090,8 +2091,10 @@ Every value below was read from the repository. Use these verbatim; do not round
 | Notification channel / id | `leafguard_scan_reminders` / 1001 | `NotificationHelper.kt` |
 | SharedPreferences keys | `pref_backend_url`, `pref_confidence_threshold` | `SettingsActivity.kt` |
 | Cleartext allow-list | 10.0.2.2, 10.0.3.2, 127.0.0.1, localhost | `network_security_config.xml` |
-| Keras artifact | 25,143,175 bytes, SHA-256 `08f285af…b325f` | `model-provenance.txt` |
-| TFLite artifact | 9,056,916 bytes, SHA-256 `22ea2d4a…41f9` | model validation evidence |
+| Keras artifact | 25,143,175 bytes, SHA-256 `08f285aff6d9e1ab88d4d5b2269f1cc977714003755f8553887edbf8691b325f` | `model-provenance.txt` |
+| TFLite artifact | 9,056,916 bytes, SHA-256 `22ea2d4a47a52b2d9b150e0f74b113def0f12bbdb59209f7e0bce2a9701d41f9` | model validation evidence |
+| Placeholder release APK (to be withdrawn) | SHA-256 `020c1c25760cd4737b7952c2e77944538e6e95732e9955bbdc0b5c6f3d401abf` | model validation evidence |
+| Canonical labels file | SHA-256 `23eeb476d27d53fea16ba988aaca02d52673ba780412bfc19f4a8aa72d36b53d` | model validation evidence |
 | Parity | 30/30 top class, max delta 0.000006 | model validation evidence |
 | Limited-set accuracy | 28/30 (93.3 %) across 3 tomato classes | model validation evidence |
 | Upstream model commit | `f6165bd93524dfb77a9629aae70db845832d1b01` (MIT) | `model-provenance.txt` |
