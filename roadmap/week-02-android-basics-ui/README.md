@@ -61,12 +61,23 @@ Week 02 keeps the Week 01 planning evidence and adds the first runnable Android 
 
 ### Files you should create or update this week
 
-- Android Activity files for the planned placeholder screens.
-- XML layout files for each placeholder screen.
-- `AndroidManifest.xml` so every Activity can open.
-- `strings.xml`, `colors.xml`, and `themes.xml` so visible text and styling are managed as resources.
+Week 02 requires exactly **16 Android source/resource files** (plus the generated Gradle scaffold):
+
+| Group | Count | Files |
+|---|---:|---|
+| Manifest | 1 | `AndroidManifest.xml` |
+| Kotlin Activities | 6 | `MainActivity.kt` (real navigation) + 5 placeholder Activities, 12 lines each |
+| XML layouts | 6 | `activity_main.xml` (real UI) + 5 placeholder layouts, 25 lines each |
+| Value resources | 3 | `strings.xml` (20 strings), `colors.xml` (6 colors), `themes.xml` (1 style) |
+
+Optional: `AnalyticsActivity.kt` + `activity_analytics.xml` if your Week 01 screen map included an Analytics screen.
+
+Also update outside the app project:
+
 - `docs/evidence/week-02/` screenshots showing launch and navigation.
 - `progress-tracker.md` after the Week 02 validation passes.
+
+> **Exact contents of every one of these files** — full code, line counts, what is real, what is a placeholder, and what must not exist yet — are in [`learning-notes.md` section 10](learning-notes.md#10-end-of-week-02-file-inventory-exact-files-exact-code-exact-size).
 
 ### What this repository state can do
 
@@ -230,20 +241,26 @@ LeafGuard-AI/
 |   |-- week-01/{product-idea.md, user-journey.md, screen-map.md, system-sketch.*, week-growth-map.md, week-01-validation.md}
 |   `-- week-02/{README.md, launch screenshots, navigation screenshots, validation notes}
 |-- android-app-kotlin/
-|   |-- build.gradle
-|   |-- settings.gradle
+|   |-- build.gradle                       (4 lines)
+|   |-- settings.gradle                    (17 lines)
+|   |-- gradle.properties                  (3 lines)
+|   |-- gradlew, gradlew.bat, gradle/wrapper/   (generated, never hand-edited)
 |   `-- app/
-|       |-- build.gradle
+|       |-- build.gradle                   (40 lines, exactly 4 dependencies)
+|       |-- proguard-rules.pro             (generated, untouched)
 |       `-- src/main/
-|           |-- AndroidManifest.xml
-|           |-- java/com/leafguard/{MainActivity.kt, ScanActivity.kt, ResultActivity.kt, HistoryActivity.kt, DiseaseLibraryActivity.kt, SettingsActivity.kt, AnalyticsActivity.kt}
+|           |-- AndroidManifest.xml        (37 lines, 6 Activities declared)
+|           |-- java/com/leafguard/{MainActivity.kt (34), ScanActivity.kt (12), ResultActivity.kt (12), HistoryActivity.kt (12), DiseaseLibraryActivity.kt (12), SettingsActivity.kt (12)}
 |           `-- res/
-|               |-- layout/{activity_main.xml, activity_scan.xml, activity_result.xml, activity_history.xml, activity_disease_library.xml, activity_settings.xml, activity_analytics.xml}
-|               |-- values/{strings.xml, colors.xml, themes.xml}
-|               |-- drawable/{bg_feature_row.xml, ic_nav_home.xml, ic_nav_scan.xml, ic_nav_library.xml, ic_nav_analytics.xml, ic_nav_about.xml}
-|               `-- menu/bottom_nav_menu.xml
-`-- android-app/ (Java mirror of the same Week 02 Android shell)
+|               |-- layout/{activity_main.xml (56), activity_scan.xml (25), activity_result.xml (25), activity_history.xml (25), activity_disease_library.xml (25), activity_settings.xml (25)}
+|               `-- values/{strings.xml (25), colors.xml (9), themes.xml (9)}
+|
+|   (optional, only if your screen map has Analytics: AnalyticsActivity.kt + activity_analytics.xml)
+|
+`-- android-app/ (Java mirror of the same 16-file Week 02 Android shell)
 ```
+
+Not yet present after Week 02: `res/xml/`, `assets/`, `res/menu/`, custom `res/drawable/`, and the `network/`, `database/`, `ml/`, `utils/`, `ui/` packages. Each arrives in the week that needs it.
 
 ---
 

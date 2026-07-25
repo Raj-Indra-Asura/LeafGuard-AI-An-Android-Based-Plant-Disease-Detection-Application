@@ -117,11 +117,12 @@ Create `res/xml/file_provider_paths.xml`:
 
 ## Step 3: Add Week 03 Strings
 
-In `strings.xml`, add:
+In `strings.xml`, delete `placeholder_scan` (the Scan screen is no longer a placeholder), change `scan_title` to `Scan Leaf`, and add the rest:
 
 ```xml
 <string name="scan_title">Scan Leaf</string>
 <string name="scan_instruction">Take a photo or choose an image from your device.</string>
+<string name="scan_preview_description">Preview of the selected leaf image</string>
 <string name="take_photo">Take Photo</string>
 <string name="choose_from_gallery">Choose from Gallery</string>
 <string name="no_image_selected">No image selected yet.</string>
@@ -131,6 +132,8 @@ In `strings.xml`, add:
 <string name="gallery_cancelled">Gallery closed. No image selected.</string>
 <string name="camera_file_error">Could not prepare a file for the camera.</string>
 ```
+
+The finished Week 03 `strings.xml` holds 29 strings. Every Week 03 file is listed with exact code and line counts in [`learning-notes.md` section 11](learning-notes.md#11-end-of-week-03-file-inventory-exact-files-exact-code-exact-size).
 
 ### Why this exists
 
@@ -168,7 +171,7 @@ Update `activity_scan.xml` so it has a preview and two image input buttons.
         android:layout_height="280dp"
         android:layout_marginTop="20dp"
         android:background="#E8F5E9"
-        android:contentDescription="@string/scan_title"
+        android:contentDescription="@string/scan_preview_description"
         android:scaleType="centerCrop" />
 
     <TextView

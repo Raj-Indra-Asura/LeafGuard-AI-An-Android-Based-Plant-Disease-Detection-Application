@@ -58,12 +58,22 @@ Week 03 keeps the Week 02 navigation shell and upgrades the Scan screen into the
 
 ### Files you should create or update this week
 
-- `ScanActivity.kt` or its Java twin.
-- `activity_scan.xml`.
-- `AndroidManifest.xml`.
-- `res/xml/file_provider_paths.xml`.
-- `strings.xml` for camera, gallery, preview, and error messages.
+Week 03 adds **1 new file**, rewrites **2 files**, extends **2 files**, and leaves the other **12 Week 02 files untouched**. Total: **17 required Android files**.
+
+| Change | File | Size |
+|---|---|---|
+| NEW | `res/xml/file_provider_paths.xml` | 6 lines |
+| REWRITTEN | `ScanActivity.kt` | 12 → 132 lines |
+| REWRITTEN | `res/layout/activity_scan.xml` | 25 → 60 lines |
+| EXTENDED | `AndroidManifest.xml` | 37 → 53 lines (camera permission + FileProvider) |
+| EXTENDED | `res/values/strings.xml` | 25 → 35 lines (20 → 29 strings) |
+| UNCHANGED | `app/build.gradle` | 40 lines — **no new dependency is needed this week** |
+
+Also update outside the app project:
+
 - `docs/evidence/week-03/` screenshots or screen recordings for camera, gallery, denial, and cancellation.
+
+> **Exact contents of every changed file** — full code, per-block line counts, why each line exists, and what must still not exist — are in [`learning-notes.md` section 11](learning-notes.md#11-end-of-week-03-file-inventory-exact-files-exact-code-exact-size).
 
 ### What this repository state can do
 
@@ -214,17 +224,29 @@ LeafGuard-AI/
 |   |-- week-02/{launch and navigation evidence}
 |   `-- week-03/{README.md, camera proof, gallery proof, permission-denial proof, cancellation proof}
 |-- android-app-kotlin/
-|   `-- app/src/main/
-|       |-- AndroidManifest.xml
-|       |-- java/com/leafguard/{MainActivity.kt, ScanActivity.kt, ResultActivity.kt, HistoryActivity.kt, DiseaseLibraryActivity.kt, SettingsActivity.kt, AnalyticsActivity.kt}
-|       `-- res/
-|           |-- layout/{activity_main.xml, activity_scan.xml, activity_result.xml, activity_history.xml, activity_disease_library.xml, activity_settings.xml, activity_analytics.xml}
-|           |-- values/{strings.xml, colors.xml, themes.xml}
-|           |-- xml/file_provider_paths.xml
-|           |-- drawable/{bg_dashed_upload.xml, bg_feature_row.xml, ic_nav_*.xml}
-|           `-- menu/bottom_nav_menu.xml
-`-- android-app/ (Java mirror with camera/gallery support)
+|   |-- build.gradle, settings.gradle, gradle.properties   (unchanged from Week 02)
+|   `-- app/
+|       |-- build.gradle                       (40 lines, UNCHANGED - no new dependency)
+|       `-- src/main/
+|           |-- AndroidManifest.xml            (53 lines, EXTENDED: camera permission + FileProvider)
+|           |-- java/com/leafguard/
+|           |   |-- MainActivity.kt            (34, unchanged, real)
+|           |   |-- ScanActivity.kt            (132, REWRITTEN, real image input)
+|           |   |-- ResultActivity.kt          (12, unchanged, placeholder)
+|           |   |-- HistoryActivity.kt         (12, unchanged, placeholder)
+|           |   |-- DiseaseLibraryActivity.kt  (12, unchanged, placeholder)
+|           |   `-- SettingsActivity.kt        (12, unchanged, placeholder)
+|           `-- res/
+|               |-- layout/
+|               |   |-- activity_main.xml      (56, unchanged)
+|               |   |-- activity_scan.xml      (60, REWRITTEN: preview + 2 buttons)
+|               |   `-- activity_result.xml, activity_history.xml, activity_disease_library.xml, activity_settings.xml (25 each, unchanged placeholders)
+|               |-- values/{strings.xml (35, EXTENDED), colors.xml (9), themes.xml (9)}
+|               `-- xml/file_provider_paths.xml   (6 lines, NEW)
+`-- android-app/ (Java mirror with the same camera/gallery behavior)
 ```
+
+Still not present after Week 03: `assets/`, `res/menu/`, custom `res/drawable/`, `network_security_config.xml`, and the `network/`, `database/`, `ml/`, `utils/`, `ui/` packages.
 
 ---
 
