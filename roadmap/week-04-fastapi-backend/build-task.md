@@ -143,7 +143,7 @@ Do not expose the development server to the public internet.
 2. Call `/diseases`.
 3. Open `/predict`.
 4. Upload a sample leaf image under `image`.
-5. verify 200 and inspect every response field.
+5. Verify 200 and inspect every response field.
 6. Upload an invalid file and verify a safe error.
 
 Use an image from `sample-images/` if needed.
