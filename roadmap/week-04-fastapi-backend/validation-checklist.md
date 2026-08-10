@@ -6,6 +6,29 @@
 
 You may not move to Week 05 until every required item is yes.
 
+## How to Use This Checklist
+
+Validate in order after completing the build task. Record each result in `docs/evidence/week-04/validation.md` using:
+
+```text
+Item:
+Method: automated test | /docs | source inspection | repository check
+Expected:
+Actual:
+Evidence file:
+Result: PASS | FAIL | NOT TESTED
+```
+
+This checklist contains **57 required items** across nine sections. A checked box means you observed evidence, not merely that the expected code exists. `NOT TESTED` is not a pass.
+
+| Validation layer | Sections | What it proves |
+|---|---|---|
+| Progressive boundary | 1 and 7 | Week 03 remains intact and future work is honest |
+| Environment and source | 2 | The standalone backend is reproducible and safely configured |
+| API behavior | 3–5 | Routes, response contract, and failures behave correctly |
+| Repeatability | 6 | Automated and manual observations agree |
+| Learning record | 8–9 | Evidence exists and the student can explain it |
+
 ---
 
 ## 1. Week 03 Connection
@@ -141,6 +164,41 @@ Week 04 is complete only when:
 5. Future-week functionality is not falsely claimed.
 
 If any item is no, remain in Week 04 and fix it before connecting Android.
+
+---
+
+## Evidence Coverage Matrix
+
+Use this matrix before signing off the week:
+
+| Evidence | Checklist sections covered | Minimum visible proof |
+|---|---|---|
+| Health response | 3, 4, 9 | 200, `status`, mock mode, class count |
+| Disease-list response | 3, 9 | 200, count 10, 10 returned records |
+| Valid prediction | 4, 6 | Multipart `image`, 200, all eight fields |
+| Invalid prediction | 5, 6 | Request detail, safe status, safe response detail |
+| Automated test summary | 3–6 | `Ran 8 tests` and `OK` |
+| API contract note | 4, 9 | Method, path, field name, response fields, statuses |
+| Repository boundary check | 1, 2, 7 | No Week 04 Android delta or tracked local environment |
+| Quiz and reflection | 8, 9 | Passing score and evidence-based explanation |
+| Progress record | 8 | Date, work completed, challenge, next step |
+
+## Failure Routing
+
+Do not restart the whole week when one check fails. Return to the smallest responsible boundary:
+
+| Failed observation | Return to | Recheck |
+|---|---|---|
+| Environment import fails | Build Step 2 and backend README setup | Import command |
+| Health mode is wrong | `config.py`, `.env`, Build Step 3 | `/health` |
+| Disease count differs | `DISEASE_INFO`, Build Step 4 | Disease-list test |
+| Missing field does not return 422 | `/predict` signature and FastAPI contract | One missing-field request |
+| Invalid bytes return success | `preprocess_image`, Build Step 5 | Spoofed-image test |
+| Oversized upload is not 413 | Read limit in `/predict` | Oversized test |
+| Real mode silently mocks | `model_loader.py`, Build Step 6 | 503 test and `/health` |
+| Manual and automated results differ | Exercise 6 debugging record | Focused test, then all eight |
+
+After a repair, rerun the focused failing check first and then the complete eight-test suite. Save the final passing result; do not hide the earlier failure from your learning notes.
 
 <!-- NAV_FOOTER_START -->
 

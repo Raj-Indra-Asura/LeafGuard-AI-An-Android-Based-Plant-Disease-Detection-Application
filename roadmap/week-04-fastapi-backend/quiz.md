@@ -6,6 +6,16 @@ Answer after completing the learning notes and build task. This quiz checks Week
 
 Passing score: 14 out of 18.
 
+Complete the quiz without opening the answer key, source files, or learning notes. The quiz checks whether you can independently explain the Week 04 contract after building and validating it.
+
+| Question group | Questions | Skill checked |
+|---|---|---|
+| Multiple choice | 1–8 | Recall exact Week 04 scope and API facts |
+| True or false | 9–13 | Reject common boundary and validation mistakes |
+| Short answer | 14–18 | Trace, justify, and apply the contract |
+
+For short answers, use the exact project terms where they matter: `POST /predict`, multipart `image`, mock mode, JSON, and HTTP status codes. Do not award yourself credit for a vague answer that could describe any backend.
+
 ---
 
 ## Multiple Choice
@@ -132,9 +142,35 @@ Answer:
 
 Short answers should mention the `image` contract, validation, JSON, mock honesty, HTTP errors, Week 05 Android networking, and Week 06 real inference.
 
+### Short-Answer Scoring Guide
+
+Award one point only when the answer includes the required Week 04 ideas:
+
+| Question | Full-credit requirements |
+|---:|---|
+| 14 | Upload field `image`; bounded read; MIME/decode validation; mock prediction; eight-field JSON; cleanup or safe error |
+| 15 | FastAPI binds by parameter name; another field name breaks the request contract and normally produces 422 |
+| 16 | Mock is deterministic contract practice; real inference uses a validated Keras model; mock output is not accuracy evidence |
+| 17 | Three concrete cases with matching outcomes, such as text/spoofed/empty -> 400, oversized -> 413, missing -> 422, unavailable real mode -> 503 |
+| 18 | Three deferred items correctly assigned, including Android networking in Week 05 and real cloud inference in Week 06 |
+
+If an answer contains a correct idea plus a false claim, correct the claim before awarding the point.
+
 ## Readiness Rule
 
 If you score below 14, reread `learning-notes.md`, revisit the build task, and retake the quiz before moving to Week 05.
+
+Use the missed-question map instead of rereading everything:
+
+| Missed questions | Review |
+|---|---|
+| 1, 8, 9, 18 | Week boundary and progressive build sections |
+| 2, 3, 4, 7, 14, 15 | Routes, multipart, JSON, and `/docs` sections |
+| 5, 10, 13, 17 | Input validation and status-code sections |
+| 6, 11, 16 | Mock/real predictor boundary |
+| 12 | `PredictionResult` confidence contract |
+
+After reviewing, write a new answer in your own words rather than changing only the selected letter.
 
 <!-- NAV_FOOTER_START -->
 

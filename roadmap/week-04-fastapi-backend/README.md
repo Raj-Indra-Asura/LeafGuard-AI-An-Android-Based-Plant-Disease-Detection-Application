@@ -10,6 +10,35 @@ The Android app does **not** call the backend this week. A real model is also ou
 
 ---
 
+## How Week 04 Continues the Progressive Build
+
+Each week accepts one verified input from the previous week and produces one verified output for the next week.
+
+| Week | Verified input | New work | Verified output |
+|---:|---|---|---|
+| 01 | Product idea | User journey and weekly slices | A buildable product plan |
+| 02 | Week 01 plan | Android Activities, layouts, and navigation | A runnable six-screen shell |
+| 03 | Week 02 Scan placeholder | Camera, gallery, URI, and preview | A real selected-image URI |
+| **04** | **Week 03 image concept and stable Android shell** | **Standalone FastAPI upload contract** | **A tested server ready for an Android client** |
+| 05 | Week 03 URI + Week 04 API contract | Retrofit and multipart Android upload | Android-to-backend communication |
+
+The Week 03 URI is not sent anywhere during Week 04. It is the conceptual handoff: the learner already understands where an image comes from, and now learns what the future receiver must accept.
+
+```text
+Week 03 Android                         Week 04 backend
+----------------                       ----------------
+selectedImageUri                       POST /predict
+camera/gallery preview                 multipart field: image
+device-side cancellation               server-side validation
+no network code                        no Android code
+          \                            /
+           `-- Week 05 connects both --'
+```
+
+This separation is a CSE 2206 client-server design exercise. If a request fails in Week 04, the failure belongs to the server or request contract; Android networking cannot be the cause yet.
+
+---
+
 ## Product State After Week 04
 
 **Cumulative product contribution: 35%**
@@ -51,6 +80,35 @@ Week 04 keeps all Week 01–03 work and adds the first independently runnable ba
 - `backend-api/test_api.py` verifies the API contract.
 - `backend-api/README.md` explains setup and commands.
 - `docs/evidence/week-04/` stores proof of this week's work.
+
+### Exact Week 04 Implementation State
+
+Week 04 works with **13 required text files** in `backend-api/`: 10 core files and 3 environment/container support files. It changes **0 Android files** and requires **0 real-model artifacts**.
+
+| Group | Count | Files | Required action |
+|---|---:|---|---|
+| Python source and tests | 5 | `main.py`, `config.py`, `model_loader.py`, `labels.py`, `test_api.py` | Read, trace, run, and correct only if validation fails |
+| Contract/data files | 2 | `labels-38.txt`, `README.md` | Preserve label order; follow operational commands |
+| Dependency manifests | 3 | `requirements-base.txt`, `requirements-dev.txt`, `requirements.txt` | Install `requirements-dev.txt` for Week 04 |
+| Support files | 3 | `.env.example`, `.dockerignore`, `Dockerfile` | Understand their boundary; Docker is optional this week |
+| Android changes | 0 | `android-app-kotlin/`, `android-app/` | Leave at the verified Week 03 state |
+
+Exact checked-in sizes:
+
+| File group | Logical lines |
+|---|---:|
+| `main.py` | 216 |
+| `config.py` | 16 |
+| `model_loader.py` | 87 |
+| `labels.py` | 37 |
+| `test_api.py` | 86 |
+| **Python source and tests total** | **442** |
+| `labels-38.txt` | 38 |
+| `README.md` | 920 |
+| Three requirements files | 10 total |
+| `.env.example`, `.dockerignore`, `Dockerfile` | 37 total |
+
+Logical line counts describe the checked-in learning snapshot. They are a reconstruction aid, not a reason to add blank lines or reformat working code. The authoritative implementation explanation is in [learning-notes.md section 12](learning-notes.md#12-end-of-week-04-file-inventory-exact-files-exact-roles-exact-size).
 
 ### Files you should create or update this week
 
@@ -167,6 +225,45 @@ This proves the server-side product state is 35%.
 | 7 | `reflection.md` | Explain what you built and why. |
 
 Move to Week 05 only after the milestone demo and validation checklist pass.
+
+### How the Seven Files Form One Learning Loop
+
+The files are not seven descriptions of the same task. Each has one role and produces an input for the next.
+
+| File | Student action | Concrete output |
+|---|---|---|
+| `README.md` | Identify the product slice and exclusions | Scope statement |
+| `learning-notes.md` | Explain the concepts and exact implementation | Understanding checklist |
+| `exercises.md` | Practise the contract before changing code | Six evidence files |
+| `build-task.md` | Verify the implementation from the inside out | Running API and test output |
+| `validation-checklist.md` | Prove every required behavior and boundary | Completed validation record |
+| `quiz.md` | Recall and apply the concepts without copying | Score of at least 14/18 |
+| `reflection.md` | Explain decisions, failures, and the Week 05 handoff | Reflection answers |
+
+Do not skip directly from the overview to the server command. The progression is deliberately **understand -> practise -> build -> validate -> recall -> reflect**.
+
+---
+
+## Exact Completion Contract
+
+Week 04 is complete only when all of these quantities agree:
+
+| Quantity | Required value |
+|---|---:|
+| API routes | 4 paths: `/`, `/health`, `/diseases`, `/predict` |
+| HTTP methods | 3 GET path operations + 1 POST path operation |
+| Multipart upload field | 1, named exactly `image` |
+| Successful response fields | 8 |
+| Canonical labels | 38 |
+| Reviewed guidance entries | 10 |
+| Automated contract tests | 8 |
+| Required Week 04 evidence items | 9 |
+| Android files modified for Week 04 | 0 |
+| Real model required for Week 04 | 0 |
+
+The eight successful prediction fields are `model_label`, `disease`, `confidence`, `uncertain`, `guidance_available`, `symptoms`, `treatment`, and `prevention`.
+
+The numbers alone do not prove completion. The tests and milestone demo must show that the code behind them behaves correctly.
 
 <!-- NAV_FOOTER_START -->
 
