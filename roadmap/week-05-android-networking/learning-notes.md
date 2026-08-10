@@ -1,240 +1,58 @@
-# Week 05: Learning Notes - Android Networking with Retrofit
+# Week 05 Learning Notes: Android Networking From the Verified Contract
 
-## Related materials
+## Purpose
 
-- Exercises (primary Kotlin): [../../exercises/android-kotlin/](../../exercises/android-kotlin/)
-- Exercises (secondary Java): [../../exercises/android/](../../exercises/android/)
-- Solutions: [../../solutions/week-05/](../../solutions/week-05/)
-- Notebooks: [../../notebooks/week-05/](../../notebooks/week-05/)
-- Glossary: [../../GLOSSARY.md](../../GLOSSARY.md)
+These notes teach only what is needed to connect the Week 03 Android image URI to the Week 04 FastAPI contract. Read the concepts before the exercises and build task.
+
+Section 12 is the authoritative reconstruction appendix. It contains every changed or new Kotlin-track file in full, with exact logical line counts. The snapshot was compiled independently with `./gradlew assembleDebug`.
 
 ---
 
-## Table of Contents
+## 1. How Week 05 Grows From Weeks 03 and 04
 
-1. [HTTP Networking Fundamentals](#1-http-networking-fundamentals)
-2. [Why Retrofit Over Other Options](#2-why-retrofit-over-other-options)
-3. [Retrofit Architecture Deep Dive](#3-retrofit-architecture-deep-dive)
-4. [Multipart File Upload Explained](#4-multipart-file-upload-explained)
-5. [JSON Parsing with Gson](#5-json-parsing-with-gson)
-6. [Asynchronous Programming in Android](#6-asynchronous-programming-in-android)
-7. [Error Handling Strategies](#7-error-handling-strategies)
-8. [Network Security in Android](#8-network-security-in-android)
-9. [Best Practices for Production Apps](#9-best-practices-for-production-apps)
-10. [CSE 2206 Exam Preparation](#10-cse-2206-exam-preparation)
+Week 05 has two verified inputs:
+
+| Input | Existing fact | Week 05 use |
+|---|---|---|
+| Week 03 Android | `selectedImageUri` points to a camera or gallery image | Read its bytes for upload |
+| Week 04 FastAPI | `POST /predict` accepts multipart field `image` | Define the Retrofit interface |
+| Week 04 JSON | Successful response has eight named fields | Define `PredictionResponse` |
+
+```text
+selectedImageUri
+  -> temporary cache file
+  -> RequestBody
+  -> MultipartBody.Part named image
+  -> Retrofit POST /predict
+  -> Week 04 JSON
+  -> PredictionResponse
+  -> Intent extras
+  -> ResultActivity
+```
+
+Week 05 does not alter image capture or the backend response shape. It connects them.
 
 ---
 
-## 1. HTTP Networking Fundamentals
+## 2. Client and Server Responsibilities
 
-### What is HTTP?
+| Android client owns | FastAPI server owns |
+|---|---|
+| User image selection | Upload validation |
+| URI byte access | Image decoding and resizing |
+| Multipart request construction | Mock or real prediction mode |
+| Loading and error feedback | HTTP status codes |
+| JSON parsing | Eight-field JSON response |
+| Result display | Guidance fallback text |
 
-**HTTP (HyperText Transfer Protocol)** is the foundation of data communication on the web. It's a request-response protocol between clients (your Android app) and servers (your FastAPI backend).
-
-#### Request-Response Cycle
-
-```
-Android App                                FastAPI Backend
-    │                                            │
-    │  1. HTTP POST /predict                    │
-    │     Headers:                               │
-    │       Content-Type: multipart/form-data   │
-    │     Body:                                  │
-    │       image: [binary data]                │
-    ├───────────────────────────────────────────>│
-    │                                            │
-    │                                      2. Process
-    │                                         Image
-    │                                            │
-    │  3. HTTP 200 OK Response                  │
-    │     Headers:                               │
-    │       Content-Type: application/json      │
-    │     Body:                                  │
-    │       { "disease": "...", ... }           │
-    │<───────────────────────────────────────────┤
-    │                                            │
-    4. Parse JSON
-       Display Result
-```
-
-### HTTP Methods
-
-| Method | Purpose | Has Body? | Used In LeafGuard |
-|--------|---------|-----------|-------------------|
-| GET | Retrieve data | No | Not used (yet) |
-| POST | Send data to server | Yes | ✅ `/predict` endpoint |
-| PUT | Update existing data | Yes | Not used |
-| DELETE | Remove data | No | Not used |
-| PATCH | Partial update | Yes | Not used |
-
-**Why POST for image upload?**
-- POST allows request body (needed for image data)
-- GET requests have URL length limits, can't send large files
-- POST is semantically correct for creating/processing resources
-
-### HTTP Status Codes
-
-| Code Range | Meaning | Examples |
-|------------|---------|----------|
-| 2xx | Success | 200 OK, 201 Created |
-| 3xx | Redirection | 301 Moved Permanently |
-| 4xx | Client Error | 400 Bad Request, 404 Not Found |
-| 5xx | Server Error | 500 Internal Server Error |
-
-**In LeafGuard AI:**
-- `200 OK`: Image processed successfully, prediction returned
-- `400 Bad Request`: Invalid image format or missing file
-- `500 Internal Server Error`: Model inference failed
-
-### Content-Type Header
-
-Tells the server what format the request body is in:
-
-- `application/json`: JSON data
-- `multipart/form-data`: File uploads with form fields
-- `text/plain`: Plain text
-- `application/x-www-form-urlencoded`: HTML form data
-
-**LeafGuard uses `multipart/form-data`** for image upload.
+A network failure does not mean the model is wrong. A 400 response does not mean Android could not reach the server. Separating responsibilities makes debugging testable.
 
 ---
 
-## 2. Why Retrofit Over Other Options
+## 3. Why Retrofit
 
-### Android HTTP Networking Options
+Retrofit turns an annotated Kotlin interface into an HTTP client implementation.
 
-#### Option 1: HttpURLConnection (Standard Java)
-
-```java
-// ❌ Verbose, error-prone
-URL url = new URL("http://10.0.2.2:8000/predict");  // Android emulator → your computer
-HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-connection.setRequestMethod("POST");
-connection.setDoOutput(true);
-// ... 50 more lines of boilerplate code
-```
-
-**Problems:**
-- Requires manual threading (can't run on main thread)
-- Manual JSON parsing
-- Complex multipart encoding
-- Poor error handling
-- Lots of boilerplate code
-
-#### Option 2: OkHttp (Square Library)
-
-```java
-// 😐 Better than HttpURLConnection, still verbose
-OkHttpClient client = new OkHttpClient();
-RequestBody requestBody = new MultipartBody.Builder()
-    .setType(MultipartBody.FORM)
-    .addFormDataPart("image", "photo.jpg", imageBody)
-    .build();
-Request request = new Request.Builder()
-    .url("http://10.0.2.2:8000/predict")
-    .post(requestBody)
-    .build();
-client.newCall(request).enqueue(callback);
-```
-
-**Better, but:**
-- Still requires manual JSON parsing
-- Must manually create request bodies
-- More setup code than needed
-
-#### Option 3: Retrofit (Square Library, Built on OkHttp)
-
-**Kotlin (primary):**
-```kotlin
-// ✅ Clean, simple, professional
-@Multipart
-@POST("predict")
-fun uploadImage(@Part image: MultipartBody.Part): Call<PredictionResponse>
-```
-
-**Java (secondary reference):**
-```java
-// ✅ Clean, simple, professional
-@Multipart
-@POST("predict")
-Call<PredictionResponse> uploadImage(@Part MultipartBody.Part image);
-```
-
-**Advantages:**
-- Type-safe API definitions
-- Automatic JSON parsing (with Gson)
-- Automatic threading (async by default)
-- Clean, declarative syntax
-- Industry standard in Android development
-- Built on OkHttp (same reliability, better API)
-
-### Retrofit's Key Features
-
-1. **Annotations-Based API Definition**
-   ```java
-   @GET("users/{id}")
-   Call<User> getUser(@Path("id") int userId);
-   ```
-
-2. **Automatic JSON Conversion**
-   ```java
-   // Retrofit + Gson automatically converts JSON to objects
-   Call<PredictionResponse> call = apiService.uploadImage(imagePart);
-   ```
-
-3. **Built-in Async Support**
-   ```java
-   call.enqueue(callback); // Runs on background thread
-   ```
-
-4. **Pluggable Converters**
-   - Gson (JSON)
-   - Moshi (JSON)
-   - Jackson (JSON)
-   - Protocol Buffers
-   - XML
-
----
-
-## 3. Retrofit Architecture Deep Dive
-
-### Retrofit Components
-
-```
-┌─────────────────────────────────────────────────┐
-│           Your Android App Code                 │
-└────────────────┬────────────────────────────────┘
-                 │
-    ┌────────────▼──────────────┐
-    │    ApiService Interface   │
-    │  (Your API definitions)   │
-    └────────────┬──────────────┘
-                 │
-    ┌────────────▼──────────────┐
-    │   Retrofit Instance       │
-    │  (Built with Builder)     │
-    └────────────┬──────────────┘
-                 │
-    ┌────────────▼──────────────┐
-    │   Converter Factory       │
-    │  (GsonConverterFactory)   │
-    └────────────┬──────────────┘
-                 │
-    ┌────────────▼──────────────┐
-    │   OkHttp Client           │
-    │  (Handles actual HTTP)    │
-    └────────────┬──────────────┘
-                 │
-    ┌────────────▼──────────────┐
-    │   Network (Internet)      │
-    └───────────────────────────┘
-```
-
-### Step-by-Step: How Retrofit Processes a Request
-
-#### Step 1: Define API Interface
-
-**Kotlin (primary):**
 ```kotlin
 interface ApiService {
     @Multipart
@@ -243,899 +61,1113 @@ interface ApiService {
 }
 ```
 
-**Java (secondary reference):**
-```java
-public interface ApiService {
+| Part | Meaning |
+|---|---|
+| `@Multipart` | Encode the request as multipart form data. |
+| `@POST("predict")` | Append `predict` to the base URL and use POST. |
+| `@Part` | Put the supplied file part in the request body. |
+| `Call<PredictionResponse>` | Represent an operation that later returns parsed data. |
+
+Retrofit is built on OkHttp. Gson is the converter that maps JSON keys to Kotlin properties.
+
+---
+
+## 4. Base URL and Emulator Addressing
+
+The Android emulator is a separate virtual device.
+
+| Address | Meaning from the emulator |
+|---|---|
+| `localhost` / `127.0.0.1` | The emulator itself |
+| `10.0.2.2` | The development computer |
+
+The local Week 05 URL is:
+
+```text
+http://10.0.2.2:8000/
+```
+
+The trailing slash is required by Retrofit. A physical phone needs the development computer's LAN address and a matching network-security rule; never commit a private address as shared project truth.
+
+---
+
+## 5. From Android URI to Upload Bytes
+
+A content URI is not a normal filesystem path. Code such as `File(uri.path)` is unreliable for gallery content.
+
+Week 05 uses this safe sequence:
+
+1. Open the URI with `contentResolver.openInputStream(uri)`.
+2. Create a temporary file under `cacheDir`.
+3. Copy bytes with an 8192-byte buffer.
+4. Wrap the temporary file in an OkHttp `RequestBody`.
+5. Delete the temporary file after response or failure.
+
+The original camera/gallery content is not modified.
+
+---
+
+## 6. Multipart Contract
+
+The field name is part of the Week 04 API contract:
+
+```kotlin
+val imagePart = MultipartBody.Part.createFormData(
+    "image",
+    uploadFile.name,
+    requestBody
+)
+```
+
+Changing `image` to `file`, `photo`, or another name normally produces HTTP 422 because FastAPI cannot bind the required parameter.
+
+The client also supplies:
+
+- a filename
+- an image MIME type
+- binary bytes
+
+OkHttp generates the multipart boundary automatically.
+
+---
+
+## 7. Exact Eight-Field JSON Model
+
+Week 04 returns:
+
+| JSON key | Kotlin property | Type | Meaning |
+|---|---|---|---|
+| `model_label` | `modelLabel` | `String` | Canonical model-facing label |
+| `disease` | `disease` | `String` | Display-friendly name |
+| `confidence` | `confidence` | `Float` | Value from 0.0 to 1.0 |
+| `uncertain` | `uncertain` | `Boolean` | Below server threshold |
+| `guidance_available` | `guidanceAvailable` | `Boolean` | Reviewed guidance exists |
+| `symptoms` | `symptoms` | `String` | Guidance or safe fallback |
+| `treatment` | `treatment` | `String` | Guidance or safe fallback |
+| `prevention` | `prevention` | `String` | Guidance or safe fallback |
+
+`@SerializedName` is required where snake_case JSON maps to camelCase Kotlin.
+
+Do not reduce the model to five fields. Android must preserve the complete Week 04 contract even if the first Result screen emphasizes only some fields.
+
+---
+
+## 8. Asynchronous Request and UI State
+
+`enqueue(...)` starts the network operation without blocking Android's main thread.
+
+```text
+tap Detect
+  -> show ProgressBar and disable buttons
+  -> enqueue request
+  -> onResponse OR onFailure
+  -> hide ProgressBar and restore buttons
+```
+
+| Callback | Meaning |
+|---|---|
+| `onResponse` | A server response arrived, including 4xx and 5xx responses. |
+| `onFailure` | No usable HTTP response arrived, such as connection refusal, timeout, or conversion failure. |
+
+Inside `onResponse`, check both `response.isSuccessful` and `response.body() != null` before opening ResultActivity.
+
+---
+
+## 9. Error Categories
+
+| Observation | Callback | Example | Week 05 behavior |
+|---|---|---|---|
+| HTTP 200 + body | `onResponse` | Valid mock response | Open ResultActivity |
+| HTTP 400/413/422/503 | `onResponse` | Server rejected request | Show status-based message |
+| Connection refused | `onFailure` | Backend stopped | Show network message |
+| Timeout | `onFailure` | Server unreachable | Show network message |
+| URI read failure | Before request | Content unavailable | Restore UI and explain |
+
+Every terminal path must hide progress and permit another attempt.
+
+---
+
+## 10. Android Network Security
+
+The manifest requires:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
+`INTERNET` is an install-time permission; Android does not show a runtime dialog.
+
+Android 9+ blocks cleartext HTTP by default. Week 05 permits it only for `10.0.2.2`:
+
+```xml
+<base-config cleartextTrafficPermitted="false" />
+<domain-config cleartextTrafficPermitted="true">
+    <domain includeSubdomains="false">10.0.2.2</domain>
+</domain-config>
+```
+
+Production must use HTTPS. CORS is not Android authentication and does not replace transport security.
+
+---
+
+## 11. Result Navigation and Honest Mock Mode
+
+After a successful response, `ScanActivity` passes all eight values as Intent extras. `ResultActivity` formats confidence as a percentage and displays uncertainty and guidance availability explicitly.
+
+The screen displays what the backend returned. If `/health` says `use_mock: true`, the result proves:
+
+- Android reached FastAPI
+- multipart upload worked
+- JSON parsing worked
+- navigation and display worked
+
+It does **not** prove that a real model recognized a disease. Week 06 owns that claim.
+
+Common mistakes:
+
+- using `localhost` in the emulator
+- sending multipart field `file` instead of `image`
+- treating a content URI as a direct file path
+- using `execute()` on the UI thread
+- checking only `response.body()` and ignoring the status
+- leaving the progress indicator visible after failure
+- allowing cleartext for every domain
+- omitting `model_label`, `uncertain`, or `guidance_available`
+- calling mock output real inference
+
+---
+
+## 12. End-of-Week-05 File Inventory (Exact Files, Exact Code, Exact Size)
+
+Week 03 ended with 17 required Android source/resource files. Week 04 changed no Android files. Week 05 creates 4 files and expands 7 files in the Kotlin primary track.
+
+### 12.1 Change Summary: Week 04 -> Week 05
+
+| Change | Count | Files |
+|---|---:|---|
+| New | 4 | Three `network/*.kt` files and `network_security_config.xml` |
+| Expanded | 7 | Gradle, manifest, Scan/Result Activities, Scan/Result layouts, strings |
+| Unchanged Android source/resources | 10 | Main, History, Library, Settings, their layouts, colors, themes, FileProvider paths |
+| Backend files changed | 0 | Week 04 contract is consumed unchanged |
+| Later-week files added | 0 | No Room, TFLite, offline assets, notification, or bottom navigation |
+
+**Required Android source/resource files after Week 05: 21.**
+
+**Total across the 11 changed/new cumulative files: 726 logical lines.**
+
+Logical line count ignores whether the final line ends with a newline. These counts describe the teaching snapshot, not the repository's later fully evolved app.
+
+### 12.2 Exact Week 05 Tree
+
+```text
+android-app-kotlin/
+|-- settings.gradle                                  UNCHANGED
+|-- build.gradle                                     UNCHANGED
+|-- gradle.properties                                UNCHANGED
+`-- app/
+    |-- build.gradle                                 EXPANDED   47 lines
+    `-- src/main/
+        |-- AndroidManifest.xml                      EXPANDED   55 lines
+        |-- java/com/leafguard/
+        |   |-- MainActivity.kt                      UNCHANGED
+        |   |-- ScanActivity.kt                      EXPANDED  247 lines
+        |   |-- ResultActivity.kt                    EXPANDED   56 lines
+        |   |-- HistoryActivity.kt                   UNCHANGED
+        |   |-- DiseaseLibraryActivity.kt            UNCHANGED
+        |   |-- SettingsActivity.kt                  UNCHANGED
+        |   `-- network/
+        |       |-- ApiService.kt                    NEW        13 lines
+        |       |-- PredictionResponse.kt            NEW        22 lines
+        |       `-- RetrofitClient.kt                NEW        33 lines
+        `-- res/
+            |-- layout/
+            |   |-- activity_main.xml                UNCHANGED
+            |   |-- activity_scan.xml                EXPANDED   76 lines
+            |   |-- activity_result.xml              EXPANDED  115 lines
+            |   |-- activity_history.xml             UNCHANGED
+            |   |-- activity_disease_library.xml     UNCHANGED
+            |   `-- activity_settings.xml            UNCHANGED
+            |-- values/
+            |   |-- strings.xml                      EXPANDED   55 lines
+            |   |-- colors.xml                       UNCHANGED
+            |   `-- themes.xml                       UNCHANGED
+            `-- xml/
+                |-- file_provider_paths.xml          UNCHANGED
+                `-- network_security_config.xml      NEW         7 lines
+```
+
+The Java track under `android-app/` mirrors this behavior with Java classes. Kotlin remains the authoritative learning snapshot.
+
+### 12.3 Expanded File: `app/build.gradle` (40 -> 47 lines)
+
+Week 03 used four Android dependencies. Week 05 adds Retrofit, the Gson converter, and OkHttp logging. `buildConfig` is enabled because the cumulative ScanActivity derives its FileProvider authority from `BuildConfig.APPLICATION_ID`.
+
+```groovy
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.leafguard'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.leafguard"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "0.1.0"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+
+    buildFeatures {
+        buildConfig true
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
+}
+```
+
+### 12.4 Expanded File: `AndroidManifest.xml` (53 -> 55 lines)
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@android:drawable/ic_menu_gallery"
+        android:label="@string/app_name"
+        android:networkSecurityConfig="@xml/network_security_config"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.LeafGuardAI">
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_provider_paths" />
+        </provider>
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".ScanActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ResultActivity"
+            android:exported="false" />
+        <activity
+            android:name=".HistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".DiseaseLibraryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+    </application>
+
+</manifest>
+```
+
+### 12.5 New File: `network/ApiService.kt` (13 lines)
+
+```kotlin
+package com.leafguard.network
+
+import okhttp3.MultipartBody
+import retrofit2.Call
+import retrofit2.http.Multipart
+import retrofit2.http.POST
+import retrofit2.http.Part
+
+interface ApiService {
     @Multipart
     @POST("predict")
-    Call<PredictionResponse> uploadImage(@Part MultipartBody.Part image);
+    fun uploadImage(@Part image: MultipartBody.Part): Call<PredictionResponse>
 }
 ```
 
-**What Retrofit sees:**
-- Annotation `@POST("predict")` → HTTP method is POST, endpoint is `/predict`
-- Annotation `@Multipart` → Content-Type: multipart/form-data
-- Parameter `@Part` → This parameter goes in request body as multipart part
-- Return type `Call<PredictionResponse>` → Async call returning PredictionResponse object
+### 12.6 New File: `network/PredictionResponse.kt` (22 lines)
 
-#### Step 2: Build Retrofit Instance
-
-**Kotlin (primary):**
 ```kotlin
-val retrofit = Retrofit.Builder()
-    .baseUrl("http://10.0.2.2:8000/")
-    .addConverterFactory(GsonConverterFactory.create())
-    .build()
-```
+package com.leafguard.network
 
-**Java (secondary reference):**
-```java
-Retrofit retrofit = new Retrofit.Builder()
-    .baseUrl("http://10.0.2.2:8000/")
-    .addConverterFactory(GsonConverterFactory.create())
-    .build();
-```
+import com.google.gson.annotations.SerializedName
 
-**What this does:**
-- Sets base URL (all endpoint paths will be appended to this)
-- Registers Gson converter (JSON ↔ Kotlin data classes / Java objects)
-- Creates Retrofit instance with configuration
-
-#### Step 3: Create Service Implementation
-
-```java
-ApiService apiService = retrofit.create(ApiService.class);
-```
-
-**What happens:**
-- Retrofit uses **Java Dynamic Proxy** to create implementation
-- It reads annotations at runtime
-- Generates HTTP request code automatically
-- Returns a proxy object implementing ApiService interface
-
-#### Step 4: Make API Call
-
-**Kotlin (primary):**
-```kotlin
-val call = apiService.uploadImage(imagePart)
-call.enqueue(object : Callback<PredictionResponse> {
-    override fun onResponse(
-        call: Call<PredictionResponse>,
-        response: Response<PredictionResponse>
-    ) {
-        // Handle success
-    }
-
-    override fun onFailure(call: Call<PredictionResponse>, t: Throwable) {
-        // Handle error
-    }
-})
-```
-
-**Java (secondary reference):**
-```java
-Call<PredictionResponse> call = apiService.uploadImage(imagePart);
-call.enqueue(new Callback<PredictionResponse>() {
-    @Override
-    public void onResponse(Call<PredictionResponse> call, Response<PredictionResponse> response) {
-        // Handle success
-    }
-
-    @Override
-    public void onFailure(Call<PredictionResponse> call, Throwable t) {
-        // Handle error
-    }
-});
-```
-
-This is normal — if you hit `NetworkOnMainThreadException`, use `enqueue()` or a coroutine so the screen does not freeze.
-
-**Behind the scenes:**
-1. Retrofit builds HTTP request from annotations
-2. OkHttp sends request on background thread
-3. Server responds with JSON
-4. Gson parses JSON into PredictionResponse object
-5. Callback receives parsed object on main thread
-
----
-
-## 4. Multipart File Upload Explained
-
-### What is Multipart Form-Data?
-
-**Multipart form-data** is an HTTP content type that allows sending multiple pieces of data (text fields, files) in a single request.
-
-#### Standard Form Data (application/x-www-form-urlencoded)
-
-```
-name=John&age=25&city=Delhi
-```
-
-**Problem:** Can't send binary data (images, PDFs, etc.)
-
-#### Multipart Form-Data
-
-```
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="description"
-
-Test image
-------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="image"; filename="photo.jpg"
-Content-Type: image/jpeg
-
-[BINARY IMAGE DATA HERE]
-------WebKitFormBoundary7MA4YWxkTrZu0gW--
-```
-
-**Key components:**
-- **Boundary**: Unique string separating parts
-- **Content-Disposition**: Metadata for each part
-- **filename**: Original file name
-- **Content-Type**: MIME type of file
-- **Binary data**: The actual file bytes
-
-### Creating Multipart Request in Retrofit
-
-#### Step 1: Create RequestBody from File
-
-```java
-File imageFile = new File(imagePath);
-RequestBody requestBody = RequestBody.create(
-    MediaType.parse("image/*"),
-    imageFile
-);
-```
-
-#### Step 2: Wrap in MultipartBody.Part
-
-```java
-MultipartBody.Part imagePart = MultipartBody.Part.createFormData(
-    "image",           // Parameter name (matches backend)
-    imageFile.getName(), // Filename
-    requestBody        // File content
-);
-```
-
-#### Step 3: Send via Retrofit
-
-```java
-Call<PredictionResponse> call = apiService.uploadImage(imagePart);
-```
-
-### Backend Receives As
-
-```python
-# FastAPI backend
-@app.post("/predict")
-async def predict(image: UploadFile = File(...)):
-    contents = await image.read()  # Binary image data
-    filename = image.filename       # "photo.jpg"
-    content_type = image.content_type  # "image/jpeg"
-```
-
----
-
-## 5. JSON Parsing with Gson
-
-### What is JSON?
-
-**JSON (JavaScript Object Notation)** is a lightweight data-interchange format. It's human-readable and easy for machines to parse.
-
-#### JSON Example
-
-```json
-{
-  "disease": "Tomato Late Blight",
-  "confidence": 0.87,
-  "symptoms": "Brown spots on leaves",
-  "treatment": "Apply copper fungicide",
-  "prevention": "Remove infected leaves"
-}
-```
-
-### Manual JSON Parsing (Without Gson)
-
-```java
-// ❌ Tedious and error-prone
-String jsonString = response.body().string();
-JSONObject jsonObject = new JSONObject(jsonString);
-String disease = jsonObject.getString("disease");
-double confidence = jsonObject.getDouble("confidence");
-String symptoms = jsonObject.getString("symptoms");
-// ... and so on
-```
-
-### Automatic Parsing with Gson
-
-#### Step 1: Create Kotlin Data Class Matching JSON Structure
-
-**Kotlin (primary):**
-```kotlin
 data class PredictionResponse(
-    @SerializedName("disease") val disease: String,
-    val confidence: Double,
+    @SerializedName("model_label")
+    val modelLabel: String,
+    @SerializedName("disease")
+    val disease: String,
+    @SerializedName("confidence")
+    val confidence: Float,
+    @SerializedName("uncertain")
+    val uncertain: Boolean,
+    @SerializedName("guidance_available")
+    val guidanceAvailable: Boolean,
+    @SerializedName("symptoms")
     val symptoms: String,
+    @SerializedName("treatment")
     val treatment: String,
+    @SerializedName("prevention")
     val prevention: String
 )
 ```
 
-**Java (secondary reference):**
-```java
-public class PredictionResponse {
-    private String disease;
-    private double confidence;
-    private String symptoms;
-    private String treatment;
-    private String prevention;
+### 12.7 New File: `network/RetrofitClient.kt` (33 lines)
 
-    // Getters and setters
-    public String getDisease() { return disease; }
-    public void setDisease(String disease) { this.disease = disease; }
-    // ... more getters/setters
-}
-```
+```kotlin
+package com.leafguard.network
 
-#### Step 2: Gson Automatically Maps JSON
+import java.util.concurrent.TimeUnit
+import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 
-```java
-// ✅ Retrofit + Gson handles this automatically
-PredictionResponse prediction = response.body();
-String disease = prediction.getDisease(); // "Tomato Late Blight"
-double confidence = prediction.getConfidence(); // 0.87
-```
+object RetrofitClient {
+    private const val BASE_URL = "http://10.0.2.2:8000/"
 
-### Gson Mapping Rules
-
-1. **Field names must match JSON keys** (case-sensitive)
-   ```java
-   private String disease;  // Matches "disease" in JSON
-   ```
-
-2. **Use @SerializedName for different names**
-   ```java
-   @SerializedName("disease")
-   private String disease;  // JSON key: "disease", Java field: disease
-   ```
-
-3. **Nested objects**
-   ```json
-   {
-     "disease": {
-       "name": "Late Blight",
-       "severity": "High"
-     }
-   }
-   ```
-
-   ```java
-   public class Disease {
-       private String name;
-       private String severity;
-   }
-
-   public class PredictionResponse {
-       private Disease disease;
-   }
-   ```
-
-4. **Arrays/Lists**
-   ```json
-   {
-     "symptoms": ["Brown spots", "Wilting", "Yellowing"]
-   }
-   ```
-
-   ```java
-   private List<String> symptoms;
-   ```
-
-### Common Gson Errors
-
-1. **Missing Field**: JSON has field but Java class doesn't → Field is ignored
-2. **Type Mismatch**: JSON has string, Java expects int → Exception thrown
-3. **Null Values**: JSON has null, Java expects primitive → Exception (use wrapper types: Integer, Double instead of int, double)
-
----
-
-## 6. Asynchronous Programming in Android
-
-### The Main Thread Problem
-
-**Android's Main Thread (UI Thread):**
-- Handles all UI updates
-- Processes user interactions (clicks, swipes)
-- Renders UI at 60 FPS (16ms per frame)
-
-**If you block the main thread:**
-- UI freezes
-- App becomes unresponsive
-- After 5 seconds: "Application Not Responding" (ANR) dialog
-- Bad user experience
-
-### Network Calls Take Time
-
-```java
-// This would take 1-3 seconds
-String response = downloadDataFromServer();
-```
-
-**Problem:** If on main thread, UI freezes for 1-3 seconds. Unacceptable.
-
-### Solution: Asynchronous Callbacks
-
-```java
-// Request starts immediately, method returns
-// Callback executed later when response arrives
-call.enqueue(new Callback<PredictionResponse>() {
-    @Override
-    public void onResponse(Call<PredictionResponse> call, Response<PredictionResponse> response) {
-        // Executed on MAIN THREAD when response arrives
-        // Safe to update UI here
-    }
-
-    @Override
-    public void onFailure(Call<PredictionResponse> call, Throwable t) {
-        // Executed on MAIN THREAD when error occurs
-        // Safe to show error Toast here
-    }
-});
-```
-
-### How Retrofit Handles Threading
-
-```
-Main Thread                     Background Thread
-────────────────────────────────────────────────────
-1. User clicks button
-2. Create Call object
-3. call.enqueue(callback)
-4. Method returns                → 5. Start HTTP request
-   (UI still responsive)         → 6. Wait for response
-   (User can scroll, etc.)       → 7. Receive response
-                                  → 8. Parse JSON with Gson
-9. onResponse() called          ← 9. Return to main thread
-10. Update UI
-11. User sees result
-```
-
-**Key Point:** Steps 5-8 happen on background thread. UI never freezes.
-
-### Callbacks Explained
-
-**Callback** = "Call me back when you're done"
-
-```java
-interface Callback<T> {
-    void onResponse(Call<T> call, Response<T> response);  // Success callback
-    void onFailure(Call<T> call, Throwable t);            // Error callback
-}
-```
-
-You implement these methods, Retrofit calls them when done.
-
----
-
-## 7. Error Handling Strategies
-
-### Types of Errors
-
-#### 1. Network Errors (IOException)
-
-**Causes:**
-- No internet connection
-- Server is down
-- Request timeout
-- DNS resolution failure
-
-**Detection:**
-```java
-@Override
-public void onFailure(Call<PredictionResponse> call, Throwable t) {
-    if (t instanceof IOException) {
-        Toast.makeText(this, "Network error. Check your internet.", Toast.LENGTH_LONG).show();
-    }
-}
-```
-
-#### 2. HTTP Errors (Response code 4xx/5xx)
-
-**Causes:**
-- 400 Bad Request: Invalid data sent
-- 404 Not Found: Endpoint doesn't exist
-- 500 Internal Server Error: Backend crashed
-
-**Detection:**
-```java
-@Override
-public void onResponse(Call<PredictionResponse> call, Response<PredictionResponse> response) {
-    if (response.isSuccessful()) {
-        // 2xx status code
-        PredictionResponse prediction = response.body();
-    } else {
-        // 4xx or 5xx status code
-        int statusCode = response.code();
-        if (statusCode == 404) {
-            Toast.makeText(this, "Endpoint not found", Toast.LENGTH_LONG).show();
-        } else if (statusCode == 500) {
-            Toast.makeText(this, "Server error", Toast.LENGTH_LONG).show();
+    private val apiClient: Retrofit by lazy {
+        val logging = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BASIC
         }
+        val httpClient = OkHttpClient.Builder()
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .writeTimeout(30, TimeUnit.SECONDS)
+            .addInterceptor(logging)
+            .build()
+
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(httpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    val apiService: ApiService by lazy {
+        apiClient.create(ApiService::class.java)
     }
 }
 ```
 
-#### 3. Parsing Errors
+### 12.8 Expanded File: `ScanActivity.kt` (132 -> 247 lines)
 
-**Causes:**
-- JSON structure doesn't match Java class
-- Backend returned unexpected format
-- Corrupted response
+The full file preserves all Week 03 permission, camera, gallery, FileProvider, preview, and saved-state code. Week 05 adds cache copying, multipart creation, callbacks, progress state, and result navigation.
 
-**Detection:**
-```java
-if (response.body() == null) {
-    Toast.makeText(this, "Empty response from server", Toast.LENGTH_LONG).show();
-    return;
-}
-```
+```kotlin
+package com.leafguard
 
-### Comprehensive Error Handling Template
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Bundle
+import android.os.Environment
+import android.view.View
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import com.leafguard.network.PredictionResponse
+import com.leafguard.network.RetrofitClient
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-```java
-call.enqueue(new Callback<PredictionResponse>() {
-    @Override
-    public void onResponse(Call<PredictionResponse> call, Response<PredictionResponse> response) {
-        progressBar.setVisibility(View.GONE);
-        uploadButton.setEnabled(true);
+class ScanActivity : AppCompatActivity() {
 
-        if (response.isSuccessful() && response.body() != null) {
-            // SUCCESS: Got valid response
-            PredictionResponse prediction = response.body();
-            navigateToResult(prediction);
+    private lateinit var imagePreview: ImageView
+    private lateinit var textImageStatus: TextView
+    private lateinit var buttonDetectDisease: Button
+    private lateinit var progressUpload: ProgressBar
+
+    private var selectedImageUri: Uri? = null
+    private var pendingCameraUri: Uri? = null
+
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            launchCamera()
         } else {
-            // HTTP ERROR: Got response but status code is not 2xx
-            String errorMsg = "Server error: " + response.code();
-            Toast.makeText(MainActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.camera_permission_denied, Toast.LENGTH_SHORT).show()
         }
     }
 
-    @Override
-    public void onFailure(Call<PredictionResponse> call, Throwable t) {
-        progressBar.setVisibility(View.GONE);
-        uploadButton.setEnabled(true);
-
-        // NETWORK ERROR: Couldn't reach server
-        if (t instanceof IOException) {
-            Toast.makeText(MainActivity.this, "Network error. Check connection.", Toast.LENGTH_LONG).show();
-        } else if (t instanceof SocketTimeoutException) {
-            Toast.makeText(MainActivity.this, "Request timed out.", Toast.LENGTH_LONG).show();
+    private val cameraLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        val cameraUri = pendingCameraUri
+        if (success && cameraUri != null) {
+            updateSelectedImage(cameraUri)
         } else {
-            Toast.makeText(MainActivity.this, "Unexpected error: " + t.getMessage(), Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.camera_cancelled, Toast.LENGTH_SHORT).show()
+        }
+        pendingCameraUri = null
+    }
+
+    private val galleryLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            updateSelectedImage(uri)
+        } else {
+            Toast.makeText(this, R.string.gallery_cancelled, Toast.LENGTH_SHORT).show()
         }
     }
-});
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_scan)
+
+        imagePreview = findViewById(R.id.imagePreview)
+        textImageStatus = findViewById(R.id.textImageStatus)
+        buttonDetectDisease = findViewById(R.id.buttonDetectDisease)
+        progressUpload = findViewById(R.id.progressUpload)
+
+        findViewById<Button>(R.id.buttonTakePhoto).setOnClickListener {
+            openCameraWithPermissionCheck()
+        }
+        findViewById<Button>(R.id.buttonChooseGallery).setOnClickListener {
+            galleryLauncher.launch("image/*")
+        }
+        buttonDetectDisease.setOnClickListener {
+            uploadSelectedImage()
+        }
+
+        savedInstanceState?.getString(KEY_SELECTED_IMAGE_URI)?.let { uriText ->
+            updateSelectedImage(Uri.parse(uriText))
+        }
+    }
+
+    private fun openCameraWithPermissionCheck() {
+        val granted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (granted) {
+            launchCamera()
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    private fun launchCamera() {
+        try {
+            val imageUri = createImageUri()
+            pendingCameraUri = imageUri
+            cameraLauncher.launch(imageUri)
+        } catch (exception: IOException) {
+            pendingCameraUri = null
+            Toast.makeText(this, R.string.camera_file_error, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    @Throws(IOException::class)
+    private fun createImageUri(): Uri {
+        val imageDirectory = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "captures")
+        if (!imageDirectory.exists() && !imageDirectory.mkdirs()) {
+            throw IOException("Could not create image directory")
+        }
+
+        val imageFile = File(imageDirectory, "leafguard_${System.currentTimeMillis()}.jpg")
+        return FileProvider.getUriForFile(
+            this,
+            "${BuildConfig.APPLICATION_ID}.fileprovider",
+            imageFile
+        )
+    }
+
+    private fun updateSelectedImage(uri: Uri) {
+        selectedImageUri = uri
+        imagePreview.setImageURI(uri)
+        textImageStatus.setText(R.string.image_ready_for_upload)
+        buttonDetectDisease.isEnabled = true
+    }
+
+    private fun uploadSelectedImage() {
+        val imageUri = selectedImageUri
+        if (imageUri == null) {
+            Toast.makeText(this, R.string.select_image_first, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        setUploadInProgress(true)
+        val uploadFile = try {
+            copyUriToCacheFile(imageUri)
+        } catch (exception: IOException) {
+            setUploadInProgress(false)
+            Toast.makeText(this, R.string.image_prepare_error, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val mimeType = contentResolver.getType(imageUri) ?: "image/*"
+        val requestBody = uploadFile.asRequestBody(mimeType.toMediaTypeOrNull())
+        val imagePart = MultipartBody.Part.createFormData("image", uploadFile.name, requestBody)
+
+        RetrofitClient.apiService.uploadImage(imagePart).enqueue(
+            object : Callback<PredictionResponse> {
+                override fun onResponse(
+                    call: Call<PredictionResponse>,
+                    response: Response<PredictionResponse>
+                ) {
+                    uploadFile.delete()
+                    setUploadInProgress(false)
+                    val prediction = response.body()
+                    if (!response.isSuccessful || prediction == null) {
+                        Toast.makeText(
+                            this@ScanActivity,
+                            getString(R.string.server_error_format, response.code()),
+                            Toast.LENGTH_LONG
+                        ).show()
+                        return
+                    }
+                    openResult(prediction)
+                }
+
+                override fun onFailure(
+                    call: Call<PredictionResponse>,
+                    throwable: Throwable
+                ) {
+                    uploadFile.delete()
+                    setUploadInProgress(false)
+                    Toast.makeText(
+                        this@ScanActivity,
+                        R.string.network_error,
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        )
+    }
+
+    @Throws(IOException::class)
+    private fun copyUriToCacheFile(uri: Uri): File {
+        val uploadFile = File(cacheDir, "leafguard_upload_${System.currentTimeMillis()}.jpg")
+        try {
+            contentResolver.openInputStream(uri).use { inputStream ->
+                if (inputStream == null) {
+                    throw IOException("Unable to open selected image")
+                }
+                FileOutputStream(uploadFile).use { outputStream ->
+                    inputStream.copyTo(outputStream, bufferSize = 8192)
+                }
+            }
+        } catch (exception: IOException) {
+            uploadFile.delete()
+            throw exception
+        }
+        return uploadFile
+    }
+
+    private fun openResult(prediction: PredictionResponse) {
+        val intent = Intent(this, ResultActivity::class.java).apply {
+            putExtra(ResultActivity.EXTRA_MODEL_LABEL, prediction.modelLabel)
+            putExtra(ResultActivity.EXTRA_DISEASE, prediction.disease)
+            putExtra(ResultActivity.EXTRA_CONFIDENCE, prediction.confidence)
+            putExtra(ResultActivity.EXTRA_UNCERTAIN, prediction.uncertain)
+            putExtra(ResultActivity.EXTRA_GUIDANCE_AVAILABLE, prediction.guidanceAvailable)
+            putExtra(ResultActivity.EXTRA_SYMPTOMS, prediction.symptoms)
+            putExtra(ResultActivity.EXTRA_TREATMENT, prediction.treatment)
+            putExtra(ResultActivity.EXTRA_PREVENTION, prediction.prevention)
+        }
+        startActivity(intent)
+    }
+
+    private fun setUploadInProgress(inProgress: Boolean) {
+        progressUpload.visibility = if (inProgress) View.VISIBLE else View.GONE
+        buttonDetectDisease.isEnabled = !inProgress && selectedImageUri != null
+        findViewById<Button>(R.id.buttonTakePhoto).isEnabled = !inProgress
+        findViewById<Button>(R.id.buttonChooseGallery).isEnabled = !inProgress
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(KEY_SELECTED_IMAGE_URI, selectedImageUri?.toString())
+    }
+
+    companion object {
+        private const val KEY_SELECTED_IMAGE_URI = "selected_image_uri"
+    }
+}
 ```
 
-### Timeout Configuration
+### 12.9 Expanded File: `ResultActivity.kt` (12 -> 56 lines)
 
-```java
-OkHttpClient client = new OkHttpClient.Builder()
-    .connectTimeout(30, TimeUnit.SECONDS)  // Connection timeout
-    .readTimeout(30, TimeUnit.SECONDS)     // Read timeout
-    .writeTimeout(30, TimeUnit.SECONDS)    // Write timeout
-    .build();
+```kotlin
+package com.leafguard
 
-Retrofit retrofit = new Retrofit.Builder()
-    .baseUrl(BASE_URL)
-    .client(client)  // Use custom OkHttp client
-    .addConverterFactory(GsonConverterFactory.create())
-    .build();
+import android.os.Bundle
+import android.widget.ProgressBar
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import kotlin.math.roundToInt
+
+class ResultActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_result)
+
+        val disease = intent.getStringExtra(EXTRA_DISEASE) ?: getString(R.string.result_unknown)
+        val modelLabel = intent.getStringExtra(EXTRA_MODEL_LABEL) ?: getString(R.string.result_unknown)
+        val confidence = intent.getFloatExtra(EXTRA_CONFIDENCE, 0f)
+        val uncertain = intent.getBooleanExtra(EXTRA_UNCERTAIN, true)
+        val guidanceAvailable = intent.getBooleanExtra(EXTRA_GUIDANCE_AVAILABLE, false)
+        val symptoms = intent.getStringExtra(EXTRA_SYMPTOMS) ?: getString(R.string.guidance_unavailable)
+        val treatment = intent.getStringExtra(EXTRA_TREATMENT) ?: getString(R.string.guidance_unavailable)
+        val prevention = intent.getStringExtra(EXTRA_PREVENTION) ?: getString(R.string.guidance_unavailable)
+        val confidencePercent = (confidence * 100f).roundToInt()
+
+        findViewById<TextView>(R.id.textResultDisease).text = disease
+        findViewById<TextView>(R.id.textResultModelLabel).text = getString(
+            R.string.model_label_format,
+            modelLabel
+        )
+        findViewById<TextView>(R.id.textResultConfidence).text = getString(
+            R.string.confidence_format,
+            confidencePercent
+        )
+        findViewById<ProgressBar>(R.id.progressResultConfidence).progress = confidencePercent
+        findViewById<TextView>(R.id.textResultStatus).text = getString(
+            if (uncertain) R.string.result_uncertain else R.string.result_confident
+        )
+        findViewById<TextView>(R.id.textGuidanceStatus).text = getString(
+            if (guidanceAvailable) R.string.guidance_available else R.string.guidance_not_reviewed
+        )
+        findViewById<TextView>(R.id.textResultSymptoms).text = symptoms
+        findViewById<TextView>(R.id.textResultTreatment).text = treatment
+        findViewById<TextView>(R.id.textResultPrevention).text = prevention
+    }
+
+    companion object {
+        const val EXTRA_MODEL_LABEL = "extra_model_label"
+        const val EXTRA_DISEASE = "extra_disease"
+        const val EXTRA_CONFIDENCE = "extra_confidence"
+        const val EXTRA_UNCERTAIN = "extra_uncertain"
+        const val EXTRA_GUIDANCE_AVAILABLE = "extra_guidance_available"
+        const val EXTRA_SYMPTOMS = "extra_symptoms"
+        const val EXTRA_TREATMENT = "extra_treatment"
+        const val EXTRA_PREVENTION = "extra_prevention"
+    }
+}
 ```
 
-**Explanation:**
-- **connectTimeout**: Time limit to establish connection
-- **readTimeout**: Time limit to read response
-- **writeTimeout**: Time limit to send request body
+### 12.10 Expanded File: `activity_scan.xml` (60 -> 76 lines)
 
----
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/screen_background">
 
-## 8. Network Security in Android
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
 
-### Cleartext Traffic Restrictions
+        <TextView
+            android:id="@+id/textScanTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/scan_title"
+            android:textColor="@color/text_primary"
+            android:textSize="24sp" />
 
-**Android 9 (API 28) and above:** HTTP (cleartext) traffic is **blocked by default**.
+        <TextView
+            android:id="@+id/textScanInstruction"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/scan_instruction"
+            android:textColor="@color/text_secondary"
+            android:textSize="16sp" />
 
-**Why?**
-- HTTPS (encrypted) is more secure
-- Google encourages encrypted communication
-- Protects users from man-in-the-middle attacks
+        <ImageView
+            android:id="@+id/imagePreview"
+            android:layout_width="match_parent"
+            android:layout_height="280dp"
+            android:layout_marginTop="20dp"
+            android:background="#E8F5E9"
+            android:contentDescription="@string/scan_preview_description"
+            android:scaleType="centerCrop" />
 
-**Problem for LeafGuard:**
-- Your local backend uses HTTP. In the Android emulator, use `http://10.0.2.2:8000`; on your computer browser, use `http://localhost:8000`; on a physical phone, use your computer's LAN IP.
-- Not HTTPS (https://...)
-- Android blocks it by default
+        <TextView
+            android:id="@+id/textImageStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/no_image_selected"
+            android:textColor="@color/text_secondary" />
 
-This is normal — if the request fails with `CLEARTEXT communication not permitted`, add the config below. If it fails with connection refused, make sure the backend is running and the emulator URL is `http://10.0.2.2:8000/`.
+        <Button
+            android:id="@+id/buttonTakePhoto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/take_photo" />
 
-### Solution: Network Security Configuration
+        <Button
+            android:id="@+id/buttonChooseGallery"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/choose_from_gallery" />
 
-#### Step 1: Create `res/xml/network_security_config.xml`
+        <Button
+            android:id="@+id/buttonDetectDisease"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="@string/detect_disease" />
+
+        <ProgressBar
+            android:id="@+id/progressUpload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:contentDescription="@string/upload_progress_description"
+            android:visibility="gone" />
+    </LinearLayout>
+</ScrollView>
+```
+
+### 12.11 Expanded File: `activity_result.xml` (25 -> 115 lines)
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/screen_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:id="@+id/textResultTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/result_title"
+            android:textColor="@color/text_primary"
+            android:textSize="24sp" />
+
+        <TextView
+            android:id="@+id/textResultDisease"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/result_unknown"
+            android:textColor="@color/leaf_green_dark"
+            android:textSize="22sp" />
+
+        <TextView
+            android:id="@+id/textResultModelLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/model_label_placeholder"
+            android:textColor="@color/text_secondary" />
+
+        <TextView
+            android:id="@+id/textResultConfidence"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/confidence_placeholder"
+            android:textColor="@color/text_primary" />
+
+        <ProgressBar
+            android:id="@+id/progressResultConfidence"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="100"
+            android:progress="0" />
+
+        <TextView
+            android:id="@+id/textResultStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/result_uncertain"
+            android:textColor="@color/text_secondary" />
+
+        <TextView
+            android:id="@+id/textGuidanceStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="@string/guidance_not_reviewed"
+            android:textColor="@color/text_secondary" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/symptoms_heading"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textResultSymptoms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/guidance_unavailable"
+            android:textColor="@color/text_secondary" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/treatment_heading"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textResultTreatment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/guidance_unavailable"
+            android:textColor="@color/text_secondary" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/prevention_heading"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/textResultPrevention"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/guidance_unavailable"
+            android:textColor="@color/text_secondary" />
+    </LinearLayout>
+</ScrollView>
+```
+
+### 12.12 Expanded File: `strings.xml` (35 -> 55 lines)
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LeafGuard AI</string>
+
+    <string name="home_title">LeafGuard AI</string>
+    <string name="home_subtitle">Plant disease detection learning app</string>
+
+    <string name="open_scan">Open Scan</string>
+    <string name="open_result">Open Sample Result</string>
+    <string name="open_history">Open History</string>
+    <string name="open_library">Open Disease Library</string>
+    <string name="open_settings">Open Settings</string>
+
+    <string name="scan_title">Scan Leaf</string>
+    <string name="result_title">Prediction Result</string>
+    <string name="history_title">History</string>
+    <string name="library_title">Disease Library</string>
+    <string name="settings_title">Settings and About</string>
+
+    <string name="placeholder_history">Saved scan history will be added in Week 07.</string>
+    <string name="placeholder_library">The XML disease library will be added in Week 08.</string>
+    <string name="placeholder_settings">Course project shell. Settings options will grow in later weeks.</string>
+
+    <string name="scan_instruction">Take a photo or choose an image, then upload it to the Week 04 backend.</string>
+    <string name="scan_preview_description">Preview of the selected leaf image</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="choose_from_gallery">Choose from Gallery</string>
+    <string name="no_image_selected">No image selected yet.</string>
+    <string name="image_ready_for_upload">Image selected. Ready to detect.</string>
+    <string name="camera_permission_denied">Camera permission denied. You can still choose from gallery.</string>
+    <string name="camera_cancelled">Camera cancelled. No new image selected.</string>
+    <string name="gallery_cancelled">Gallery closed. No new image selected.</string>
+    <string name="camera_file_error">Could not prepare a file for the camera.</string>
+
+    <string name="detect_disease">Detect Disease</string>
+    <string name="upload_progress_description">Uploading image for prediction</string>
+    <string name="select_image_first">Select or capture an image first.</string>
+    <string name="image_prepare_error">Could not prepare the selected image for upload.</string>
+    <string name="server_error_format">Server rejected the request (HTTP %1$d).</string>
+    <string name="network_error">Could not reach the backend. Check the server and emulator URL.</string>
+
+    <string name="result_unknown">Unknown result</string>
+    <string name="model_label_placeholder">Model label: unavailable</string>
+    <string name="model_label_format">Model label: %1$s</string>
+    <string name="confidence_placeholder">Confidence: 0%%</string>
+    <string name="confidence_format">Confidence: %1$d%%</string>
+    <string name="result_uncertain">Low-confidence result: verify before acting.</string>
+    <string name="result_confident">Confidence is above the configured server threshold.</string>
+    <string name="guidance_available">Reviewed project guidance is available.</string>
+    <string name="guidance_not_reviewed">Detailed project guidance is not reviewed for this label.</string>
+    <string name="symptoms_heading">Symptoms</string>
+    <string name="treatment_heading">Treatment</string>
+    <string name="prevention_heading">Prevention</string>
+    <string name="guidance_unavailable">No information available.</string>
+</resources>
+```
+
+### 12.13 New File: `network_security_config.xml` (7 lines)
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Allow cleartext traffic to local IP -->
+    <base-config cleartextTrafficPermitted="false" />
     <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="false">10.0.2.2</domain>
     </domain-config>
 </network-security-config>
 ```
 
-#### Step 2: Reference in AndroidManifest.xml
+### 12.14 Files Week 05 Does Not Rewrite
 
-```xml
-<application
-    android:networkSecurityConfig="@xml/network_security_config"
-    ... >
-</application>
+| Area | Week 05 status | Later owner |
+|---|---|---|
+| `MainActivity.kt` and home layout | Unchanged navigation shell | UI polish week |
+| History Activity/layout | Placeholder | Week 07 |
+| Disease Library Activity/layout | Placeholder | Week 08 |
+| Settings Activity/layout | Placeholder | Later UI/settings week |
+| `colors.xml`, `themes.xml` | Unchanged | UI polish week |
+| `file_provider_paths.xml` | Unchanged Week 03 security boundary | Week 03 |
+| Backend source | Unchanged, consumed as contract | Week 06 changes inference |
+| Room, TFLite, notifications | Absent | Future weeks |
+
+### 12.15 Verify the Exact Week 05 State
+
+```bash
+# Backend contract first
+cd backend-api
+USE_MOCK=true .venv/bin/python -m unittest -v test_api
+USE_MOCK=true .venv/bin/uvicorn main:app --reload
+
+# Android build in another terminal
+cd android-app-kotlin
+./gradlew assembleDebug
 ```
 
-### INTERNET Permission
+Behavior checks:
 
-**Required** for any network access:
+| Check | Expected |
+|---|---|
+| Gallery/camera selection | Preview and Detect button enabled |
+| Active upload | Progress visible; input buttons disabled |
+| Backend mock success | Result screen opens with all contract states represented |
+| Backend stopped | Friendly network error; UI restored; no crash |
+| Invalid server response | HTTP status message; UI restored |
+| Repeated attempt | Another upload can start |
 
-```xml
-<uses-permission android:name="android.permission.INTERNET"/>
-```
-
-**Without this:** SecurityException thrown, network calls fail.
-
-### Production Best Practices
-
-1. **Use HTTPS in production** (not HTTP)
-2. **Certificate pinning** for extra security
-3. **Never allow cleartext for production domains**
-4. **Only allow cleartext for local development IPs**
+Save evidence under `docs/evidence/week-05/`.
 
 ---
 
-## 9. Best Practices for Production Apps
+## 13. Learning-to-Evidence Map
 
-### 1. Singleton Retrofit Instance
-
-**❌ Don't create new instance per request:**
-```java
-// BAD: Creates new Retrofit for each upload
-Retrofit retrofit = new Retrofit.Builder()...build();
-```
-
-**✅ Use singleton pattern:**
-```java
-public class RetrofitClient {
-    private static Retrofit retrofit = null;
-
-    public static Retrofit getClient() {
-        if (retrofit == null) {
-            retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        }
-        return retrofit;
-    }
-}
-```
-
-### 2. Logging Interceptor (Development Only)
-
-**See HTTP requests/responses in Logcat:**
-
-```java
-// Add dependency
-implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0'
-
-// Add to OkHttp client
-HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor();
-interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
-
-OkHttpClient client = new OkHttpClient.Builder()
-    .addInterceptor(interceptor)
-    .build();
-```
-
-**Remove in production** (exposes sensitive data in logs).
-
-### 3. Request Cancellation
-
-**Cancel request if Activity is destroyed:**
-
-```java
-private Call<PredictionResponse> currentCall;
-
-void uploadImage() {
-    currentCall = apiService.uploadImage(imagePart);
-    currentCall.enqueue(callback);
-}
-
-@Override
-protected void onDestroy() {
-    super.onDestroy();
-    if (currentCall != null && !currentCall.isCanceled()) {
-        currentCall.cancel();
-    }
-}
-```
-
-### 4. Retry Logic
-
-**Automatic retry on failure:**
-
-```java
-OkHttpClient client = new OkHttpClient.Builder()
-    .retryOnConnectionFailure(true)  // Retry on connection failure
-    .build();
-```
-
-### 5. Base URL Management
-
-**Use BuildConfig for different environments:**
-
-```java
-private static final String BASE_URL = BuildConfig.DEBUG
-    ? "http://10.0.2.2:8000/"  // Development emulator URL
-    : "https://api.leafguard.com/";  // Production
-```
+| Concept | Exercise | Build step | Validation proof |
+|---|---|---|---|
+| Week 03 + Week 04 handoff | 1 | 1 | Boundary explanation |
+| Eight-field response | 2 | 3 | Model inspection and Result screen |
+| URI-to-cache conversion | 3 | 7 | Camera and gallery uploads |
+| Multipart `image` | 3 | 7 | Backend receives 200 |
+| Async callbacks | 4 | 8 | Responsive loading state |
+| HTTP vs network error | 5 | 8 | Two distinct failure demos |
+| Local security | 5 | 4 | Emulator reaches only allowed host |
+| Complete integration | 6 | 10 | Milestone demo and evidence |
 
 ---
 
-## 10. CSE 2206 Exam Preparation
-
-### Key Concepts to Explain
-
-#### 1. Client-Server Architecture
-
-**Definition:** Application architecture where client (Android app) requests services from server (FastAPI backend).
-
-**In LeafGuard:**
-- Client: Android app (user interface, camera, display)
-- Server: FastAPI backend (ML model, processing logic)
-- Communication: HTTP requests/responses
-
-#### 2. RESTful API
-
-**REST = Representational State Transfer**
-
-**Principles:**
-- Stateless (each request independent)
-- Resource-based (endpoints represent resources)
-- Standard HTTP methods (GET, POST, PUT, DELETE)
-- JSON for data exchange
-
-**LeafGuard example:**
-- Resource: Plant disease prediction
-- Endpoint: `/predict`
-- Method: POST
-- Input: Image file
-- Output: JSON with disease name
-
-#### 3. Asynchronous vs Synchronous
-
-| Aspect | Synchronous | Asynchronous |
-|--------|-------------|--------------|
-| Execution | Blocks thread until complete | Returns immediately |
-| UI Impact | Freezes UI | UI stays responsive |
-| Android | NetworkOnMainThreadException | Recommended approach |
-| Retrofit | call.execute() | call.enqueue() |
-
-#### 4. JSON
-
-**Definition:** Text-based data format for exchanging data between systems.
-
-**Why JSON?**
-- Human-readable
-- Language-independent
-- Lightweight
-- Easy to parse
-
-**Alternative:** XML (more verbose)
-
-### Sample Viva Questions & Answers
-
-**Q1: How does your Android app communicate with the backend?**
-
-**A:** My Android app uses Retrofit library to make HTTP POST requests to the FastAPI backend. The app converts the captured image into a MultipartBody.Part and sends it to the `/predict` endpoint. The backend processes the image with a machine learning model and returns a JSON response containing the disease name, confidence score, symptoms, and treatment recommendations. Retrofit automatically parses the JSON into a Java PredictionResponse object using Gson.
-
----
-
-**Q2: Why can't you make network calls on the main thread?**
-
-**A:** The main thread (UI thread) is responsible for rendering the user interface and handling user interactions. Network calls typically take 1-3 seconds to complete. If we block the main thread during this time, the UI freezes, making the app unresponsive. After 5 seconds, Android shows an "Application Not Responding" (ANR) dialog. To prevent this, we use Retrofit's `enqueue()` method which performs network operations on a background thread and delivers results back to the main thread via callbacks.
-
----
-
-**Q3: How do you handle network errors in your app?**
-
-**A:** I implement comprehensive error handling in both `onResponse()` and `onFailure()` callbacks. In `onResponse()`, I check if the response is successful (2xx status code) and if the response body is not null. If the status code is 4xx or 5xx, I show an appropriate error message. In `onFailure()`, I check if the error is an IOException (network error) or SocketTimeoutException (timeout), and display user-friendly Toast messages. I also hide the progress bar and re-enable the upload button in both cases to allow the user to retry.
-
----
-
-**Q4: What is multipart form-data and why do you use it?**
-
-**A:** Multipart form-data is an HTTP content type that allows sending multiple pieces of data, including binary files, in a single request. Traditional form encoding (application/x-www-form-urlencoded) only supports text data. Since LeafGuard AI needs to upload image files from the Android app to the backend, I use multipart form-data. Each part of the request has a boundary separator, content-disposition header, and the actual data. Retrofit makes this easy with the `@Multipart` annotation and `MultipartBody.Part` class.
-
----
-
-**Q5: Explain the flow when a user uploads an image.**
-
-**A:**
-1. User captures an image using camera (from Week 03 implementation)
-2. User taps "Detect Disease" button
-3. App shows ProgressBar and disables button for feedback
-4. App converts the Bitmap to a File, then creates RequestBody and MultipartBody.Part
-5. Retrofit sends HTTP POST request to `http://10.0.2.2:8000/predict` in the emulator (or your LAN IP on a physical phone) with the image
-6. Request runs on background thread (via OkHttp)
-7. FastAPI backend receives image, preprocesses it, runs ML model inference
-8. Backend returns JSON response with disease, confidence, symptoms, treatment
-9. Retrofit receives response on background thread, Gson parses JSON to a PredictionResponse data object
-10. `onResponse()` callback executes on main thread
-11. App hides ProgressBar, creates Intent with prediction data
-12. App navigates to ResultActivity
-13. ResultActivity displays disease name, confidence percentage, and recommendations
-
-Expected result: the Result screen should show the disease name and confidence percentage.
-
----
-
-**Q6: What permissions does your app need for networking?**
-
-**A:** The app requires the INTERNET permission, declared in AndroidManifest.xml with `<uses-permission android:name="android.permission.INTERNET"/>`. Additionally, since Android 9 (API 28) blocks HTTP traffic by default, I created a network security configuration file that allows cleartext traffic to my local backend at `10.0.2.2` in the emulator (or my computer LAN IP for a physical phone). This is referenced in the manifest with `android:networkSecurityConfig="@xml/network_security_config"`. In production, I would use HTTPS instead of HTTP.
-
----
-
-**Q7: What is the difference between Retrofit and HttpURLConnection?**
-
-**A:** HttpURLConnection is the standard Java networking API. It's low-level and requires significant boilerplate code for tasks like setting headers, handling multipart uploads, parsing JSON, and managing background threads. Retrofit is a type-safe HTTP client library built on top of OkHttp. It provides a clean, annotation-based API for defining endpoints, automatically handles threading via callbacks, integrates with Gson for automatic JSON parsing, and reduces boilerplate code significantly. Retrofit is the industry standard for Android networking because it makes code more maintainable and less error-prone.
-
----
-
-**Q8: How does Gson convert JSON to Java objects?**
-
-**A:** Gson uses reflection to map JSON keys to Java class fields. When I define a PredictionResponse class with fields like `private String disease`, Gson looks for a "disease" key in the JSON response and assigns its value to the field. If field names don't match JSON keys, I can use the `@SerializedName` annotation. Gson supports primitive types, wrapper types, strings, nested objects, arrays, and lists. It handles null values gracefully when using wrapper types (Integer, Double) instead of primitives (int, double). Retrofit integrates Gson via GsonConverterFactory, so JSON conversion happens automatically without any manual parsing code.
-
----
-
-### Practice Problems
-
-#### Problem 1: Implement GET Request
-
-**Task:** Add a method to ApiService to get a list of all supported diseases.
-
-**Backend endpoint:**
-```
-GET /diseases
-Response: ["Tomato Late Blight", "Potato Early Blight", ...]
-```
-
-**Your code:**
-```java
-@GET("diseases")
-Call<List<String>> getDiseases();
-```
-
-#### Problem 2: Add Query Parameter
-
-**Task:** Add a disease search endpoint with query parameter.
-
-**Backend endpoint:**
-```
-GET /diseases?search=tomato
-Response: ["Tomato Late Blight", "Tomato Mosaic Virus", ...]
-```
-
-**Your code:**
-```java
-@GET("diseases")
-Call<List<String>> searchDiseases(@Query("search") String searchTerm);
-```
-
-#### Problem 3: Handle Nested JSON
-
-**Backend returns:**
-```json
-{
-  "disease": {
-    "name": "Tomato Late Blight",
-    "scientific_name": "Phytophthora infestans",
-    "severity": "High"
-  },
-  "confidence": 0.87
-}
-```
-
-**Your data models:**
-```java
-public class Disease {
-    private String name;
-    @SerializedName("scientific_name")
-    private String scientificName;
-    private String severity;
-    // Getters and setters
-}
-
-public class PredictionResponse {
-    private Disease disease;
-    private double confidence;
-    // Getters and setters
-}
-```
-
----
-
-## Summary
-
-### What You Learned This Week
-
-1. **HTTP Fundamentals:** Request-response cycle, methods, status codes, headers
-2. **Retrofit Architecture:** How it simplifies Android networking
-3. **Multipart Upload:** Sending image files via HTTP
-4. **JSON Parsing:** Automatic conversion with Gson
-5. **Async Programming:** Callbacks, threading, UI responsiveness
-6. **Error Handling:** Network errors, HTTP errors, timeout handling
-7. **Network Security:** Cleartext restrictions, permissions
-8. **Best Practices:** Singleton pattern, logging, cancellation
-
-### Key Takeaways
-
-- **Always use async networking** (`enqueue()`, never `execute()`)
-- **Handle all error cases** (network, HTTP, parsing)
-- **Show loading indicators** for user feedback
-- **Use HTTPS in production** (HTTP only for local development)
-- **Retrofit is the standard** (don't use HttpURLConnection)
-- **Singleton for Retrofit** (don't create multiple instances)
-
-### Next Steps
-
-- Complete Week 05 exercises to practice these concepts
-- Implement build task step-by-step
-- Test thoroughly with different network conditions
-- Move to Week 06: Integrate real ML model in backend
-
----
-
-**Now you have a solid theoretical foundation. Practice with exercises to build muscle memory!**
-
+## 14. Week 05 Understanding Checklist
+
+- [ ] I can explain how Weeks 03 and 04 combine in Week 05.
+- [ ] I can explain why the emulator uses `10.0.2.2`.
+- [ ] I can explain why Retrofit requires a trailing base-URL slash.
+- [ ] I can name the multipart field `image`.
+- [ ] I can name all eight JSON response fields.
+- [ ] I can explain why a content URI is copied to cache.
+- [ ] I can distinguish `onResponse` from `onFailure`.
+- [ ] I can explain why `enqueue` does not freeze the UI.
+- [ ] I can explain the local cleartext exception and production HTTPS rule.
+- [ ] I can demonstrate success and backend-unavailable behavior.
+- [ ] I can explain why mock success is not model-accuracy evidence.
+- [ ] I can identify all 4 new and 7 expanded files.
 
 <!-- NAV_FOOTER_START -->
 
 ---
 
-## 📚 Week 05 — Navigation
-
-### All Files In This Week (Complete In Order)
+## Week 05 Navigation
 
 | Step | File | Description |
-|------|------|-------------|
-| 1 | [README.md](README.md) | Week Overview & Objectives |
-| **2** | **learning-notes.md** ← *You are here* | **Theory & Learning Notes** |
-| 3 | [exercises.md](exercises.md) | Practice Exercises |
-| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
-| 5 | [validation-checklist.md](validation-checklist.md) | Validation & Verification |
-| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
-| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
+|---:|---|---|
+| 1 | [README.md](README.md) | Week overview |
+| **2** | **learning-notes.md** - current | Theory and exact source snapshot |
+| 3 | [exercises.md](exercises.md) | Guided practice |
+| 4 | [build-task.md](build-task.md) | Implementation guide |
+| 5 | [validation-checklist.md](validation-checklist.md) | Validation and evidence |
+| 6 | [quiz.md](quiz.md) | Knowledge assessment |
+| 7 | [reflection.md](reflection.md) | Reflection and handoff |
 
----
-
-### Within-Week Navigation
-
-[← Week Overview & Objectives](README.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Theory & Learning Notes** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Practice Exercises →](exercises.md)
-
----
-
-### Week Progression
-
-| ← Previous Week | 🏠 Home | Next Week → |
-|:----------------|:-------:|------------:|
-| [⬅ Week 04: FastAPI Backend](../week-04-fastapi-backend/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 06: Cloud ML Model ➡](../week-06-cloud-ml-model/README.md) |
-
----
+[Previous: Week 04](../week-04-fastapi-backend/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Next: Week 06](../week-06-cloud-ml-model/README.md)

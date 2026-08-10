@@ -1,1059 +1,207 @@
-# Week 05: Android Networking with Retrofit
+# Week 05: Connect Android to FastAPI
 
-## What you'll learn & why
+## Week 05 Mindset
 
-This week connects your Android app to the FastAPI backend over the network using Retrofit. You will send the leaf photo as a multipart upload, then receive a JSON diagnosis with the disease name, confidence, symptoms, treatment, and prevention. This matters because LeafGuard AI becomes a real client-server app instead of only a local camera screen. You will also practice showing loading states and useful errors so the app feels reliable even when the network fails.
+Week 03 gave Android a real image URI. Week 04 gave FastAPI a tested multipart contract. Week 05 connects those two verified pieces:
 
-## New words this week
+> Select or capture an image in Android -> upload it as multipart field `image` -> parse the Week 04 JSON -> display the returned result.
 
-- **backend**: The server-side part of LeafGuard AI that receives the image, runs the model, and returns the diagnosis. In this project, the backend is the FastAPI app from Week 04.
-- **API (Application Programming Interface)**: A clear set of rules for how the Android app talks to the backend. The `/predict` API endpoint accepts an image and returns prediction data.
-- **HTTP POST**: HyperText Transfer Protocol (HTTP) method used to send data to a server. We use POST because an image must go in the request body.
-- **multipart** (`multipart/form-data`): A request format for sending files and form fields together. LeafGuard sends the photo in a multipart part named `image`.
-- **JSON**: JavaScript Object Notation, a lightweight text format for structured data. The backend returns JSON such as `{ "disease": "Tomato Late Blight", "confidence": 0.87 }`.
-- **Retrofit `Call` + `enqueue`**: Retrofit is a library that calls the backend for you; `enqueue` runs the call in the background and calls you back when the reply arrives.
-- **data class**: A Kotlin class that just holds data, such as the disease name and confidence returned by the backend.
-- **object singleton**: A Kotlin `object` is a single shared instance, useful for one shared `RetrofitClient`.
-- **`lifecycleScope.launch` / coroutine**: A coroutine does slow work, like a network call, without freezing the screen.
-
-See the full [glossary](../../GLOSSARY.md) for more terms.
-
-## Related materials
-
-- Exercises (primary Kotlin): [../../exercises/android-kotlin/](../../exercises/android-kotlin/)
-- Exercises (secondary Java): [../../exercises/android/](../../exercises/android/)
-- Solutions: [../../solutions/week-05/](../../solutions/week-05/)
-- Notebooks: [../../notebooks/week-05/](../../notebooks/week-05/)
-- Glossary: [../../GLOSSARY.md](../../GLOSSARY.md)
-
-## Repository State After Week 05
-
-Week 05 connects the Week 03 Android image input to the Week 04 backend. The repository now shows a real client-server boundary: Android prepares a multipart request, FastAPI returns JSON, and the app displays that response.
-
-### Structure to browse after this week
-
-- `android-app-kotlin/app/build.gradle` includes Retrofit, Gson converter, and OkHttp dependencies.
-- `android-app-kotlin/app/src/main/AndroidManifest.xml` includes `INTERNET` permission and any local-network configuration needed for development.
-- `android-app-kotlin/app/src/main/res/xml/network_security_config.xml` allows local HTTP testing when required.
-- `android-app-kotlin/app/src/main/java/com/leafguard/network/ApiService.kt` defines the multipart `/predict` call.
-- `android-app-kotlin/app/src/main/java/com/leafguard/network/RetrofitClient.kt` builds the Retrofit instance.
-- `android-app-kotlin/app/src/main/java/com/leafguard/network/PredictionResponse.kt` models the JSON response.
-- `android-app-kotlin/app/src/main/java/com/leafguard/ScanActivity.kt` uploads the selected image.
-- `android-app-kotlin/app/src/main/java/com/leafguard/ResultActivity.kt` displays disease, confidence, symptoms, treatment, and prevention values returned by the backend.
-- `backend-api/` must still be runnable because Android needs it during the demo.
-
-### Files you should create or update this week
-
-- `app/build.gradle` for networking dependencies.
-- `AndroidManifest.xml` and optionally `network_security_config.xml`.
-- `network/ApiService.kt`, `network/RetrofitClient.kt`, and `network/PredictionResponse.kt`.
-- `ScanActivity.kt` for upload, loading state, and failure handling.
-- `ResultActivity.kt` and `activity_result.xml` for displaying returned data.
-- Matching Java-track files under `android-app/` if you maintain both tracks.
-- `docs/evidence/week-05/` for successful upload and backend-unavailable error proof.
-
-### What this repository state can do
-
-- Capture or choose an image, upload it to the running backend, parse JSON, and show a result screen.
-- Handle slow network, server failure, or missing backend with a visible error instead of a crash.
-- Demonstrate Android networking, JSON parsing, and asynchronous callbacks.
-
-### What this repository state cannot do
-
-- It still cannot guarantee real AI accuracy if the backend is returning mock predictions.
-- It cannot remember scan results after the app closes.
-- It cannot provide a complete offline diagnosis.
-- It cannot yet browse a full disease reference library.
+This week does **not** prove real model accuracy. The backend may still run in explicit mock mode. Week 05 proves mobile networking, contract compatibility, loading state, result display, and safe failure behavior.
 
 ---
 
-## Weekly Objective
+## Progressive Handoff
 
-By the end of Week 05, you will:
+| Week | Verified input | New work | Verified output |
+|---:|---|---|---|
+| 01 | Product idea | User journey and weekly slices | Buildable plan |
+| 02 | Week 01 plan | Android Activities, layouts, navigation | Runnable screen shell |
+| 03 | Scan placeholder | Camera, gallery, URI, preview | Real selected image URI |
+| 04 | Image concept | Standalone FastAPI contract | Tested `POST /predict` API |
+| **05** | **Week 03 URI + Week 04 contract** | **Retrofit multipart connection** | **Android-to-backend result flow** |
+| 06 | Working client-server pipeline | Real cloud model validation | Real cloud inference |
 
-1. **Integrate Retrofit library** into your Android project for HTTP networking
-2. **Configure Retrofit with Gson converter** to handle JSON parsing automatically
-3. **Create API service interfaces** defining HTTP methods with proper annotations
-4. **Implement multipart image upload** from Android app to your FastAPI backend
-5. **Handle asynchronous network callbacks** with proper success and error handling
-6. **Display loading states** (ProgressBar) while network requests are in progress
-7. **Parse JSON responses** from backend and extract prediction data
-8. **Navigate to ResultActivity** with prediction data after successful upload
-9. **Implement error handling** for network failures, timeouts, and server errors
-10. **Test end-to-end communication** between Android app and FastAPI backend
+```text
+Week 03 Android                    Week 04 FastAPI
+selectedImageUri                   POST /predict
+        |                          field: image
+        |                                |
+        `---- Week 05 Retrofit ----------'
+                       |
+                 ResultActivity
+```
 
-**Measurable Outcomes:**
-- Android app successfully uploads images to FastAPI `/predict` endpoint
-- JSON response parsed and disease prediction displayed in ResultActivity
-- Loading indicator shown during network operations
-- Error messages displayed when backend is unavailable or network fails
-- No app crashes when network operations fail
-- Git commits showing incremental networking implementation
+If Week 03 image input or Week 04 backend tests do not pass, stop and repair that earlier boundary first.
 
 ---
 
-## Why This Week Matters
+## Product State After Week 05
 
-### Connection to CSE 2206 Mobile Application Development
+**Cumulative product contribution: 45%**
 
-Week 05 is the **critical integration point** where your Android app transforms from a local-only application into a **network-enabled mobile application**. This week demonstrates:
+The product can now:
 
-- **HTTP Networking:** Making POST requests with multipart data (core syllabus requirement)
-- **JSON Parsing:** Converting server responses into Kotlin data classes (with Java reference classes as a secondary track)
-- **Asynchronous Programming:** Handling network callbacks on background threads
-- **Error Handling:** Managing network failures gracefully
-- **User Experience:** Showing progress indicators and error messages
+- preserve Week 03 camera and gallery input
+- convert a selected content URI into temporary upload bytes
+- send `POST /predict` using multipart field `image`
+- parse all eight Week 04 response fields with Gson
+- show loading state while the request is active
+- distinguish an HTTP response error from a network failure
+- open a real Result screen after a successful response
+- recover for another attempt without crashing
 
-**This is a mandatory CSE 2206 demonstration topic.** Your teacher will expect you to explain:
-- How Retrofit simplifies HTTP networking in Android
-- The difference between synchronous vs asynchronous network calls
-- How to prevent UI freezing during network operations
-- How to handle network errors without crashing the app
+The product still cannot:
 
-### Academic Requirement Alignment
-
-CSE 2206 syllabus explicitly requires:
-
-1. **Network Programming (Week 5-6 syllabus):** HTTP POST requests, multipart file upload, JSON parsing
-2. **Asynchronous Operations:** Network calls must not block the main UI thread
-3. **Third-Party Library Integration:** Using Retrofit demonstrates professional Android development
-4. **Client-Server Architecture:** Completing the full request-response cycle from Week 04
-
-**Viva Question Preview:**
-- "Explain how your Android app communicates with the backend"
-- "What happens if the user has no internet connection?"
-- "Why can't you make network calls on the main thread?"
-- "How does Retrofit convert JSON to Kotlin data classes or Java objects?"
+- claim real AI accuracy while the backend reports mock mode
+- save scan history; that belongs to Week 07
+- provide the later local disease library
+- run offline TensorFlow Lite inference
+- use production HTTP security; local cleartext is restricted to the emulator host only
 
 ---
 
-## Syllabus Topics Covered This Week
+## Exact Week 05 Repository Delta
 
-### Direct Coverage
+The Kotlin track is primary. Week 05 adds **4 files**, expands **7 files**, preserves the other Week 03 Android files, and does not rewrite the Week 04 backend contract.
 
-1. **Android Networking Fundamentals**
-   - HTTP protocol in mobile context
-   - Network permissions (INTERNET permission)
-   - Making POST requests with image data
-   - Handling network responses
+| Change | Count | Files |
+|---|---:|---|
+| New | 4 | `network/ApiService.kt`, `network/PredictionResponse.kt`, `network/RetrofitClient.kt`, `res/xml/network_security_config.xml` |
+| Expanded | 7 | `app/build.gradle`, `AndroidManifest.xml`, `ScanActivity.kt`, `ResultActivity.kt`, `activity_scan.xml`, `activity_result.xml`, `strings.xml` |
+| Backend changed | 0 | Week 04 API stays the server source of truth |
+| Later-week packages added | 0 | No `database/`, `ml/`, `ui/`, notification, or offline assets |
 
-2. **Asynchronous Programming**
-   - Callbacks and listener interfaces
-   - Background thread management
-   - UI thread updates after network operations
-   - Understanding Retrofit's enqueue() method
+Exact cumulative sizes for the 11 Week 05 target files:
 
-3. **Third-Party Libraries**
-   - Adding Gradle dependencies (Retrofit, Gson, OkHttp)
-   - Configuring library initialization
-   - Using library APIs effectively
-   - Reading library documentation
+| File | Logical lines |
+|---|---:|
+| `app/build.gradle` | 47 |
+| `AndroidManifest.xml` | 55 |
+| `ScanActivity.kt` | 247 |
+| `ResultActivity.kt` | 56 |
+| `network/ApiService.kt` | 13 |
+| `network/PredictionResponse.kt` | 22 |
+| `network/RetrofitClient.kt` | 33 |
+| `activity_scan.xml` | 76 |
+| `activity_result.xml` | 115 |
+| `strings.xml` | 55 |
+| `network_security_config.xml` | 7 |
+| **Total across changed/new files** | **726** |
 
-4. **JSON Data Parsing**
-   - Creating data model classes matching JSON structure
-   - Automatic deserialization with Gson
-   - Accessing nested JSON fields
-   - Handling optional/nullable fields
+These are cumulative end-of-week files, not added-line counts. For example, the 247-line `ScanActivity.kt` contains the complete Week 03 camera/gallery behavior plus Week 05 upload behavior.
 
-5. **Error Handling**
-   - Try-catch for network errors
-   - Timeout configuration
-   - Server error code handling (404, 500, etc.)
-   - User-friendly error messages
-
-6. **User Experience**
-   - Showing ProgressBar during uploads
-   - Hiding progress after completion
-   - Disabling buttons during network operations
-   - Toast messages for feedback
-
-### CSE 2206 Concept Connections
-
-| Syllabus Topic | LeafGuard AI Implementation | This Week |
-|----------------|----------------------------|-----------|
-| Network Programming | HTTP POST image upload | ✅ Core focus |
-| JSON Parsing | Gson converts JSON to Kotlin data classes / Java objects | ✅ Core focus |
-| Asynchronous Operations | Retrofit callbacks on background thread | ✅ Core focus |
-| Error Handling | Try-catch, onFailure callbacks | ✅ Core focus |
-| Third-Party Libraries | Retrofit, Gson, OkHttp integration | ✅ Core focus |
-| User Interface | ProgressBar, Toast messages | ✅ Applied |
-| Intent Navigation | Passing data to ResultActivity | ✅ Applied |
+The full content of every changed or new file appears in [learning-notes.md section 12](learning-notes.md#12-end-of-week-05-file-inventory-exact-files-exact-code-exact-size).
 
 ---
 
-## Prerequisites
+## Exact API Contract Android Must Preserve
 
-### Completed Previous Weeks
+| Contract part | Required value |
+|---|---|
+| Method | `POST` |
+| Path | `/predict` |
+| Encoding | `multipart/form-data` |
+| File field | `image` |
+| Success | HTTP 200 |
+| Response fields | 8 |
 
-- **Week 03:** Camera and gallery image capture working, permissions handled
-- **Week 04:** FastAPI backend running, `/predict` endpoint tested with Postman
+The response model contains:
 
-**Critical checkpoint:** Before starting Week 05, you MUST:
-1. Have FastAPI backend running and accessible from your phone's browser (http://YOUR_IP:8000/docs)
-2. Have images successfully captured in your Android app (from Week 03)
-3. Be able to ping your laptop's IP from your phone (both on same Wi-Fi network)
+```text
+model_label, disease, confidence, uncertain,
+guidance_available, symptoms, treatment, prevention
+```
 
-### Required Knowledge
-
-1. **Android Basics:**
-   - Activities and Intents
-   - UI components (Button, ImageView, ProgressBar, TextView)
-   - Event listeners (onClick)
-   - Using strings.xml resources
-
-2. **Java/Kotlin Fundamentals:**
-   - Classes and objects
-   - Methods and callbacks
-   - Interfaces
-   - Anonymous classes or lambda expressions
-   - Null safety basics
-
-3. **Gradle Basics:**
-   - How to add dependencies to `build.gradle (Module: app)`
-   - Sync project after Gradle changes
-   - Understanding library versions
-
-4. **Networking Concepts:**
-   - What is HTTP POST?
-   - What is JSON?
-   - Basic understanding of request headers
-   - What is multipart form-data?
+Android does not rename, omit, or invent fields. Gson maps this existing Week 04 JSON into `PredictionResponse`.
 
 ---
 
-## Learning Resources
+## CSE 2206 Connection
 
-### Official Documentation (Read First)
+Week 05 applies these mobile-development concepts:
 
-1. **Retrofit:**
-   - Official site: https://square.github.io/retrofit/
-   - Getting Started Guide
-   - Annotations reference (@POST, @Multipart, @Part)
+- client-server architecture
+- third-party Gradle dependencies
+- HTTP POST and multipart file upload
+- JSON deserialization
+- asynchronous callbacks
+- Activity-to-Activity data passing with Intent extras
+- runtime error feedback and loading state
+- Android network permission and local development security
 
-2. **Gson:**
-   - GitHub: https://github.com/google/gson
-   - User Guide: https://github.com/google/gson/blob/master/UserGuide.md
+The central CSE 2206 question is:
 
-3. **Android Developer:**
-   - Connecting to the Network: https://developer.android.com/training/basics/network-ops/connecting
-   - Permissions: https://developer.android.com/training/permissions/requesting
-
-### Video Tutorials (Recommended)
-
-1. **Retrofit Tutorial for Beginners** (YouTube)
-   - Search: "Android Retrofit Tutorial 2024"
-   - Focus on POST requests with multipart data
-   - Watch videos that explain Gson integration
-
-2. **Asynchronous Programming in Android** (YouTube)
-   - Search: "Android Background Tasks Tutorial"
-   - Understand why network calls can't be on main thread
-
-### Reading Materials
-
-1. **Retrofit vs OkHttp vs HttpURLConnection:**
-   - Understand why Retrofit is preferred for Android
-   - Retrofit provides cleaner API and automatic JSON parsing
-
-2. **Understanding Callbacks:**
-   - How `onResponse()` and `onFailure()` work
-   - Difference between synchronous and asynchronous calls
+> How can an Android client perform slow network work without freezing the UI or crashing when the server is unavailable?
 
 ---
 
-## Conceptual Overview
+## Milestone Demo
 
-### What You're Building This Week
-
-```
-Android App                     FastAPI Backend
-┌─────────────┐                ┌──────────────┐
-│             │                │              │
-│  [Image]    │                │  /predict    │
-│             │   HTTP POST    │              │
-│  [Upload]◄──┼────────────────►  endpoint    │
-│   Button    │  multipart     │              │
-│             │                │  Returns     │
-│ ProgressBar │                │  JSON        │
-│             │                │              │
-│  [Result]   │◄───JSON────────┤              │
-│  Activity   │  Response      │              │
-└─────────────┘                └──────────────┘
-```
-
-### Request-Response Flow
-
-1. **User Action:** User taps "Detect Disease" button after capturing image
-2. **UI Feedback:** ProgressBar becomes visible, button disabled
-3. **Image Preparation:** Convert Bitmap to File or RequestBody
-4. **Network Request:** Retrofit creates HTTP POST with multipart data
-5. **Backend Processing:** FastAPI receives image, processes it, returns JSON
-6. **Response Handling:**
-   - Success: Parse JSON, extract disease name and confidence
-   - Failure: Show error Toast message
-7. **UI Update:** Hide ProgressBar, navigate to ResultActivity or show error
-8. **Display Result:** Show disease name, confidence, recommendations
-
-### Key Retrofit Concepts
-
-#### 1. API Service Interface
-
-Defines HTTP methods using annotations. Kotlin is the primary track for the real app.
-
-**Kotlin (primary):**
-```kotlin
-interface ApiService {
-    @Multipart
-    @POST("predict")
-    fun uploadImage(@Part image: MultipartBody.Part): Call<PredictionResponse>
-}
-```
-
-**Java (secondary reference):**
-```java
-public interface ApiService {
-    @Multipart
-    @POST("predict")
-    Call<PredictionResponse> uploadImage(@Part MultipartBody.Part image);
-}
-```
-
-**Explanation:**
-- `@POST("predict")`: Makes POST request to `/predict` endpoint
-- `@Multipart`: Indicates multipart form-data content type
-- `@Part`: Marks image parameter as part of multipart request
-- `Call<PredictionResponse>`: Return type wrapping async operation
-
-#### 2. Retrofit Client Singleton
-
-Configures Retrofit instance once for entire app. The Android emulator reaches your computer at `http://10.0.2.2:8000/`; use your computer's LAN (Local Area Network) IP only for a physical phone on the same Wi-Fi.
-
-**Kotlin (primary):**
-```kotlin
-object RetrofitClient {
-    private const val BASE_URL = "http://10.0.2.2:8000/"
-
-    private val retrofit: Retrofit by lazy {
-        Retrofit.Builder()
-            .baseUrl(BASE_URL)
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
-
-    val apiService: ApiService by lazy {
-        retrofit.create(ApiService::class.java)
-    }
-}
-```
-
-**Java (secondary reference):**
-```java
-public class RetrofitClient {
-    private static final String BASE_URL = "http://10.0.2.2:8000/";
-    private static Retrofit retrofit = null;
-
-    public static Retrofit getClient() {
-        if (retrofit == null) {
-            retrofit = new Retrofit.Builder()
-                .baseUrl(BASE_URL)
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
-        }
-        return retrofit;
-    }
-}
-```
-
-**Why singleton?** Creating Retrofit instances is expensive. Reuse one instance.
-
-#### 3. Data Models
-
-Kotlin data class matching the JSON structure:
-
-**Kotlin (primary):**
-```kotlin
-data class PredictionResponse(
-    @SerializedName("disease") val disease: String,
-    val confidence: Double,
-    val symptoms: String,
-    val treatment: String,
-    val prevention: String
-)
-```
-
-**Java (secondary reference):**
-```java
-public class PredictionResponse {
-    private String disease;
-    private double confidence;
-    private String symptoms;
-    private String treatment;
-    private String prevention;
-
-    // Getters and setters
-}
-```
-
-Gson automatically maps JSON keys to Kotlin or Java fields.
-
-#### 4. Asynchronous Callbacks
-
-**Kotlin (primary):**
-```kotlin
-call.enqueue(object : Callback<PredictionResponse> {
-    override fun onResponse(
-        call: Call<PredictionResponse>,
-        response: Response<PredictionResponse>
-    ) {
-        // Handle success
-    }
-
-    override fun onFailure(call: Call<PredictionResponse>, t: Throwable) {
-        // Handle error
-    }
-})
-```
-
-**Java (secondary reference):**
-```java
-call.enqueue(new Callback<PredictionResponse>() {
-    @Override
-    public void onResponse(Call<PredictionResponse> call, Response<PredictionResponse> response) {
-        // Handle success
-    }
-
-    @Override
-    public void onFailure(Call<PredictionResponse> call, Throwable t) {
-        // Handle error
-    }
-});
-```
-
-**Key Point:** `enqueue()` runs the request asynchronously. Retrofit delivers callbacks safely for UI updates in the normal Android setup.
+1. Start the Week 04 backend with `USE_MOCK=true`.
+2. Launch the Kotlin app on an emulator.
+3. Open Scan and select or capture an image.
+4. Tap **Detect Disease**.
+5. Show the progress indicator while uploading.
+6. Show the Result screen with all contract data represented.
+7. Stop the backend.
+8. Retry and show a friendly network error with no crash.
+9. Explain that mock mode proves the pipeline, not disease accuracy.
 
 ---
 
-## Weekly Timeline
-
-### Day 1: Retrofit Setup and Configuration
-
-**Morning (Theory - 1 hour):**
-- Read Retrofit official documentation
-- Watch "Retrofit Tutorial for Beginners" video (30 minutes)
-- Understand HTTP POST and multipart concepts
-
-**Afternoon (Implementation - 2 hours):**
-- Add Retrofit, Gson, OkHttp dependencies to `build.gradle`
-- Create `ApiService` interface with basic structure
-- Create `RetrofitClient` singleton class
-- Configure BASE_URL with `http://10.0.2.2:8000/` for the emulator (LAN IP only for a physical phone)
-
-**Evening (Testing - 30 minutes):**
-- Sync Gradle and fix any dependency conflicts
-- Verify app still builds without errors
-- Commit: "week-05: add Retrofit and Gson dependencies"
-
----
-
-### Day 2: Data Models and API Interface
-
-**Morning (Theory - 1 hour):**
-- Review your FastAPI `/predict` JSON response structure from Week 04
-- Understand JSON-to-Java mapping with Gson
-- Learn about Gson annotations (@SerializedName if needed)
-
-**Afternoon (Implementation - 2 hours):**
-- Create `PredictionResponse.java` data model
-- Match fields to FastAPI JSON response
-- Add getters and setters
-- Complete `ApiService` interface with @Multipart and @Part annotations
-
-**Evening (Review - 30 minutes):**
-- Double-check JSON field names match backend response
-- Commit: "week-05: create data models and API service interface"
-
----
-
-### Day 3: Image Upload Implementation
-
-**Morning (Theory - 1 hour):**
-- Learn about `RequestBody` and `MultipartBody.Part`
-- Understand how to convert File to RequestBody
-- Review error handling patterns
-
-**Afternoon (Implementation - 3 hours):**
-- Create method to convert image file to MultipartBody.Part
-- Implement upload button click listener
-- Add ProgressBar to MainActivity layout
-- Write upload logic with Retrofit call
-
-**Evening (Debugging - 1 hour):**
-- Test with simple image
-- Check Logcat for network errors
-- Commit: "week-05: implement image upload with Retrofit"
-
----
-
-### Day 4: Response Handling and Navigation
-
-**Morning (Theory - 1 hour):**
-- Review callback patterns
-- Understand `onResponse()` vs `onFailure()`
-- Learn about HTTP status codes
-
-**Afternoon (Implementation - 2 hours):**
-- Implement `onResponse()` callback
-- Parse PredictionResponse object
-- Create Intent to ResultActivity with data
-- Pass disease name, confidence, symptoms, treatment as Intent extras
-
-**Evening (Testing - 1 hour):**
-- Test successful upload and navigation
-- Verify data displays correctly in ResultActivity
-- Commit: "week-05: handle response and navigate to result"
-
----
-
-### Day 5: Error Handling and Loading States
-
-**Morning (Theory - 1 hour):**
-- Study common network errors
-- Learn timeout configuration
-- Understand user feedback best practices
-
-**Afternoon (Implementation - 3 hours):**
-- Implement `onFailure()` callback
-- Show Toast messages for different error types
-- Handle timeout scenarios
-- Configure OkHttp client with custom timeout values
-- Show/hide ProgressBar appropriately
-- Disable upload button during network operation
-
-**Evening (Testing - 1 hour):**
-- Test with backend stopped (server error)
-- Test with Wi-Fi off (network error)
-- Test with slow network (timeout)
-- Commit: "week-05: add error handling and loading states"
-
----
-
-### Day 6: Edge Cases and Permissions
-
-**Morning (Theory - 1 hour):**
-- Review Android permission system
-- Learn about INTERNET permission (declared in manifest)
-- Understand network security configuration
-
-**Afternoon (Implementation - 2 hours):**
-- Add INTERNET permission to AndroidManifest.xml
-- Handle case where image is null
-- Handle case where user taps upload without selecting image
-- Add validation before upload
-- Configure network security (allow cleartext traffic for local IP)
-
-**Evening (Testing - 1 hour):**
-- Test all edge cases
-- Verify no crashes
-- Commit: "week-05: handle edge cases and add permissions"
-
----
-
-### Day 7: Integration Testing and Documentation
-
-**Morning (Testing - 2 hours):**
-- Test complete flow: camera → upload → result
-- Test with multiple images
-- Test error scenarios
-- Verify all Toast messages appear correctly
-
-**Afternoon (Documentation - 2 hours):**
-- Complete Week 05 validation checklist
-- Take screenshots: upload in progress, successful result, error messages
-- Update progress-tracker.md
-- Fill out reflection.md
-
-**Evening (Final Review - 1 hour):**
-- Complete Week 05 quiz
-- Review learning notes
-- Commit: "week-05: complete integration testing and documentation"
-
----
-
-## Common Mistakes to Avoid
-
-### 1. ❌ Hardcoding IP Address in Multiple Places
-
-**Problem:** BASE_URL copied in several files, makes updates difficult
-
-**Solution:** Define BASE_URL once in RetrofitClient, reference it everywhere:
-
-**Kotlin (primary):**
-```kotlin
-object RetrofitClient {
-    private const val BASE_URL = "http://10.0.2.2:8000/" // Emulator → your computer
-    // Use this everywhere
-}
-```
-
-**Java (secondary reference):**
-```java
-public class RetrofitClient {
-    private static final String BASE_URL = "http://10.0.2.2:8000/"; // Emulator → your computer
-    // Use this everywhere
-}
-```
-
-### 2. ❌ Making Network Calls on Main Thread
-
-**Problem:** App freezes or crashes with NetworkOnMainThreadException
-
-**Solution:** Always use `enqueue()` (asynchronous), never `execute()` (synchronous):
-
-**Kotlin (primary):**
-```kotlin
-// ✅ Correct - asynchronous
-call.enqueue(object : Callback<PredictionResponse> { /* ... */ })
-
-// ❌ Wrong - synchronous
-call.execute() // Don't do this!
-```
-
-**Java (secondary reference):**
-```java
-// ✅ Correct - asynchronous
-call.enqueue(new Callback<PredictionResponse>() { ... });
-
-// ❌ Wrong - synchronous
-call.execute(); // Don't do this!
-```
-
-This is normal — if you see `NetworkOnMainThreadException`, move the network call off the main thread by using `enqueue()` or a coroutine.
-
-### 3. ❌ Not Handling Null Responses
-
-**Problem:** App crashes when backend returns empty response
-
-**Solution:** Always check if response body is null:
-
-**Kotlin (primary):**
-```kotlin
-val prediction = response.body()
-if (response.isSuccessful && prediction != null) {
-    // Safe to use prediction
-}
-```
-
-**Java (secondary reference):**
-```java
-if (response.isSuccessful() && response.body() != null) {
-    PredictionResponse prediction = response.body();
-    // Safe to use prediction
-}
-```
-
-### 4. ❌ Forgetting INTERNET Permission
-
-**Problem:** Network requests fail silently
-
-**Solution:** Add to AndroidManifest.xml:
-
-```xml
-<uses-permission android:name="android.permission.INTERNET"/>
-```
-
-### 5. ❌ Using the Wrong URL (Uniform Resource Locator)
-
-**Problem:** Typing `http://localhost:8000` inside the Android emulator points to the emulator itself, not your computer.
-
-**Solution:** Use the emulator address first: `http://10.0.2.2:8000/`. From your computer browser, use `http://localhost:8000`. For a physical phone on the same Wi-Fi, use your computer's LAN (Local Area Network) IP address such as `http://192.168.1.10:8000/`.
-
-This is normal — if you see “connection refused,” the backend may not be running, or the app may be using the wrong `10.0.2.2`/LAN URL.
-
-```
-Computer/browser: http://localhost:8000/docs
-Android emulator: http://10.0.2.2:8000/docs
-Physical phone: http://YOUR_LAN_IP:8000/docs
-```
-
-### 6. ❌ Not Configuring Network Security for HTTP
-
-**Problem:** Android 9+ blocks cleartext (HTTP) traffic by default
-
-**Solution:** Add network security config in AndroidManifest.xml:
-
-```xml
-<application
-    android:networkSecurityConfig="@xml/network_security_config">
-```
-
-And create `res/xml/network_security_config.xml`:
-
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<network-security-config>
-    <domain-config cleartextTrafficPermitted="true">
-        <domain includeSubdomains="true">10.0.2.2</domain>
-        <!-- For a physical phone, add your computer's LAN IP here too. -->
-    </domain-config>
-</network-security-config>
-```
-
-This is normal — if you see `CLEARTEXT communication not permitted`, add this config or set `android:usesCleartextTraffic="true"` for local development only.
-
-### 7. ❌ Not Showing Loading State
-
-**Problem:** User thinks app is frozen during upload
-
-**Solution:** Show ProgressBar and disable button:
-
-```java
-// Before upload
-progressBar.setVisibility(View.VISIBLE);
-uploadButton.setEnabled(false);
-
-// After response (success or failure)
-progressBar.setVisibility(View.GONE);
-uploadButton.setEnabled(true);
-```
-
-### 8. ❌ Generic Error Messages
-
-**Problem:** "Error occurred" doesn't help user understand what happened
-
-**Solution:** Provide specific messages:
-
-```java
-if (t instanceof IOException) {
-    Toast.makeText(this, "Network error. Check your internet connection.", Toast.LENGTH_LONG).show();
-} else if (t instanceof SocketTimeoutException) {
-    Toast.makeText(this, "Request timed out. Server might be down.", Toast.LENGTH_LONG).show();
-} else {
-    Toast.makeText(this, "Unexpected error: " + t.getMessage(), Toast.LENGTH_LONG).show();
-}
+## Seven-File Learning Loop
+
+| Step | File | Purpose | Required output |
+|---:|---|---|---|
+| 1 | `README.md` | Fix the Week 05 scope | Boundary statement |
+| 2 | `learning-notes.md` | Learn concepts and exact code | Understanding checklist |
+| 3 | `exercises.md` | Practise before building | Six exercise files |
+| 4 | `build-task.md` | Reconstruct and run the slice | Compiling app and demo |
+| 5 | `validation-checklist.md` | Prove success and failure paths | Pass/fail record |
+| 6 | `quiz.md` | Recall the contract independently | At least 14/18 |
+| 7 | `reflection.md` | Explain evidence and Week 06 handoff | Reflection answers |
+
+Progress in this order:
+
+```text
+understand -> practise -> build -> validate -> recall -> reflect
 ```
 
 ---
 
-## Teacher Demonstration Tips
-
-### What to Show Your Teacher
-
-1. **Open FastAPI backend terminal** showing server running
-2. **Open Android app** on phone or emulator
-3. **Capture an image** using camera or gallery
-4. **Tap "Detect Disease" button**
-5. **Point out:**
-   - ProgressBar appears (loading state)
-   - Network request happens in background
-   - No UI freeze
-6. **Show ResultActivity** with disease prediction
-7. **Demonstrate error handling:**
-   - Stop FastAPI server
-   - Try upload again
-   - Show error Toast message
-   - App doesn't crash
-
-### Key Points to Explain
-
-1. **"I'm using Retrofit, a professional HTTP client library for Android"**
-   - Simplifies network code
-   - Handles threading automatically
-   - Integrates with Gson for JSON parsing
-
-2. **"The app makes an HTTP POST request with multipart data"**
-   - Sends image file to backend
-   - Backend processes and returns JSON
-   - App parses JSON into Java objects
-
-3. **"Network operations happen asynchronously"**
-   - Main thread stays responsive
-   - User sees progress indicator
-   - Callbacks handle response or errors
-
-4. **"I implemented comprehensive error handling"**
-   - Network failures show user-friendly messages
-   - App doesn't crash when backend is down
-   - Timeout configuration prevents infinite waiting
-
-### Viva Question Preparation
-
-**Q: Why can't you make network calls on the main thread?**
-A: The main thread handles UI rendering. Blocking it with network operations would freeze the app. Android enforces this with NetworkOnMainThreadException. I use Retrofit's `enqueue()` which runs on a background thread automatically.
-
-**Q: How does Retrofit convert JSON to Java objects?**
-A: I configured Retrofit with GsonConverterFactory. Gson reads the JSON response, matches field names to my PredictionResponse class properties, and creates Java objects automatically. This eliminates manual JSON parsing code.
-
-**Q: What happens if the user has no internet?**
-A: The `onFailure()` callback is triggered. I check if the error is an IOException (network error) and show a Toast message: "Network error. Check your internet connection." The app doesn't crash.
-
-**Q: How do you send an image in an HTTP request?**
-A: I convert the image File to a RequestBody, then wrap it in MultipartBody.Part with the @Part annotation. Retrofit builds a multipart/form-data request automatically. The backend receives it as a file upload.
-
-**Q: What is the difference between synchronous and asynchronous calls?**
-A: Synchronous calls block the thread until response is received. Asynchronous calls return immediately and use callbacks to deliver results later. I use `enqueue()` (async) instead of `execute()` (sync) to keep the UI responsive.
-
----
-
-## Debugging Checklist
-
-If your networking isn't working, check these in order:
-
-### 1. ✅ Backend is Running
-
-```bash
-# In terminal, you should see:
-INFO:     Uvicorn running on http://0.0.0.0:8000
-```
-
-Test on your computer: `http://localhost:8000/docs`. Test from the Android emulator: `http://10.0.2.2:8000/docs`.
-
-### 2. ✅ Phone and Laptop on Same Wi-Fi
-
-- Check Wi-Fi network name on both devices
-- Must be identical network
-- Some public Wi-Fi networks block device-to-device communication
-
-### 3. ✅ Correct IP Address in RetrofitClient
-
-**Kotlin (primary):**
-```kotlin
-// ❌ Wrong inside the emulator
-private const val BASE_URL = "http://localhost:8000/"
-private const val BASE_URL = "http://127.0.0.1:8000/"
-
-// ✅ Correct for Android emulator
-private const val BASE_URL = "http://10.0.2.2:8000/"
-
-// ✅ Secondary note: physical phone on same Wi-Fi
-private const val BASE_URL = "http://YOUR_LAN_IP:8000/"
-```
-
-**Java (secondary reference):**
-```java
-// ❌ Wrong inside the emulator
-private static final String BASE_URL = "http://localhost:8000/";
-private static final String BASE_URL = "http://127.0.0.1:8000/";
-
-// ✅ Correct for Android emulator
-private static final String BASE_URL = "http://10.0.2.2:8000/";
-```
-
-### 4. ✅ INTERNET Permission in Manifest
-
-```xml
-<uses-permission android:name="android.permission.INTERNET"/>
-```
-
-### 5. ✅ Network Security Config for HTTP
-
-Required for Android 9+. See "Common Mistakes" section above.
-
-### 6. ✅ Gradle Dependencies Added
-
-```gradle
-implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-implementation 'com.squareup.okhttp3:logging-interceptor:4.9.0'
-```
-
-### 7. ✅ Gradle Synced Successfully
-
-After adding dependencies, click "Sync Now" and wait for success.
-
-### 8. ✅ JSON Structure Matches
-
-FastAPI JSON response:
-```json
-{
-  "disease": "Tomato Late Blight",
-  "confidence": 0.87,
-  "symptoms": "...",
-  "treatment": "..."
-}
-```
-
-Kotlin data class or Java secondary class:
-```java
-private String disease;
-private double confidence;
-private String symptoms;
-private String treatment;
-```
-
-Field names must match exactly (or use @SerializedName).
-
----
-
-## Validation Criteria
-
-Before moving to Week 06, you MUST demonstrate:
-
-### Technical Validation
-
-- [ ] Retrofit and Gson dependencies added to build.gradle
-- [ ] ApiService interface created with @POST annotation
-- [ ] RetrofitClient singleton implemented
-- [ ] PredictionResponse data model matches backend JSON
-- [ ] Image successfully converts to MultipartBody.Part
-- [ ] Upload button triggers network request
-- [ ] ProgressBar shows during upload
-- [ ] onResponse() callback receives data
-- [ ] ResultActivity displays disease name and confidence
-- [ ] onFailure() callback handles errors
-- [ ] Toast messages shown for network errors
-- [ ] INTERNET permission in AndroidManifest.xml
-- [ ] Network security config allows HTTP to local IP
-- [ ] App doesn't crash when backend is stopped
-- [ ] App doesn't crash when network is unavailable
-
-### User Experience Validation
-
-- [ ] Loading indicator visible during upload
-- [ ] Upload button disabled during network operation
-- [ ] Clear error messages for different failure types
-- [ ] Smooth transition to ResultActivity after success
-- [ ] No UI freeze during network operations
-
-### Code Quality Validation
-
-- [ ] BASE_URL defined in one location only
-- [ ] Proper null checks for response.body()
-- [ ] Try-catch blocks where appropriate
-- [ ] Meaningful variable names
-- [ ] No hardcoded strings (use strings.xml)
-
----
-
-## Success Metrics
-
-You have successfully completed Week 05 when:
-
-1. **End-to-End Test:** You can capture an image, upload it, and see the dummy prediction in ResultActivity
-2. **Error Handling Test:** You can stop the backend, try uploading, and see a user-friendly error message without app crash
-3. **Network Security:** You understand why HTTP requires special configuration on Android 9+
-4. **Explanation Ability:** You can explain how Retrofit works to your teacher during demonstration
-5. **Documentation:** All screenshots saved, validation checklist completed, reflection written
-
----
-
-## Next Week Preview: Week 06 - Cloud ML Model Integration
-
-Now that your Android app can communicate with your FastAPI backend, Week 06 will:
-
-- Replace dummy predictions with real TensorFlow model inference
-- Implement image preprocessing in backend
-- Load trained plant disease detection model
-- Return actual confidence scores and disease names
-- Handle model limitations and fallback strategies
-
-Week 05 built the communication pipeline. Week 06 makes it intelligent.
-
----
-
-## Final Notes
-
-### Time Estimate
-
-- **Minimum:** 15-20 hours
-- **Expected:** 20-25 hours
-- **With debugging:** 25-30 hours
-
-This is a networking-heavy week. Budget extra time for debugging connection issues.
-
-### When to Ask for Help
-
-Get help if:
-- After 2 hours of debugging, you still can't connect to backend
-- Retrofit dependencies cause Gradle sync errors
-- You don't understand callbacks after reading documentation
-- App crashes and Logcat error is unclear
-
-### Collaboration Policy
-
-- **Allowed:** Discussing Retrofit concepts, debugging connection issues together
-- **Not Allowed:** Copying someone else's RetrofitClient or ApiService code
-
-Write your own code. Understand every line.
-
----
-
-**Ready to start? Open `learning-notes.md` to begin your Week 05 journey!**
-
+## Exact Completion Contract
+
+Week 05 is complete only when:
+
+| Quantity | Required value |
+|---|---:|
+| New files | 4 |
+| Expanded files | 7 |
+| Retrofit endpoint methods | 1 |
+| Multipart field names | 1: `image` |
+| Parsed response fields | 8 |
+| Successful end-to-end paths demonstrated | 1 |
+| Backend-unavailable paths demonstrated | 1 |
+| Android debug build | Successful |
+| Week 04 backend tests | 8 passing |
+| Real-model accuracy claimed | 0 |
+
+Do not move to Week 06 until the milestone demo and validation checklist pass.
 
 <!-- NAV_FOOTER_START -->
 
 ---
 
-## 📈 Product State After This Week
-
-**Cumulative product completion: 45%** *(official model: [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md))*
-
-- **Your app can now…** send a captured photo from the phone to your backend and display the disease name and confidence on a real Result screen, with friendly error handling when the server is down.
-- **Your app still cannot…** give real AI answers (predictions are still mock), remember past scans, or work offline. Week 06 integrates the real model.
-- **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
-
-### Cumulative Repository State After Week 05
-
-This snapshot includes all Week 01-04 files and adds the Android networking bridge. From this point, the Android client and FastAPI backend must stay aligned on the `/predict` JSON contract.
-
-```text
-LeafGuard-AI/
-|-- README.md
-|-- START_HERE.md
-|-- LEARNING_PATH.md
-|-- PRODUCT_PROGRESS_MAP.md
-|-- progress-tracker.md
-|-- roadmap/
-|   |-- week-01-project-understanding/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|   |-- week-02-android-basics-ui/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|   |-- week-03-camera-gallery/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|   |-- week-04-fastapi-backend/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|   `-- week-05-android-networking/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- docs/evidence/{week-01/, week-02/, week-03/, week-04/, week-05/}
-|-- backend-api/{main.py, config.py, model_loader.py, labels.py, labels-38.txt, requirements*.txt, test_api.py, README.md, models/}
-|-- android-app-kotlin/
-|   |-- app/build.gradle
-|   `-- app/src/main/
-|       |-- AndroidManifest.xml
-|       |-- java/com/leafguard/{MainActivity.kt, ScanActivity.kt, ResultActivity.kt, HistoryActivity.kt, DiseaseLibraryActivity.kt, SettingsActivity.kt, AnalyticsActivity.kt}
-|       |-- java/com/leafguard/network/{ApiService.kt, RetrofitClient.kt, PredictionResponse.kt}
-|       `-- res/
-|           |-- layout/{activity_scan.xml, activity_result.xml, activity_main.xml, activity_history.xml, activity_disease_library.xml, activity_settings.xml, activity_analytics.xml}
-|           |-- values/{strings.xml, colors.xml, themes.xml}
-|           |-- xml/{file_provider_paths.xml, network_security_config.xml}
-|           |-- drawable/{bg_dashed_upload.xml, bg_feature_row.xml, ic_nav_*.xml}
-|           `-- menu/bottom_nav_menu.xml
-`-- android-app/ (Java mirror with Retrofit/OkHttp networking files)
-```
-
----
-
-## 📚 Week 05 — Navigation
-
-### All Files In This Week (Complete In Order)
+## Week 05 Navigation
 
 | Step | File | Description |
-|------|------|-------------|
-| **1** | **README.md** ← *You are here* | **Week Overview & Objectives** |
-| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
-| 3 | [exercises.md](exercises.md) | Practice Exercises |
-| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
-| 5 | [validation-checklist.md](validation-checklist.md) | Validation & Verification |
-| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
-| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
+|---:|---|---|
+| **1** | **README.md** - current | Week overview and exact boundary |
+| 2 | [learning-notes.md](learning-notes.md) | Theory and complete source inventory |
+| 3 | [exercises.md](exercises.md) | Guided practice |
+| 4 | [build-task.md](build-task.md) | Implementation guide |
+| 5 | [validation-checklist.md](validation-checklist.md) | Validation and evidence |
+| 6 | [quiz.md](quiz.md) | Knowledge assessment |
+| 7 | [reflection.md](reflection.md) | Reflection and handoff |
 
----
-
-### Within-Week Navigation
-
-*(Start of week)* &nbsp;&nbsp;|&nbsp;&nbsp; **Week Overview & Objectives** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Theory & Learning Notes →](learning-notes.md)
-
----
-
-### Week Progression
-
-| ← Previous Week | 🏠 Home | Next Week → |
-|:----------------|:-------:|------------:|
-| [⬅ Week 04: FastAPI Backend](../week-04-fastapi-backend/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 06: Cloud ML Model ➡](../week-06-cloud-ml-model/README.md) |
-
----
+[Previous: Week 04](../week-04-fastapi-backend/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Next: Week 06](../week-06-cloud-ml-model/README.md)
