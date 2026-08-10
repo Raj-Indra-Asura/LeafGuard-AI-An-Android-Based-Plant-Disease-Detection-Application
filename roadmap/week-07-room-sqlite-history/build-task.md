@@ -1,450 +1,268 @@
-# Week 07 Build Task: Implement Room Database Scan History
-
-> **Kotlin-first & accuracy note:** The real Room classes (Kotlin primary: `android-app-kotlin/.../database/`) are `ScanRecord` (table `scan_history`), `ScanDao` (methods `insertScan`, `getAllScans`, `getScanById`, `getRecentScans`, `deleteScan`, `deleteScanById` — all `suspend fun`), and `AppDatabase` (file `leafguard.db`, version 1). In Kotlin, call DAO methods from `lifecycleScope.launch { ... }` (a **coroutine** does the slow database work without freezing the screen) and enable **kapt** (`kapt` generates Room's code — without it the build fails). The Java track uses `annotationProcessor` + `ExecutorService` and is the labelled secondary reference.
+# Week 07 Build Task: Persist and Browse Scan History
 
 ## Objective
 
-Integrate Room database into LeafGuard AI to persist scan history. Users can view past scans, see details, and delete records.
+Reconstruct or verify the exact Kotlin Week 07 Room/history slice in [learning-notes.md section 12](learning-notes.md#12-end-of-week-07-file-inventory-exact-files-exact-code-exact-size).
 
-**Estimated Time:** 8-10 hours (spread over 3-4 days)
-
----
-
-## Step 1: Add Room Dependencies (15 minutes)
-
-Add to `build.gradle (Module: app)`:
-
-```gradle
-dependencies {
-    def room_version = "2.5.0"
-    implementation "androidx.room:room-runtime:$room_version"
-    annotationProcessor "androidx.room:room-compiler:$room_version"
-    
-    // Existing dependencies...
-}
-```
-
-Sync Gradle. Verify no errors.
+Estimated time: 8 to 10 hours.
 
 ---
 
-## Step 2: Create ScanRecord Entity (30 minutes)
+## Before You Start
 
-Create `ScanRecord.java`:
+- [ ] Week 06 real result flow works.
+- [ ] All eight response fields reach ResultActivity.
+- [ ] Six Week 07 exercises are complete.
+- [ ] You can name the 10 database columns.
+- [ ] You understand that history is local and user-triggered.
 
-```java
-@Entity(tableName = "scan_history")
-public class ScanRecord {
-    @PrimaryKey(autoGenerate = true)
-    private int id;
-    
-    private String disease;
-    private double confidence;
-    private String symptoms;
-    private String treatment;
-    private long timestamp;
-    
-    @ColumnInfo(name = "image_path")
-    private String imagePath;
-    
-    // Constructor (without id)
-    public ScanRecord(String disease, double confidence, String symptoms,
-                       String treatment, long timestamp, String imagePath) {
-        this.disease = disease;
-        this.confidence = confidence;
-        this.symptoms = symptoms;
-        this.treatment = treatment;
-        this.timestamp = timestamp;
-        this.imagePath = imagePath;
-    }
-    
-    // Getters and setters for all fields
-    // TODO: Generate using IDE (Code → Generate → Getters and Setters)
-}
+Evidence folder:
+
+```text
+docs/evidence/week-07/
+|-- exercises/
+|-- android-build.txt
+|-- schema-note.md
+|-- validation.md
+|-- quiz-answers.md
+|-- reflection-answers.md
+`-- screenshots/
 ```
 
 ---
 
-## Step 3: Create ScanDao (30 minutes)
+## Step 1: Freeze the Week 06 Input
 
-Create `ScanDao.java`:
+Record the eight fields that must survive persistence:
 
-```java
-@Dao
-public interface ScanDao {
-    
-    @Insert
-    void insert(ScanRecord scan);
-    
-    @Query("SELECT * FROM scan_history ORDER BY timestamp DESC")
-    List<ScanRecord> getAll();
-    
-    @Query("SELECT * FROM scan_history WHERE id = :scanId")
-    ScanRecord getById(int scanId);
-    
-    @Delete
-    void delete(ScanRecord scan);
-    
-    @Query("DELETE FROM scan_history")
-    void deleteAll();
-}
+```text
+model_label, disease, confidence, uncertain,
+guidance_available, symptoms, treatment, prevention
 ```
+
+Checkpoint: no FastAPI, Keras, Retrofit, or ScanActivity change is required.
 
 ---
 
-## Step 4: Create AppDatabase (45 minutes)
+## Step 2: Add Room Tooling
 
-Create `AppDatabase.java`:
+Expand `app/build.gradle` to the exact 55-line target:
 
-```java
-@Database(entities = {ScanRecord.class}, version = 1, exportSchema = false)
-public abstract class AppDatabase extends RoomDatabase {
-    
-    private static AppDatabase instance;
-    
-    public abstract ScanDao scanDao();
-    
-    public static synchronized AppDatabase getInstance(Context context) {
-        if (instance == null) {
-            instance = Room.databaseBuilder(
-                context.getApplicationContext(),
-                AppDatabase.class,
-                "leafguard.db"
-            )
-            .fallbackToDestructiveMigration()
-            .build();
-        }
-        return instance;
-    }
-}
+- `kotlin-kapt`
+- lifecycle runtime KTX
+- RecyclerView
+- Room runtime 2.6.1
+- Room KTX 2.6.1
+- Room compiler through kapt
+
+Build:
+
+```bash
+cd android-app-kotlin
+./gradlew assembleDebug
 ```
 
-Build project. Verify no errors.
+Do not add location, TFLite, WorkManager, or Week 08 XML dependencies.
 
 ---
 
-## Step 5: Create History List Layout (1 hour)
+## Step 3: Create the Entity
 
-Create `activity_history_list.xml`:
+Create `database/ScanRecord.kt` from Section 12.
 
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
-    
-    <TextView
-        android:id="@+id/emptyTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="No scan history yet"
-        android:gravity="center"
-        android:padding="32dp"
-        android:visibility="gone"/>
-    
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/historyRecyclerView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
-        
-</LinearLayout>
-```
+Checkpoint:
 
-Create `item_scan_history.xml`:
+- table is `scan_history`
+- `id` is auto-generated `Long`
+- all eight Week 06 values are present
+- timestamp is `Long`
+- no later latitude/image metadata is added
 
-```xml
-<?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="16dp">
-    
-    <TextView
-        android:id="@+id/diseaseTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:textStyle="bold"/>
-    
-    <TextView
-        android:id="@+id/confidenceTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="14sp"/>
-    
-    <TextView
-        android:id="@+id/timestampTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="12sp"
-        android:textColor="#666666"/>
-        
-</LinearLayout>
-```
+Build before continuing.
 
 ---
 
-## Step 6: Create RecyclerView Adapter (1.5 hours)
+## Step 4: Create the DAO
 
-Create `HistoryAdapter.java`:
+Create `database/ScanDao.kt` with exactly four suspend methods:
 
-```java
-public class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.ViewHolder> {
-    
-    private List<ScanRecord> scans;
-    private OnItemClickListener listener;
-    
-    public interface OnItemClickListener {
-        void onItemClick(ScanRecord scan);
-    }
-    
-    public HistoryAdapter(OnItemClickListener listener) {
-        this.scans = new ArrayList<>();
-        this.listener = listener;
-    }
-    
-    @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-            .inflate(R.layout.item_scan_history, parent, false);
-        return new ViewHolder(view);
-    }
-    
-    @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
-        holder.bind(scans.get(position), listener);
-    }
-    
-    @Override
-    public int getItemCount() {
-        return scans.size();
-    }
-    
-    public void setScans(List<ScanRecord> scans) {
-        this.scans = scans;
-        notifyDataSetChanged();
-    }
-    
-    static class ViewHolder extends RecyclerView.ViewHolder {
-        // TODO: Implement ViewHolder with findViewById and bind method
-        // Reference Week 07 learning notes for complete implementation
-    }
-}
+1. insert
+2. list newest first
+3. find one by ID
+4. delete one by ID
+
+Checkpoint: Room compiles every SQL query.
+
+---
+
+## Step 5: Create the Database Singleton
+
+Create `database/AppDatabase.kt`.
+
+Required values:
+
+```text
+database name: leafguard.db
+version: 1
+entities: ScanRecord
 ```
 
+Use `applicationContext`, `@Volatile`, and synchronized double checking.
+
+Build before UI work.
+
 ---
 
-## Step 7: Implement HistoryActivity (2 hours)
+## Step 6: Add Explicit Save to Result
 
-Create `HistoryActivity.java`:
+Expand ResultActivity and its layout:
 
-```java
-public class HistoryActivity extends AppCompatActivity {
-    
-    private RecyclerView recyclerView;
-    private TextView emptyTextView;
-    private HistoryAdapter adapter;
-    private AppDatabase database;
-    private ExecutorService executor;
-    
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_history_list);
-        
-        // Initialize views
-        recyclerView = findViewById(R.id.historyRecyclerView);
-        emptyTextView = findViewById(R.id.emptyTextView);
-        
-        // Setup RecyclerView
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new HistoryAdapter(this::openDetailActivity);
-        recyclerView.setAdapter(adapter);
-        
-        // Initialize database and executor
-        database = AppDatabase.getInstance(this);
-        executor = Executors.newSingleThreadExecutor();
-        
-        // Load scans
-        loadScans();
-    }
-    
-    private void loadScans() {
-        executor.execute(() -> {
-            List<ScanRecord> scans = database.scanDao().getAll();
-            
-            runOnUiThread(() -> {
-                if (scans.isEmpty()) {
-                    emptyTextView.setVisibility(View.VISIBLE);
-                    recyclerView.setVisibility(View.GONE);
-                } else {
-                    emptyTextView.setVisibility(View.GONE);
-                    recyclerView.setVisibility(View.VISIBLE);
-                    adapter.setScans(scans);
-                }
-            });
-        });
-    }
-    
-    private void openDetailActivity(ScanRecord scan) {
-        Intent intent = new Intent(this, HistoryDetailActivity.class);
-        intent.putExtra("scan_id", scan.getId());
-        startActivity(intent);
-    }
-}
+- keep all eight existing render values
+- add `buttonSaveHistory`
+- disable after tap
+- create one complete `ScanRecord`
+- insert inside `lifecycleScope.launch`
+- show success text
+
+Checkpoint: one tap inserts one row; networking is not rerun.
+
+---
+
+## Step 7: Build the History List
+
+Create/expand:
+
+```text
+HistoryAdapter.kt
+HistoryActivity.kt
+activity_history.xml
+item_scan_history.xml
 ```
 
+Required behavior:
+
+- `LinearLayoutManager`
+- list loaded in `onResume`
+- DAO controls newest-first order
+- adapter displays disease, percentage, and date/time
+- empty state toggles correctly
+- row tap passes only record ID
+
+Build before detail work.
+
 ---
 
-## Step 8: Save Scan After Prediction (1 hour)
+## Step 8: Build Detail and Delete
 
-In `ResultActivity.java`, after successful prediction:
+Create:
 
-```java
-private void saveScanToHistory() {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
-    executor.execute(() -> {
-        ScanRecord scan = new ScanRecord(
-            disease,
-            confidence,
-            symptoms,
-            treatment,
-            System.currentTimeMillis(),
-            imagePath  // Save captured image path
-        );
-        
-        AppDatabase.getInstance(this).scanDao().insert(scan);
-        
-        runOnUiThread(() -> {
-            Toast.makeText(this, "Scan saved to history", Toast.LENGTH_SHORT).show();
-        });
-    });
-}
+```text
+HistoryDetailActivity.kt
+activity_history_detail.xml
 ```
 
-Call `saveScanToHistory()` after displaying results.
+Register the Activity in the manifest.
+
+Required behavior:
+
+- reject missing ID
+- query one row by ID
+- display all eight values plus timestamp
+- confirm before delete
+- cancel preserves row
+- confirm deletes by ID and finishes
+
+Checkpoint: return to History triggers `onResume` and refreshes.
 
 ---
 
-## Step 9: Create History Detail Activity (1 hour)
+## Step 9: Verify Persistence
 
-Create `activity_history_detail.xml` and `HistoryDetailActivity.java`:
+Run this sequence:
 
-```java
-public class HistoryDetailActivity extends AppCompatActivity {
-    
-    private AppDatabase database;
-    private ExecutorService executor;
-    private int scanId;
-    
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_history_detail);
-        
-        scanId = getIntent().getIntExtra("scan_id", -1);
-        database = AppDatabase.getInstance(this);
-        executor = Executors.newSingleThreadExecutor();
-        
-        loadScanDetails();
-    }
-    
-    private void loadScanDetails() {
-        executor.execute(() -> {
-            ScanRecord scan = database.scanDao().getById(scanId);
-            
-            runOnUiThread(() -> {
-                // Display all fields
-                // TODO: Set text to TextViews
-            });
-        });
-    }
-}
-```
+1. open empty History
+2. produce and save one result
+3. open History
+4. terminate and relaunch app
+5. verify row remains
+6. save another result
+7. verify newest first
+8. open both detail records
+
+App restart is the proof that data is in Room rather than only an Activity field.
 
 ---
 
-## Step 10: Implement Delete Functionality (1 hour)
+## Step 10: Verify Delete and Empty State
 
-Add delete button to detail activity:
+For one record:
 
-```java
-deleteButton.setOnClickListener(v -> showDeleteConfirmation());
+1. tap Delete
+2. tap Cancel
+3. verify record remains
+4. tap Delete again
+5. confirm
+6. verify record disappears
 
-private void showDeleteConfirmation() {
-    new AlertDialog.Builder(this)
-        .setTitle("Delete Scan?")
-        .setMessage("This cannot be undone")
-        .setPositiveButton("Delete", (dialog, which) -> deleteScan())
-        .setNegativeButton("Cancel", null)
-        .show();
-}
-
-private void deleteScan() {
-    executor.execute(() -> {
-        ScanRecord scan = database.scanDao().getById(scanId);
-        database.scanDao().delete(scan);
-        
-        runOnUiThread(() -> {
-            Toast.makeText(this, "Scan deleted", Toast.LENGTH_SHORT).show();
-            finish();  // Return to history list
-        });
-    });
-}
-```
+Delete remaining records and verify the empty message returns.
 
 ---
 
-## Completion Checklist
+## Step 11: Validate Exact Boundaries
 
-- [ ] Room dependencies added
-- [ ] Entity, DAO, Database classes created
-- [ ] History list layout created
-- [ ] RecyclerView adapter implemented
-- [ ] HistoryActivity displays scans
-- [ ] Scans saved after prediction
-- [ ] Detail activity shows full scan info
-- [ ] Delete functionality works
-- [ ] No crashes with empty history
-- [ ] All database operations on background thread
+The teaching snapshot must not add:
+
+- changes to API/model contracts
+- automatic save of every result
+- location columns
+- image URI persistence
+- XML disease-library enrichment
+- TFLite/offline inference
+- sharing, analytics, notifications, or bottom navigation
+- destructive migrations
+
+The current evolved app may contain later features. They are not Week 07 evidence.
 
 ---
 
-**Test thoroughly before moving to Week 08!**
+## Evidence to Save
 
+1. Successful Android debug build.
+2. Ten-column schema note.
+3. Empty history.
+4. Save success.
+5. One-item history.
+6. Restart persistence.
+7. Newest-first two-item history.
+8. Complete detail.
+9. Delete-cancel behavior.
+10. Delete-confirm behavior.
+11. Empty state after all deletes.
+
+Do not commit application database files or personal leaf images.
+
+---
+
+## Done Means
+
+- exact 7-new/7-expanded snapshot is understood
+- app builds
+- all eight result fields save
+- history persists after restart
+- list order is newest first
+- empty state is correct
+- detail loads by primary key
+- delete cancellation and confirmation work
+- UI remains responsive during DAO work
+- Week 06 inference remains unchanged
+- evidence is saved
 
 <!-- NAV_FOOTER_START -->
 
 ---
 
-## 📚 Week 07 — Navigation
+## Week 07 Navigation
 
-### All Files In This Week (Complete In Order)
+[README](README.md) | [Learning Notes](learning-notes.md) | [Exercises](exercises.md) | **Build Task - current** | [Validation](validation-checklist.md) | [Quiz](quiz.md) | [Reflection](reflection.md)
 
-| Step | File | Description |
-|------|------|-------------|
-| 1 | [README.md](README.md) | Week Overview & Objectives |
-| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
-| 3 | [exercises.md](exercises.md) | Practice Exercises |
-| **4** | **build-task.md** ← *You are here* | **Build Implementation Guide** |
-| 5 | [validation-checklist.md](validation-checklist.md) | Validation & Verification |
-| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
-| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
-
----
-
-### Within-Week Navigation
-
-[← Practice Exercises](exercises.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Build Implementation Guide** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Validation & Verification →](validation-checklist.md)
-
----
-
-### Week Progression
-
-| ← Previous Week | 🏠 Home | Next Week → |
-|:----------------|:-------:|------------:|
-| [⬅ Week 06: Cloud ML Model](../week-06-cloud-ml-model/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 08: XML Disease Library ➡](../week-08-xml-disease-library/README.md) |
-
----
+[Previous: Exercises](exercises.md) | [Learning Path](../../LEARNING_PATH.md) | [Next: Validation](validation-checklist.md)

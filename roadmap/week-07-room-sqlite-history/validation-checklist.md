@@ -1,235 +1,230 @@
-# Week 07: Validation Checklist - Room Database and Scan History
+# Week 07 Validation Checklist: Room Scan History
 
-## 🎬 Milestone Demo (proves the cumulative product state)
+## Milestone Demo
 
-> **Demo:** Do a scan, kill and reopen the app, and show the scan still listed in History — then delete it live (**cumulative product: 65%**).
->
-> This single live demo proves the product state defined in [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md). You may not advance to Week 08 until this demo works and every item below passes.
+> Save a Week 06 result, show it newest-first in History after app restart, open its complete detail, cancel deletion once, confirm deletion once, and show the empty state when no records remain.
 
+Every required item must be yes before Week 08.
 
-## Pass/Fail Validation Criteria
+Record results in `docs/evidence/week-07/validation.md`:
 
-Answer **Yes** or **No** for each item (tick the box for **Yes**). Every box should be **Yes** before you finish the week — no partial credit. A **No** just shows you what to go back and fix.
-
----
-
-## Section 1: Room Setup (10 points)
-
-- [ ] Room dependencies added to build.gradle
-- [ ] Gradle sync completed successfully
-- [ ] Project builds without Room-related errors
-- [ ] No @Entity or @Dao annotation errors
-- [ ] All three Room components (Entity, DAO, Database) created
+```text
+Item:
+Method: build | source inspection | emulator | app restart
+Expected:
+Actual:
+Evidence:
+Result: PASS | FAIL | NOT TESTED
+```
 
 ---
 
-## Section 2: Entity Class (8 points)
+## 1. Progressive Boundary
 
-- [ ] ScanRecord entity class exists
-- [ ] @Entity annotation present
-- [ ] @PrimaryKey with autoGenerate=true
-- [ ] All required columns: `id`, `disease_name`, `confidence`, `symptoms`, `treatment`, `prevention`, `image_uri`, `latitude`, `longitude`, `timestamp`
-- [ ] Constructor implemented
-- [ ] All getters implemented
-- [ ] All setters implemented
-- [ ] No compilation errors
+- [ ] Week 06 result flow still works.
+- [ ] All eight response values reach ResultActivity.
+- [ ] FastAPI and Keras code have zero Week 07 changes.
+- [ ] Retrofit/ScanActivity contract has zero Week 07 changes.
+- [ ] Save is explicit rather than automatic.
+- [ ] History is described as local device/app data.
+- [ ] Week 08 XML library work is deferred.
 
----
-
-## Section 3: DAO Interface (8 points)
-
-- [ ] ScanDao interface exists
-- [ ] @Dao annotation present
-- [ ] @Insert method `insertScan()` implemented (Kotlin: `suspend fun`)
-- [ ] @Query for `getAllScans()` implemented with correct SQL
-- [ ] @Query for `getScanById()` implemented
-- [ ] @Delete `deleteScan()` (and `deleteScanById()` query) implemented
-- [ ] All methods have correct return types
-- [ ] No SQL syntax errors
+Pass rule: all 7.
 
 ---
 
-## Section 4: Database Class (8 points)
+## 2. Exact Repository State
 
-- [ ] AppDatabase class exists
-- [ ] Extends RoomDatabase
-- [ ] @Database annotation with entities and version
-- [ ] Abstract scanDao() method
-- [ ] Singleton pattern implemented
-- [ ] getInstance() method is synchronized
-- [ ] Room.databaseBuilder configured correctly
-- [ ] Database name set
+- [ ] Exactly 7 new Week 07 files are documented.
+- [ ] Exactly 7 expanded Week 07 files are documented.
+- [ ] Complete changed/new total is 864 logical lines.
+- [ ] `kotlin-kapt` is enabled.
+- [ ] Room runtime, KTX, and compiler are version 2.6.1.
+- [ ] lifecycle runtime KTX is present.
+- [ ] RecyclerView dependency is present.
+- [ ] Android debug build succeeds.
+- [ ] No later-week dependency is required.
 
----
-
-## Section 5: History List UI (12 points)
-
-- [ ] HistoryActivity created
-- [ ] activity_history_list.xml layout exists
-- [ ] RecyclerView in layout
-- [ ] Empty state TextView in layout
-- [ ] item_scan_history.xml item layout exists
-- [ ] Item layout has TextViews for disease, confidence, timestamp
-- [ ] HistoryAdapter class created
-- [ ] ViewHolder inner class implemented
-- [ ] RecyclerView displays scans from database
-- [ ] List scrolls smoothly
-- [ ] Empty state shows when no scans
-- [ ] Back button works
+Pass rule: all 9.
 
 ---
 
-## Section 6: Database Operations (10 points)
+## 3. Entity and Schema
 
-- [ ] Database work runs off the main thread (Kotlin: `suspend` + `lifecycleScope.launch`; Java secondary: `ExecutorService`)
-- [ ] No database operations on main thread
-- [ ] Insert operation works (scan saved)
-- [ ] Query all operation works (list populated)
-- [ ] Query by ID operation works (detail view)
-- [ ] Delete operation works (scan removed)
-- [ ] Toast confirmation after insert
-- [ ] No crashes on empty database
-- [ ] Data persists after app restart
-- [ ] Timestamps stored correctly
+- [ ] Entity table name is `scan_history`.
+- [ ] Schema has exactly 10 columns.
+- [ ] `id` is an auto-generated `Long` primary key.
+- [ ] `model_label` is preserved.
+- [ ] `disease` is preserved.
+- [ ] `confidence` remains a `Float` on 0.0-1.0 scale.
+- [ ] `uncertain` is preserved.
+- [ ] `guidance_available` is preserved.
+- [ ] Symptoms, treatment, and prevention are preserved.
+- [ ] `timestamp` records save time as `Long`.
+- [ ] No location/image/later metadata appears.
 
----
-
-## Section 7: Integration with Prediction (8 points)
-
-- [ ] Scan automatically saved after successful prediction
-- [ ] All prediction data saved (disease, confidence, symptoms, treatment)
-- [ ] Timestamp generated at save time
-- [ ] Image URI saved (`image_uri`)
-- [ ] Save happens on background thread
-- [ ] Toast confirms "Scan saved to history"
-- [ ] New scan appears in history list
-- [ ] Multiple predictions save correctly
+Pass rule: all 11.
 
 ---
 
-## Section 8: Detail View (8 points)
+## 4. DAO and Database
 
-- [ ] HistoryDetailActivity created
-- [ ] activity_history_detail.xml exists
-- [ ] Layout shows all scan fields
-- [ ] Navigation from list to detail works
-- [ ] Scan ID passed via Intent
-- [ ] Correct scan loaded by ID
-- [ ] All fields display correctly
-- [ ] Back button returns to list
+- [ ] DAO has exactly four methods.
+- [ ] Insert returns generated row ID.
+- [ ] List query orders by `timestamp DESC`.
+- [ ] Detail query binds primary key and uses `LIMIT 1`.
+- [ ] Delete query binds primary key.
+- [ ] Delete returns affected row count.
+- [ ] All DAO methods are `suspend`.
+- [ ] Database version is 1.
+- [ ] Database name is `leafguard.db`.
+- [ ] `applicationContext` is used.
+- [ ] Singleton uses `@Volatile` and synchronized double checking.
 
----
-
-## Section 9: Delete Functionality (10 points)
-
-- [ ] Delete button/option exists
-- [ ] Delete triggers confirmation AlertDialog
-- [ ] Dialog has title and message
-- [ ] Positive button labeled "Delete"
-- [ ] Negative button labeled "Cancel"
-- [ ] Cancel keeps scan (doesn't delete)
-- [ ] Confirm deletes scan from database
-- [ ] UI updates after delete
-- [ ] Toast shows "Scan deleted"
-- [ ] App doesn't crash on delete
+Pass rule: all 11.
 
 ---
 
-## Section 10: Data Formatting (6 points)
+## 5. Save Flow
 
-- [ ] Timestamps displayed in readable format (not raw milliseconds)
-- [ ] Confidence displayed as percentage (e.g., "87.5%")
-- [ ] Dates formatted clearly (e.g., "May 25, 2024")
-- [ ] No null pointer exceptions on display
-- [ ] Long text truncates or wraps properly
-- [ ] UI doesn't break with special characters
+- [ ] Result screen shows Save to History.
+- [ ] Save button is disabled after tap.
+- [ ] One complete `ScanRecord` is created.
+- [ ] Timestamp is assigned at save.
+- [ ] Insert runs through `lifecycleScope.launch`.
+- [ ] Success feedback is shown.
+- [ ] Button text changes to Saved state.
+- [ ] Repeated tap in the same screen does not insert a duplicate.
+- [ ] Saving does not rerun networking or inference.
 
----
-
-## Section 11: Edge Cases (8 points)
-
-- [ ] App handles empty history gracefully
-- [ ] App handles 20+ scans (performance test)
-- [ ] Delete all scans doesn't crash app
-- [ ] Re-opening app after delete shows updated list
-- [ ] Rotating device doesn't lose data
-- [ ] Killing and restarting app preserves history
-- [ ] Null checks prevent crashes
-- [ ] No memory leaks (Context references)
+Pass rule: all 9.
 
 ---
 
-## Section 12: Code Quality (4 points)
+## 6. History List
 
-- [ ] No hardcoded strings (use strings.xml)
-- [ ] Meaningful variable names
-- [ ] Singleton prevents multiple database instances
-- [ ] No unused imports
-- [ ] Consistent code style
+- [ ] Empty database shows empty message.
+- [ ] Empty database hides RecyclerView.
+- [ ] Non-empty database shows RecyclerView.
+- [ ] Non-empty database hides empty message.
+- [ ] RecyclerView uses `LinearLayoutManager`.
+- [ ] Adapter count matches DAO rows.
+- [ ] Row displays disease.
+- [ ] Row displays formatted percentage.
+- [ ] Row displays formatted date/time.
+- [ ] Newest saved row appears first.
+- [ ] History reloads in `onResume`.
 
----
-
-## Final Validation Score
-
-**Total Points:** 100
-
-**Your Score:** _____ / 100
-
-**Pass Threshold:** 85/100
-
-**Status:** [ ] PASS | [ ] FAIL
+Pass rule: all 11.
 
 ---
 
-## Teacher Demonstration
+## 7. Detail and Navigation
 
-Must successfully demonstrate:
+- [ ] Row tap passes only `EXTRA_SCAN_ID`.
+- [ ] Detail Activity is registered in manifest.
+- [ ] Missing ID shows feedback and closes safely.
+- [ ] Missing database row shows feedback and closes safely.
+- [ ] Detail queries Room by primary key.
+- [ ] Detail shows model label and disease.
+- [ ] Detail shows confidence and uncertainty.
+- [ ] Detail shows guidance availability.
+- [ ] Detail shows symptoms, treatment, and prevention.
+- [ ] Detail shows formatted save timestamp.
 
-1. View empty history (shows empty message)
-2. Perform 3 predictions (scans auto-save)
-3. View history list (shows 3 scans)
-4. Open scan detail (all fields display)
-5. Delete scan with confirmation
-6. Return to list (2 scans remain)
-7. Close and reopen app (data persists)
+Pass rule: all 10.
 
 ---
 
-**Date Validated:** _________
+## 8. Delete Behavior
 
-**Next:** Week 08 - XML Disease Library
+- [ ] Delete button opens confirmation dialog.
+- [ ] Dialog clearly describes local removal.
+- [ ] Cancel preserves the row.
+- [ ] Confirm calls delete by ID.
+- [ ] Positive deleted count shows success.
+- [ ] Detail closes after confirmed action.
+- [ ] Returning History refreshes automatically.
+- [ ] Deleted row no longer appears.
+- [ ] Deleting all rows restores empty state.
 
+Pass rule: all 9.
+
+---
+
+## 9. Persistence and Responsiveness
+
+- [ ] Saved row remains after Activity recreation.
+- [ ] Saved row remains after app process restart/relaunch.
+- [ ] Two different rows retain independent IDs.
+- [ ] Full details match their corresponding list item.
+- [ ] Save UI remains responsive.
+- [ ] History load UI remains responsive.
+- [ ] Delete UI remains responsive.
+- [ ] No database operation is placed directly as blocking main-thread work.
+
+Pass rule: all 8.
+
+---
+
+## 10. Evidence and Understanding
+
+- [ ] Android build output saved.
+- [ ] Ten-column schema note saved.
+- [ ] Empty-state evidence saved.
+- [ ] Save-success evidence saved.
+- [ ] Restart-persistence evidence saved.
+- [ ] Newest-first evidence saved.
+- [ ] Complete-detail evidence saved.
+- [ ] Delete-cancel evidence saved.
+- [ ] Delete-confirm evidence saved.
+- [ ] Final-empty-state evidence saved.
+- [ ] Quiz score is at least 14/18.
+- [ ] Reflection uses observed evidence.
+- [ ] Progress tracker is updated.
+- [ ] No database file or personal image is committed.
+
+Pass rule: all 14.
+
+---
+
+## Failure Routing
+
+| Failure | Return to | Focused recheck |
+|---|---|---|
+| kapt/Room compile fails | Gradle/entity/DAO | `assembleDebug` |
+| Insert fails | Entity and DAO insert | Save one row |
+| Wrong list order | DAO SQL | Two timestamps |
+| Empty message wrong | History visibility | Empty/non-empty states |
+| Detail wrong record | ID extra/query | Two distinct rows |
+| Delete not reflected | `onResume` reload | Confirm/delete/back |
+| Record lost on restart | Room construction/save | Relaunch app |
+| UI freezes | suspend/lifecycle usage | Save/load/delete interaction |
+
+After repair, rerun the focused check and the complete milestone demo.
+
+---
+
+## Completion Criteria
+
+Week 07 is complete only when:
+
+1. Exact 14-file snapshot builds.
+2. All eight result values persist in a 10-column row.
+3. Save is explicit and asynchronous.
+4. History persists after restart and sorts newest first.
+5. Empty/list states are correct.
+6. Detail loads by generated ID.
+7. Delete cancel and confirm both work.
+8. Week 06 inference remains unchanged.
+9. Evidence and understanding checks pass.
 
 <!-- NAV_FOOTER_START -->
 
 ---
 
-## 📚 Week 07 — Navigation
+## Week 07 Navigation
 
-### All Files In This Week (Complete In Order)
+[README](README.md) | [Learning Notes](learning-notes.md) | [Exercises](exercises.md) | [Build Task](build-task.md) | **Validation - current** | [Quiz](quiz.md) | [Reflection](reflection.md)
 
-| Step | File | Description |
-|------|------|-------------|
-| 1 | [README.md](README.md) | Week Overview & Objectives |
-| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
-| 3 | [exercises.md](exercises.md) | Practice Exercises |
-| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
-| **5** | **validation-checklist.md** ← *You are here* | **Validation & Verification** |
-| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
-| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
-
----
-
-### Within-Week Navigation
-
-[← Build Implementation Guide](build-task.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Validation & Verification** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Knowledge Assessment Quiz →](quiz.md)
-
----
-
-### Week Progression
-
-| ← Previous Week | 🏠 Home | Next Week → |
-|:----------------|:-------:|------------:|
-| [⬅ Week 06: Cloud ML Model](../week-06-cloud-ml-model/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 08: XML Disease Library ➡](../week-08-xml-disease-library/README.md) |
-
----
+[Previous: Build Task](build-task.md) | [Learning Path](../../LEARNING_PATH.md) | [Next: Quiz](quiz.md)
