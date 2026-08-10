@@ -1,249 +1,124 @@
-# Week 09: Validation Checklist - TensorFlow Lite Offline AI
-
-## 🎬 Milestone Demo (proves the cumulative product state)
-
-> **Demo:** Turn on airplane mode and complete a full scan → result → history flow entirely offline (**cumulative product: 82%**).
->
-> This single live demo proves the product state defined in [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md). You may not advance to Week 10 until this demo works and every item below passes.
-
-
-Use this checklist after finishing the Week 09 build task.
-For each item, answer **Yes** or **No** — tick it **Yes** only when you have real evidence: a screenshot, log entry, code snippet, or successful test. A **No** shows you what to fix next.
-
-**Accuracy note:** the real `TFLiteClassifier` uses **224×224 RGB, floats 0..1, argmax** over 10 outputs, and falls back to a **green-channel heuristic** when `assets/model.tflite` is the committed text placeholder. "Missing/invalid model handled gracefully" means this fallback runs without crashing.
-
-**Suggested pass target:** 120 / 140 or higher
-
----
-
-## A. Model Sourcing Verification (15 marks)
-
-| Check | Item | Yes / No | Evidence |
-|------|------|-----------|----------|
-| [ ] | Source of the model is documented (TensorFlow Hub / Colab / Model Maker / other). | _____ | ______________________________ |
-| [ ] | `model.tflite` was verified outside Android before integration. | _____ | ______________________________ |
-| [ ] | Input shape is recorded in project notes. | _____ | ______________________________ |
-| [ ] | Normalization strategy is recorded in project notes. | _____ | ______________________________ |
-| [ ] | `labels.txt` exists and order is documented. | _____ | ______________________________ |
-
-### Section notes
-
-_______________________________________________________________
-_______________________________________________________________
-
----
-
-## B. Android Setup and Assets (15 marks)
-
-| Check | Item | Yes / No | Evidence |
-|------|------|-----------|----------|
-| [ ] | TensorFlow Lite dependency added to Gradle. | _____ | ______________________________ |
-| [ ] | GPU dependency added if acceleration testing is planned. | _____ | ______________________________ |
-| [ ] | Project sync completed successfully. | _____ | ______________________________ |
-| [ ] | `model.tflite` is inside `app/src/main/assets/`. | _____ | ______________________________ |
-| [ ] | `labels.txt` is inside `app/src/main/assets/`. | _____ | ______________________________ |
-
-### Section notes
-
-_______________________________________________________________
-_______________________________________________________________
-
----
-
-## C. Interpreter Initialization and Safety (15 marks)
-
-| Check | Item | Yes / No | Evidence |
-|------|------|-----------|----------|
-| [ ] | Interpreter initializes without crash on a supported device. | _____ | ______________________________ |
-| [ ] | Missing model file is handled gracefully. | _____ | ______________________________ |
-| [ ] | Labels load successfully. | _____ | ______________________________ |
-| [ ] | Initialization errors are logged or shown clearly. | _____ | ______________________________ |
-| [ ] | Resources can be released using `close()`. | _____ | ______________________________ |
-
-### Section notes
-
-_______________________________________________________________
-_______________________________________________________________
-
----
-
-## D. Preprocessing Correctness (20 marks)
-
-| Check | Item | Yes / No | Evidence |
-|------|------|-----------|----------|
-| [ ] | Image is resized to the exact model input size. | _____ | ______________________________ |
-| [ ] | Color channel order matches training. | _____ | ______________________________ |
-| [ ] | Normalization formula matches training. | _____ | ______________________________ |
-| [ ] | Input tensor shape matches model expectation. | _____ | ______________________________ |
-| [ ] | Large images are scaled before heavy processing to reduce memory risk. | _____ | ______________________________ |
-
-### Section notes
-
-_______________________________________________________________
-_______________________________________________________________
-
----
-
-## E. Inference and Output Handling (20 marks)
-
-| Check | Item | Yes / No | Evidence |
-|------|------|-----------|----------|
-| [ ] | `Interpreter.run()` executes successfully. | _____ | ______________________________ |
-| [ ] | Output tensor size matches label count. | _____ | ______________________________ |
-| [ ] | Top-1 prediction is mapped correctly. | _____ | ______________________________ |
-| [ ] | Confidence score is displayed or logged. | _____ | ______________________________ |
-| [ ] | Top-3 predictions are available for debugging or documentation. | _____ | ______________________________ |
-
-### Section notes
-
-_______________________________________________________________
-_______________________________________________________________
-
----
-
-## F. Low-Confidence Handling (10 marks)
-
-| Check | Item | Yes / No | Evidence |
-|------|------|-----------|----------|
-| [ ] | Confidence threshold value is defined in code or constants. | _____ | ______________________________ |
-| [ ] | Low-confidence results show `Uncertain` or similar message. | _____ | ______________________________ |
-| [ ] | High-confidence results still show the predicted class. | _____ | ______________________________ |
-| [ ] | Low-confidence behavior has been tested using at least one difficult image. | _____ | ______________________________ |
-| [ ] | User guidance is shown or documented for retaking a better image. | _____ | ______________________________ |
-
-### Section notes
-
-_______________________________________________________________
-_______________________________________________________________
-
----
-
-## G. Threading and Responsiveness (10 marks)
-
-| Check | Item | Yes / No | Evidence |
-|------|------|-----------|----------|
-| [ ] | Inference runs off the main thread. | _____ | ______________________________ |
-| [ ] | UI remains responsive during prediction. | _____ | ______________________________ |
-| [ ] | Background result is returned safely to the main thread. | _____ | ______________________________ |
-| [ ] | Thread safety of `Interpreter` has been considered. | _____ | ______________________________ |
-| [ ] | No ANR or UI freeze observed during normal testing. | _____ | ______________________________ |
-
-### Section notes
-
-_______________________________________________________________
-_______________________________________________________________
-
----
-
-## H. GPU Delegate / NNAPI Benchmarking (10 marks)
-
-| Check | Item | Yes / No | Evidence |
-|------|------|-----------|----------|
-| [ ] | GPU delegate path was attempted or explicitly documented as unavailable. | _____ | ______________________________ |
-| [ ] | CPU fallback works if GPU is unavailable. | _____ | ______________________________ |
-| [ ] | Benchmark used repeated runs, not a single test. | _____ | ______________________________ |
-| [ ] | Latency numbers were recorded for at least CPU mode. | _____ | ______________________________ |
-| [ ] | Accelerated-mode findings are documented honestly. | _____ | ______________________________ |
-
-### Section notes
-
-_______________________________________________________________
-_______________________________________________________________
-
----
-
-## I. Offline Validation and Comparison (15 marks)
-
-| Check | Item | Yes / No | Evidence |
-|------|------|-----------|----------|
-| [ ] | Offline mode works in airplane mode. | _____ | ______________________________ |
-| [ ] | At least 5 test images were evaluated. | _____ | ______________________________ |
-| [ ] | Offline vs cloud comparison recorded predicted labels. | _____ | ______________________________ |
-| [ ] | Offline vs cloud comparison recorded latency. | _____ | ______________________________ |
-| [ ] | Limitations or mismatches were documented. | _____ | ______________________________ |
-
-### Section notes
-
-_______________________________________________________________
-_______________________________________________________________
-
----
-
-## J. Documentation and Evidence (10 marks)
-
-| Check | Item | Yes / No | Evidence |
-|------|------|-----------|----------|
-| [ ] | Progress log updated with Week 09 work. | _____ | ______________________________ |
-| [ ] | Screenshots saved showing offline prediction working. | _____ | ______________________________ |
-| [ ] | Logs or notes saved for benchmark results. | _____ | ______________________________ |
-| [ ] | Quiz and reflection completed. | _____ | ______________________________ |
-| [ ] | Build task marked complete only after real testing. | _____ | ______________________________ |
-
-### Section notes
-
-_______________________________________________________________
-_______________________________________________________________
-
----
-
-## Final Performance Record
-
-| Metric | Value | Notes |
-|-------|-------|-------|
-| Model size | __________ | |
-| Input size | __________ | |
-| Normalization type | __________ | |
-| CPU average latency | __________ ms | |
-| GPU average latency | __________ ms | |
-| NNAPI average latency | __________ ms | |
-| Confidence threshold | __________ | |
-| Number of test images | __________ | |
-
-## Final Pass / Fail Decision
-
-- **Total Score:** __________ / 140
-- **Status:** [ ] PASS  [ ] FAIL
-- **Can demonstrate offline mode in airplane mode:** [ ] Yes  [ ] No
-- **Can explain preprocessing and label order clearly:** [ ] Yes  [ ] No
-- **Can justify offline vs cloud architecture choice:** [ ] Yes  [ ] No
-
-## Teacher / Self-Review Notes
-
-_______________________________________________________________
-_______________________________________________________________
-_______________________________________________________________
-
+# Week 09 Validation Checklist: TFLite Offline Inference
+
+## Milestone
+
+> Verify model identity and four parity tests, run Offline with backend unavailable, preserve Result/XML/Room behavior, regress Cloud, and show missing assets fail safely.
+
+## 1. Boundary
+
+- [ ] Week 08 XML and Week 07 Room still work.
+- [ ] Cloud eight-field contract is unchanged.
+- [ ] Offline returns the same eight fields.
+- [ ] Week 10 features are absent.
+- [ ] Parity is not called accuracy.
+
+## 2. Exact State
+
+- [ ] 8 new and 6 expanded text files documented.
+- [ ] Total is 1,182 logical lines.
+- [ ] One local TFLite binary is identified.
+- [ ] Android build succeeds.
+- [ ] Embedded files match Section 12.
+
+## 3. Assets
+
+- [ ] TFLite size is 9,056,916 bytes.
+- [ ] SHA-256 is `22ea2d4a47a52b2d9b150e0f74b113def0f12bbdb59209f7e0bce2a9701d41f9`.
+- [ ] Labels exactly match canonical order.
+- [ ] Labels contain 38 unique values.
+- [ ] Asset README records responsibilities.
+- [ ] Binary is not duplicated in evidence.
+
+## 4. Tensor/Preprocessing
+
+- [ ] One float32 input `[1,224,224,3]`.
+- [ ] One float32 output `[1,38]`.
+- [ ] Caller writes raw RGB `[0,255]`.
+- [ ] No `/255` double normalization.
+- [ ] Direct native-order buffer is 602,112 bytes.
+- [ ] Buffer is rewound.
+- [ ] Output count matches labels.
+
+## 5. Conversion and Tests
+
+- [ ] Keras contract gates conversion.
+- [ ] Embedded scaling gates conversion.
+- [ ] Four focused tests run without skips.
+- [ ] Labels test passes.
+- [ ] Tensor test passes.
+- [ ] Raw preprocessing test passes.
+- [ ] Three-sample parity test passes.
+- [ ] Top-1 indexes match for all three.
+- [ ] Maximum observed delta is below 0.000015.
+
+## 6. Classifier
+
+- [ ] Model is memory-mapped.
+- [ ] Interpreter uses four threads.
+- [ ] Constructor validates tensors and labels.
+- [ ] Bitmap scales to 224x224.
+- [ ] RGB order is preserved.
+- [ ] Argmax is correct.
+- [ ] Display label does not reorder labels.
+- [ ] Uncertain threshold is 0.50.
+- [ ] XML guidance/fallback produces complete text.
+- [ ] Response has all eight fields.
+- [ ] Interpreter closes through `use`.
+
+## 7. Mode UI and Async State
+
+- [ ] Cloud selected by default.
+- [ ] Offline can be selected.
+- [ ] Description matches selected mode.
+- [ ] Selected image is required.
+- [ ] Both branches show progress.
+- [ ] Mode/image controls disable while running.
+- [ ] Offline runs on `Dispatchers.IO`.
+- [ ] Both branches call one `openResult`.
+- [ ] Controls restore after success/failure.
+
+## 8. Offline/Cloud Behavior
+
+- [ ] Offline works with backend stopped.
+- [ ] Offline works without Internet on a device.
+- [ ] Offline Result shows eight fields.
+- [ ] Week 08 guidance behavior remains.
+- [ ] Week 07 Room save/detail remains.
+- [ ] Cloud works after backend restart.
+- [ ] Cloud response remains compatible.
+- [ ] Repeated offline runs do not crash.
+
+## 9. Failure Behavior
+
+- [ ] Missing model shows safe error.
+- [ ] Missing labels shows safe error.
+- [ ] Wrong label count is rejected.
+- [ ] Wrong tensor shape is rejected.
+- [ ] Bitmap failure is handled.
+- [ ] No silent switch to Cloud.
+- [ ] No fabricated prediction.
+- [ ] Retry works after restoration.
+
+## 10. Evidence
+
+- [ ] Identity/hash evidence saved.
+- [ ] Four-test output saved.
+- [ ] Three-image parity saved.
+- [ ] Android build saved.
+- [ ] Backend-off Result saved.
+- [ ] Offline Room detail saved.
+- [ ] Cloud regression saved.
+- [ ] Missing-asset failure saved.
+- [ ] Limitations note records misclassification observation.
+- [ ] Quiz score >=14/18.
+- [ ] Reflection and progress tracker complete.
+
+## Completion
+
+All sections pass, device/emulator manual gates are documented, and no unsupported accuracy claim appears.
 
 <!-- NAV_FOOTER_START -->
 
 ---
 
-## 📚 Week 09 — Navigation
-
-### All Files In This Week (Complete In Order)
-
-| Step | File | Description |
-|------|------|-------------|
-| 1 | [README.md](README.md) | Week Overview & Objectives |
-| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
-| 3 | [exercises.md](exercises.md) | Practice Exercises |
-| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
-| **5** | **validation-checklist.md** ← *You are here* | **Validation & Verification** |
-| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
-| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
-
----
-
-### Within-Week Navigation
-
-[← Build Implementation Guide](build-task.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Validation & Verification** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Knowledge Assessment Quiz →](quiz.md)
-
----
-
-### Week Progression
-
-| ← Previous Week | 🏠 Home | Next Week → |
-|:----------------|:-------:|------------:|
-| [⬅ Week 08: XML Disease Library](../week-08-xml-disease-library/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 10: Notifications, Share & Location ➡](../week-10-notifications-share-location/README.md) |
-
----
+[README](README.md) | [Learning Notes](learning-notes.md) | [Exercises](exercises.md) | [Build Task](build-task.md) | **Validation** | [Quiz](quiz.md) | [Reflection](reflection.md)

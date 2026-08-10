@@ -1,2636 +1,1636 @@
-# Week 09: Learning Notes - TensorFlow Lite Offline AI
+# Week 09 Learning Notes: Verified TFLite Offline Inference
 
-> **Kotlin-first & accuracy note:** The shipped classifier is `TFLiteClassifier` (Kotlin primary: `android-app-kotlin/.../ml/TFLiteClassifier.kt`; Java secondary twin). It loads `assets/model.tflite` + `assets/labels.txt`, resizes to **224×224**, uses **RGB floats 0..1**, and picks the class with **argmax** over 10 outputs. Because the committed `model.tflite` is a **text placeholder**, the classifier catches the load error and falls back to a **green-channel heuristic** so the app still runs. Replace it with a real model via [`model/model-acquisition-guide.md`](../../model/model-acquisition-guide.md) and [`model/generate_stub_model.py`](../../model/generate_stub_model.py).
+## Purpose
 
-## Table of Contents
+These notes explain how to convert the approved Week 06 Keras artifact, validate TFLite parity, bundle exact Android assets, and add an offline inference branch that preserves the eight-field result contract.
 
-1. [Week Goal and Big Picture](#1-week-goal-and-big-picture)
-2. [TensorFlow Lite Fundamentals](#2-tensorflow-lite-fundamentals)
-3. [Where to Get a `.tflite` Model (Model Sourcing Guide)](#3-where-to-get-a-tflite-model-model-sourcing-guide)
-4. [Understanding Model Files, Labels, and Metadata](#4-understanding-model-files-labels-and-metadata)
-5. [Model Conversion Deep Dive](#5-model-conversion-deep-dive)
-6. [Android Project Setup for Offline AI](#6-android-project-setup-for-offline-ai)
-7. [Input Shapes, Output Shapes, and Tensor Basics](#7-input-shapes-output-shapes-and-tensor-basics)
-8. [Normalization Strategies - Why They Must Match Training](#8-normalization-strategies---why-they-must-match-training)
-9. [Building the Preprocessing Pipeline in Java](#9-building-the-preprocessing-pipeline-in-java)
-10. [Running Inference and Reading Results](#10-running-inference-and-reading-results)
-11. [GPU Delegate and NNAPI Acceleration](#11-gpu-delegate-and-nnapi-acceleration)
-12. [Handling Inference Errors and Low-Confidence Results](#12-handling-inference-errors-and-low-confidence-results)
-13. [Complete `TFLiteClassifier` Implementation](#13-complete-tfliteclassifier-implementation)
-14. [Comparing Cloud vs Offline - Architecture Decision](#14-comparing-cloud-vs-offline---architecture-decision)
-15. [Benchmarking, Optimization, and Best Practices](#15-benchmarking-optimization-and-best-practices)
-16. [CSE 2206 Viva and Exam Preparation](#16-cse-2206-viva-and-exam-preparation)
-17. [Summary](#17-summary)
-18. [Glossary](#18-glossary)
-19. [Quick Revision Checklist](#19-quick-revision-checklist)
+Section 12 is the authoritative reconstruction appendix. It contains all 14 Week 09 new or expanded text files in full. The Android snapshot was compiled independently, and the focused TensorFlow suite passed four tests.
 
 ---
 
-## 1. Week Goal and Big Picture
+## 1. How Week 09 Grows From Week 08
 
-Week 09 introduces **offline machine learning on Android** using **TensorFlow Lite (TFLite)**.
-
-In earlier weeks, LeafGuard AI sent images to a backend for prediction.
-That cloud approach is useful, but it depends on an internet connection and a running server.
-This week adds a second path: **run the model directly on the phone**.
-
-That means your app can:
-
-- classify a plant leaf even with no internet,
-- respond faster because there is no network round trip,
-- keep the image on the device for better privacy,
-- continue working in rural areas with weak connectivity.
-
-For CSE 2206 students, this week connects multiple ideas:
-
-- Android assets management,
-- Java file I/O,
-- bitmap image processing,
-- background threading,
-- performance measurement,
-- practical mobile AI deployment.
-
-### Why this week matters for LeafGuard AI
-
-A real farmer or field worker may not always have stable internet.
-If your app only supports cloud inference, then the app becomes unreliable in exactly the places where it is most useful.
-TensorFlow Lite solves that problem by packaging the model inside the Android app.
-
-### What you should be able to do by the end of the week
-
-By the end of Week 09, you should be able to:
-
-1. obtain or create a `.tflite` model,
-2. add that model to your Android project,
-3. load the model with `Interpreter`,
-4. preprocess a `Bitmap` into the input tensor format the model expects,
-5. run inference in Java,
-6. interpret output probabilities correctly,
-7. handle low-confidence predictions safely,
-8. benchmark CPU vs GPU delegate performance,
-9. compare offline inference with cloud inference.
-
-### LeafGuard architecture this week
+Week 08 adds offline guidance, not offline prediction. Week 09 adds the missing inference engine:
 
 ```text
-Captured Leaf Image
-        |
-        v
-+-------------------+
-| Bitmap Processing |
-+-------------------+
-        |
-        v
-+-------------------+
-| TFLiteClassifier  |
-| - load model      |
-| - preprocess      |
-| - infer           |
-| - postprocess     |
-+-------------------+
-        |
-        v
-Prediction Result + Confidence + Latency
+same selected image
+  -> cloud branch: upload to Keras backend
+  -> offline branch: decode Bitmap and run TFLite
+
+same output:
+  PredictionResponse with eight fields
+  -> Week 08 Result XML enrichment
+  -> Week 07 Room save
 ```
 
-### Key take-away
-
-**Offline AI is not just "add a model and call run()".**
-The hardest parts are usually:
-
-- getting a compatible model,
-- matching preprocessing exactly,
-- dealing with errors and low confidence,
-- keeping inference off the main thread,
-- optimizing performance for different devices.
+No Result, Room, XML schema, or API response field needs to change.
 
 ---
 
-## 2. TensorFlow Lite Fundamentals
+## 2. Why Convert Keras to TFLite
 
-### What is TensorFlow Lite?
+Keras is the approved training/cloud format. TFLite is designed for mobile deployment:
 
-**TensorFlow Lite** is a lightweight machine learning runtime designed for:
+- compact FlatBuffer model
+- Android interpreter runtime
+- memory-mapped asset loading
+- CPU execution without Python or FastAPI
+- explicit tensor interface
 
-- Android phones,
-- iPhones,
-- embedded devices,
-- Raspberry Pi,
-- edge AI systems.
-
-A normal TensorFlow training model may be too large or too slow for a mobile app.
-TFLite converts that model into a smaller, more efficient format suitable for on-device inference.
-
-### Important idea: training vs inference
-
-In ML, there are two different phases:
-
-| Phase | Where it usually happens | Purpose |
-|------|---------------------------|---------|
-| Training | Laptop, cloud GPU, Colab | Learn weights from data |
-| Inference | Android app, server, edge device | Use learned weights to make predictions |
-
-LeafGuard AI this week focuses on **inference**, not training.
-
-### Why TFLite is good for Android
-
-TFLite is useful because it offers:
-
-- small model file sizes,
-- lower memory usage,
-- hardware acceleration options,
-- offline operation,
-- direct Java API access.
-
-### TFLite file format
-
-The model usually ends with:
-
-```text
-model.tflite
-```
-
-This file contains the network structure and weights in a FlatBuffer format.
-Android does not read the original `.h5` or `SavedModel` directly during inference.
-It reads the converted `.tflite` file.
-
-### Typical inference pipeline
-
-A mobile image classification pipeline looks like this:
-
-1. Load the model file from `assets/`.
-2. Load labels from `labels.txt`.
-3. Resize image to the correct input size.
-4. Convert pixels into the expected tensor format.
-5. Normalize pixel values.
-6. Run `Interpreter.run()`.
-7. Find the highest output probability.
-8. Map that index to a label.
-9. Show disease name, confidence, and latency.
-
-### Typical performance numbers
-
-These are rough numbers for a medium-size plant disease classifier on phones:
-
-| Hardware path | Typical latency |
-|---------------|-----------------|
-| CPU only | ~200-500 ms |
-| GPU delegate | ~50-150 ms |
-| NNAPI delegate | device-dependent, often ~80-200 ms |
-
-These numbers vary based on:
-
-- model size,
-- quantization level,
-- phone chipset,
-- Android version,
-- background CPU load.
-
-### Advantages of offline AI
-
-- Works without internet.
-- Better privacy because images stay on the device.
-- Faster in rural or low-bandwidth environments.
-- No server cost for each prediction.
-- Easier demo during viva when Wi-Fi is unstable.
-
-### Limitations of offline AI
-
-- Model must fit on the device.
-- Very large models may be too slow.
-- Updating the model may require an app update.
-- Some phones may not support all delegates equally.
-- Accuracy may drop if you use aggressive quantization.
-
-### Core TensorFlow Lite classes you will meet
-
-#### `Interpreter`
-
-This is the main runtime class used to run inference.
-
-```java
-Interpreter interpreter = new Interpreter(modelBuffer);
-```
-
-#### `Interpreter.Options`
-
-Used for performance configuration.
-
-```java
-Interpreter.Options options = new Interpreter.Options();
-```
-
-You use it to:
-
-- add delegates,
-- set number of threads,
-- enable NNAPI,
-- tune performance.
-
-#### Delegates
-
-A **delegate** hands part of inference execution to optimized hardware-specific code.
-Examples:
-
-- GPU delegate,
-- NNAPI delegate.
-
-We will study delegates in detail later.
+Conversion is not retraining. It serializes compatible operations into another runtime format.
 
 ---
 
-## 3. Where to Get a `.tflite` Model (Model Sourcing Guide)
+## 3. Conversion Must Be Gated
 
-This is one of the most important missing pieces in many student projects.
-Students often understand how to call `Interpreter.run()`, but they do not know **where the model actually comes from**.
+`convert_model.py` refuses conversion unless the source Keras model passes:
 
-There are three practical paths.
+1. exact 38 unique labels
+2. input shape/dtype
+3. output count
+4. embedded `[0,255] -> [-1,1]` preprocessing
 
-### Option A: Start from TensorFlow Hub / official TensorFlow tutorials
+After conversion, the script synchronizes the same model bytes and labels to Android asset locations.
 
-A good practical path is to begin from the TensorFlow Hub tutorial for plant disease detection:
+A successful conversion command alone is not enough. Validate the generated artifact independently.
 
-- TensorFlow Hub tutorial: `https://www.tensorflow.org/hub/tutorials/cropnet_on_device`
-- TensorFlow Hub home: `https://tfhub.dev/`
-- TensorFlow Datasets PlantVillage page: `https://www.tensorflow.org/datasets/catalog/plant_village`
+---
 
-#### Why this option is good
+## 4. Exact TFLite Artifact Identity
 
-- Uses official TensorFlow tooling.
-- Teaches the full pipeline from data to on-device model.
-- Easier to defend in a viva because it is based on TensorFlow documentation.
-- Lets you adapt a proven image model to plant disease classification.
+| Property | Value |
+|---|---|
+| Source | Approved Week 06 Keras artifact |
+| Android path | `app/src/main/assets/model.tflite` |
+| Size | 9,056,916 bytes |
+| SHA-256 | `22ea2d4a47a52b2d9b150e0f74b113def0f12bbdb59209f7e0bce2a9701d41f9` |
+| Precision | Float32, no quantization |
+| Labels | 38 canonical lines |
 
-#### Important clarification
+The binary is not pasted into Markdown. Hash and size identify it exactly.
 
-There is not always a single official one-click download called "PlantVillage.tflite" on TensorFlow Hub.
-A more realistic workflow is:
+---
 
-1. use a Hub-compatible image model or the CropNet tutorial,
-2. fine-tune it on a plant disease dataset,
-3. export to TFLite.
+## 5. Tensor Contract and Embedded Scaling
 
-That still counts as a TensorFlow Hub-based model sourcing path.
-
-#### Step-by-step process for Option A
-
-1. Open `https://www.tensorflow.org/hub/tutorials/cropnet_on_device`.
-2. Read how TensorFlow Hub feature extractors are used for image classification.
-3. Review the PlantVillage dataset info at `https://www.tensorflow.org/datasets/catalog/plant_village`.
-4. Run the tutorial in Colab or your local Python environment.
-5. Replace dataset-loading steps if needed so they point to the PlantVillage dataset classes you want.
-6. Train or fine-tune the model for your chosen disease classes.
-7. Export the final model as `.tflite`.
-8. Test the `.tflite` file in Python before moving it into Android.
-
-#### What files you should expect after this process
-
-You should end up with something like:
+The TFLite model preserves the Keras interface:
 
 ```text
-model.tflite
-labels.txt
+input:  float32 [1,224,224,3]
+output: float32 [1,38]
 ```
 
-Sometimes you may also have:
+Android caller work:
+
+1. decode image URI into `Bitmap`
+2. resize to 224 x 224
+3. iterate rows and columns
+4. write R, G, B as raw float values from 0 to 255
+5. rewind the ByteBuffer
+
+Do not divide by 255. The converted graph still performs embedded scaling to `[-1,1]`.
+
+---
+
+## 6. ByteBuffer Size and Layout
+
+Each float uses 4 bytes:
+
+$$
+224 \times 224 \times 3 \times 4 = 602{,}112\text{ bytes}
+$$
+
+The classifier allocates a direct `ByteBuffer` in native byte order. Pixel order is:
 
 ```text
-saved_model/
-training_notebook.ipynb
-class_names.json
+row 0: RGB, RGB, RGB, ...
+row 1: RGB, RGB, RGB, ...
 ```
 
-### Option B: Train your own model using Google Colab
+Wrong channel order, missing rewind, wrong dtype, or double normalization can produce plausible but incorrect predictions without an exception.
 
-This is the most common student-friendly option.
-Google Colab gives you a Python notebook environment in the browser.
-You can use the PlantVillage dataset from Kaggle and train your own classifier.
+---
 
-#### Useful resources
+## 7. Labels and Output Decoding
 
-- Google Colab: `https://colab.research.google.com/`
-- Kaggle PlantVillage dataset: search for `PlantVillage` on `https://www.kaggle.com/`
-- TensorFlow Datasets PlantVillage: `https://www.tensorflow.org/datasets/catalog/plant_village`
+`labels.txt` must exactly match the canonical Week 06 label order.
 
-#### Why Colab is popular
+```kotlin
+bestIndex = argmax(scores)
+modelLabel = labels[bestIndex]
+```
 
-- No local Python setup needed.
-- Free GPU is often available.
-- Easy to share notebook screenshots as evidence.
-- Perfect for CSE 2206 documentation and viva discussion.
+The classifier validates:
 
-#### Example high-level Colab workflow
+- 38 non-empty labels
+- no duplicates
+- TFLite output dimension equals label count
 
-1. Upload or mount the dataset.
-2. Build an image classifier with Keras.
-3. Train on selected classes.
-4. Evaluate accuracy on validation data.
-5. Save the model as `.h5` or `SavedModel`.
-6. Convert to `.tflite`.
-7. Download `model.tflite` and `labels.txt`.
+Display formatting changes underscores for UI only; it does not reorder model labels.
 
-#### Example Keras training skeleton
+---
+
+## 8. Classifier Lifecycle
+
+`TFLiteClassifier` performs:
+
+```text
+construct
+  -> load labels
+  -> memory-map model
+  -> create Interpreter with 4 threads
+  -> validate tensors and label count
+
+classify
+  -> preprocess Bitmap
+  -> interpreter.run
+  -> argmax
+  -> map display name and local guidance
+  -> build PredictionResponse
+
+close
+  -> interpreter.close
+```
+
+The caller uses `.use { ... }` so `close()` runs on success or exception.
+
+---
+
+## 9. Shared Eight-Field Response
+
+Offline mode returns exactly:
+
+```text
+model_label, disease, confidence, uncertain,
+guidance_available, symptoms, treatment, prevention
+```
+
+`uncertain` is true below `0.50`. Local XML guidance is used when the display name matches one of the 10 reviewed entries; otherwise safe generic guidance is returned.
+
+ResultActivity performs its existing Week 08 lookup again safely and Room stores the final values.
+
+---
+
+## 10. Cloud/Offline Strategy in Scan
+
+Week 09 adds one simple mode selector:
+
+| Mode | Execution | Backend required |
+|---|---|---|
+| Cloud | Existing Retrofit upload | Yes |
+| Offline | TFLite classifier on `Dispatchers.IO` | No |
+
+Both branches:
+
+- require a selected image
+- show one progress state
+- disable image/mode controls while running
+- restore controls after success/failure
+- call the same `openResult(prediction)` method
+
+This is a strategy choice, not two separate result workflows.
+
+---
+
+## 11. Parity, Accuracy, and Failure Boundaries
+
+Parity asks whether conversion changed model behavior. The focused check requires:
+
+- same top-1 index for Keras and TFLite
+- confidence delta at most 0.02
+
+The reproduced three-image check passed with maximum delta below `0.000015`.
+
+However, all three predicted `Blueberry___Healthy`, which did not match their tomato sample folders. Therefore conversion fidelity passed while prediction correctness did not.
+
+Safe offline failures include:
+
+- missing/corrupt model asset
+- empty/wrong labels
+- incompatible tensor shape
+- bitmap decode failure
+- closed interpreter
+
+These show a user-safe error, restore controls, and never silently switch modes or fabricate output.
+
+Avoid adding Week 10 notifications, location, sharing, analytics, settings-driven thresholds, or UI redesign.
+
+---
+
+## 12. End-of-Week-09 File Inventory (Exact Files, Exact Code, Exact Size)
+
+Week 09 starts from the compiled Week 08 XML/Room/network state. It creates 8 text files, expands 6 text files, and supplies one generated local TFLite binary.
+
+### 12.1 Change Summary: Week 08 -> Week 09
+
+| Change | Count | Files |
+|---|---:|---|
+| New text | 8 | Conversion/validation/parity/test, classifier, labels, asset README, provenance |
+| Expanded text | 6 | Shared model contract/notes, Gradle, Scan Activity/layout, strings |
+| Local binary | 1 | `model.tflite` |
+| Result/Room/XML/API changes | 0 | Existing shared contracts remain unchanged |
+| Week 10 changes | 0 | No notification/location/share/polish |
+
+**Complete Week 09 text snapshot: 1,182 logical lines.**
+
+### 12.2 Exact Week 09 Tree
+
+```text
+LeafGuard-AI/
+|-- model/
+|   |-- model_contract.py                    EXPANDED  117 lines
+|   |-- model-notes.md                       EXPANDED   55 lines
+|   |-- convert_model.py                     NEW        47 lines
+|   |-- validate_tflite.py                   NEW        31 lines
+|   |-- parity_test.py                       NEW        58 lines
+|   `-- test_tflite_contract.py              NEW        73 lines
+|-- release-records/
+|   `-- tflite-provenance.txt                NEW        33 lines
+`-- android-app-kotlin/app/
+    |-- build.gradle                         EXPANDED   60 lines
+    `-- src/main/
+        |-- java/com/leafguard/
+        |   |-- ScanActivity.kt              EXPANDED  321 lines
+        |   `-- ml/TFLiteClassifier.kt       NEW       149 lines
+        |-- res/
+        |   |-- layout/activity_scan.xml     EXPANDED  111 lines
+        |   `-- values/strings.xml           EXPANDED   82 lines
+        `-- assets/
+            |-- model.tflite                 LOCAL/BINARY 9,056,916 bytes
+            |-- labels.txt                   NEW        38 lines
+            `-- README.md                    NEW         7 lines
+```
+
+### 12.3 Expanded File: `model/model_contract.py` (85 -> 117 lines)
 
 ```python
+from pathlib import Path
+from typing import Iterable, List, Sequence, Tuple
+
+import numpy as np
+from PIL import Image
+
+ROOT = Path(__file__).resolve().parent.parent
+DEFAULT_KERAS_MODEL = ROOT / "backend-api" / "models" / "leafguard_model.keras"
+DEFAULT_LABELS = ROOT / "model" / "labels-38.txt"
+BACKEND_LABELS = ROOT / "backend-api" / "labels-38.txt"
+ANDROID_ASSETS = (
+    ROOT / "android-app" / "app" / "src" / "main" / "assets",
+    ROOT / "android-app-kotlin" / "app" / "src" / "main" / "assets",
+)
+EXPECTED_INPUT_SHAPE = (1, 224, 224, 3)
+EXPECTED_CLASS_COUNT = 38
+
+
+def load_labels(path: Path = DEFAULT_LABELS) -> List[str]:
+    labels = [
+        line.strip()
+        for line in path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+    if len(labels) != EXPECTED_CLASS_COUNT:
+        raise ValueError(f"Expected {EXPECTED_CLASS_COUNT} labels, found {len(labels)} in {path}")
+    if len(labels) != len(set(labels)):
+        raise ValueError(f"Duplicate labels found in {path}")
+    return labels
+
+
+def validate_shape(actual: Sequence[int], expected: Sequence[int], name: str) -> None:
+    normalized = tuple(1 if dimension is None else int(dimension) for dimension in actual)
+    if normalized != tuple(expected):
+        raise ValueError(f"Expected {name} shape {tuple(expected)}, got {tuple(actual)}")
+
+
+def validate_keras_model(model, labels: Iterable[str]) -> Tuple[Tuple[int, ...], Tuple[int, ...]]:
+    input_shape = tuple(model.input_shape)
+    output_shape = tuple(model.output_shape)
+    validate_shape(input_shape, EXPECTED_INPUT_SHAPE, "Keras input")
+    if len(output_shape) != 2 or int(output_shape[-1]) != len(list(labels)):
+        raise ValueError(
+            f"Keras output shape {output_shape} is incompatible with the canonical labels"
+        )
+    input_tensor = model.inputs[0]
+    dtype_name = getattr(input_tensor.dtype, "name", str(input_tensor.dtype))
+    if dtype_name != "float32":
+        raise ValueError(f"Expected Keras float32 input, got {input_tensor.dtype}")
+    return input_shape, output_shape
+
+
+def find_embedded_rescaling(model):
+    pending = list(model.layers)
+    while pending:
+        layer = pending.pop(0)
+        if layer.__class__.__name__ == "Rescaling":
+            config = layer.get_config()
+            scale = float(config.get("scale"))
+            offset = float(config.get("offset", 0.0))
+            if np.isclose(scale, 1.0 / 127.5, rtol=1e-6, atol=1e-8) and np.isclose(
+                offset, -1.0, rtol=1e-6, atol=1e-8
+            ):
+                return layer
+        pending.extend(getattr(layer, "layers", []))
+
+    from tensorflow import keras
+
+    for operation in getattr(model, "_operations", []):
+        if operation.__class__.__name__ != "Subtract":
+            continue
+        try:
+            probe = keras.Model(inputs=model.inputs, outputs=operation.output)
+            valid_scaling = True
+            for value, expected in ((0.0, -1.0), (127.5, 0.0), (255.0, 1.0)):
+                image = np.full(EXPECTED_INPUT_SHAPE, value, dtype=np.float32)
+                output = np.asarray(probe([image], training=False))
+                if output.shape != EXPECTED_INPUT_SHAPE or not np.allclose(
+                    output, expected, rtol=1e-6, atol=1e-6
+                ):
+                    valid_scaling = False
+                    break
+        except (AttributeError, TypeError, ValueError):
+            continue
+        if valid_scaling:
+            return operation
+
+    raise ValueError(
+        "Expected embedded preprocessing mapping raw RGB [0, 255] to [-1, 1]. "
+        "Refusing conversion because Android/backend preprocessing would not match."
+    )
+
+
+def preprocess_image(path: Path) -> np.ndarray:
+    with Image.open(path) as image:
+        rgb_image = image.convert("RGB").resize((224, 224))
+        return np.expand_dims(np.asarray(rgb_image, dtype=np.float32), axis=0)
+
+
+def tensor_details(interpreter):
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+    if len(input_details) != 1 or len(output_details) != 1:
+        raise ValueError("LeafGuard requires exactly one input tensor and one output tensor")
+    input_detail = input_details[0]
+    output_detail = output_details[0]
+    validate_shape(input_detail["shape"], EXPECTED_INPUT_SHAPE, "TFLite input")
+    if input_detail["dtype"] != np.float32:
+        raise ValueError(f"Expected TFLite float32 input, got {input_detail['dtype']}")
+    if tuple(int(value) for value in output_detail["shape"]) != (1, EXPECTED_CLASS_COUNT):
+        raise ValueError(
+            f"Expected TFLite output shape (1, {EXPECTED_CLASS_COUNT}), "
+            f"got {tuple(output_detail['shape'])}"
+        )
+    if output_detail["dtype"] != np.float32:
+        raise ValueError(f"Expected TFLite float32 output, got {output_detail['dtype']}")
+    return input_detail, output_detail
+```
+
+### 12.4 New File: `model/convert_model.py` (47 lines)
+
+```python
+#!/usr/bin/env python3
+import argparse
+import shutil
+from pathlib import Path
+
 import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
 
-IMG_SIZE = (224, 224)
-BATCH_SIZE = 32
-NUM_CLASSES = 6
-
-train_ds = tf.keras.utils.image_dataset_from_directory(
-    "plantvillage_subset/train",
-    image_size=IMG_SIZE,
-    batch_size=BATCH_SIZE
+from model_contract import (
+    ANDROID_ASSETS,
+    BACKEND_LABELS,
+    DEFAULT_KERAS_MODEL,
+    DEFAULT_LABELS,
+    find_embedded_rescaling,
+    load_labels,
+    validate_keras_model,
 )
 
-val_ds = tf.keras.utils.image_dataset_from_directory(
-    "plantvillage_subset/val",
-    image_size=IMG_SIZE,
-    batch_size=BATCH_SIZE
-)
 
-model = keras.Sequential([
-    layers.Rescaling(1./255, input_shape=(224, 224, 3)),
-    layers.Conv2D(16, 3, activation='relu'),
-    layers.MaxPooling2D(),
-    layers.Conv2D(32, 3, activation='relu'),
-    layers.MaxPooling2D(),
-    layers.Conv2D(64, 3, activation='relu'),
-    layers.MaxPooling2D(),
-    layers.Flatten(),
-    layers.Dense(128, activation='relu'),
-    layers.Dense(NUM_CLASSES, activation='softmax')
-])
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Convert the approved LeafGuard Keras model to TFLite.")
+    parser.add_argument("--keras-model", type=Path, default=DEFAULT_KERAS_MODEL)
+    parser.add_argument("--labels", type=Path, default=DEFAULT_LABELS)
+    args = parser.parse_args()
 
-model.compile(
-    optimizer='adam',
-    loss='sparse_categorical_crossentropy',
-    metrics=['accuracy']
-)
+    if not args.keras_model.is_file():
+        raise SystemExit(f"Model not found: {args.keras_model}")
 
-model.fit(train_ds, validation_data=val_ds, epochs=10)
-model.save('leafguard_model.h5')
+    labels = load_labels(args.labels)
+    model = tf.keras.models.load_model(args.keras_model)
+    validate_keras_model(model, labels)
+    find_embedded_rescaling(model)
+
+    converter = tf.lite.TFLiteConverter.from_keras_model(model)
+    tflite_model = converter.convert()
+
+    shutil.copyfile(args.labels, BACKEND_LABELS)
+    print(f"Synchronized {BACKEND_LABELS}")
+    for assets_dir in ANDROID_ASSETS:
+        assets_dir.mkdir(parents=True, exist_ok=True)
+        (assets_dir / "model.tflite").write_bytes(tflite_model)
+        shutil.copyfile(args.labels, assets_dir / "labels.txt")
+        print(f"Wrote {assets_dir / 'model.tflite'} ({len(tflite_model)} bytes)")
+        print(f"Synchronized {assets_dir / 'labels.txt'}")
+
+
+if __name__ == "__main__":
+    main()
 ```
 
-This model is simple, but the workflow is excellent for learning.
-
-### Option C: Use TensorFlow Lite Model Maker for transfer learning
-
-**TensorFlow Lite Model Maker** helps you train a model with less custom code.
-It is designed for scenarios like image classification, where you want to fine-tune an existing base model.
-
-#### Why students like this option
-
-- Less training code to write.
-- Easier transfer learning workflow.
-- Can export directly to TFLite.
-- Good balance between simplicity and realism.
-
-#### Sample Python code for Model Maker
+### 12.5 New File: `model/validate_tflite.py` (31 lines)
 
 ```python
-from tflite_model_maker import image_classifier
-from tflite_model_maker.image_classifier import DataLoader
+#!/usr/bin/env python3
+import argparse
+from pathlib import Path
 
-train_data = DataLoader.from_folder('plantvillage_subset/train')
-validation_data = DataLoader.from_folder('plantvillage_subset/val')
-
-auto_model = image_classifier.create(
-    train_data,
-    model_spec='efficientnet_lite0',
-    validation_data=validation_data,
-    epochs=10,
-    batch_size=32
-)
-
-auto_model.export(
-    export_dir='exported_model',
-    tflite_filename='model.tflite',
-    label_filename='labels.txt'
-)
-```
-
-#### What this code does
-
-- loads the dataset from folders,
-- uses an EfficientNet Lite backbone,
-- fine-tunes the classifier,
-- exports both the `.tflite` model and the labels file.
-
-### What model format should you expect?
-
-For most image classification models used in Android apps, expect:
-
-- **Input shape:** `1 x 224 x 224 x 3`
-- **Input type:** usually `float32` or `uint8`
-- **Output shape:** `1 x N` where `N` is number of classes
-- **Output meaning:** a probability-like array or raw scores (logits)
-
-Example:
-
-```text
-Input:  [1][224][224][3]
-Output: [1][6]
-```
-
-If your six classes are:
-
-```text
-0 Tomato_Healthy
-1 Tomato_Early_Blight
-2 Tomato_Late_Blight
-3 Potato_Healthy
-4 Potato_Early_Blight
-5 Potato_Late_Blight
-```
-
-Then an output like:
-
-```text
-[0.03, 0.82, 0.07, 0.01, 0.05, 0.02]
-```
-
-means the predicted class is index `1`, i.e. `Tomato_Early_Blight`.
-
-### How to verify a downloaded model before adding it to Android
-
-Never copy an untested model directly into your app.
-Always verify it first.
-
-#### Verification checklist in Python
-
-1. Load the model with TFLite Interpreter.
-2. Print input tensor details.
-3. Print output tensor details.
-4. Run one inference with random or test data.
-5. Confirm output shape matches expected class count.
-6. Confirm no runtime errors occur.
-
-#### Example verification script
-
-```python
 import numpy as np
 import tensorflow as tf
 
-interpreter = tf.lite.Interpreter(model_path='model.tflite')
-interpreter.allocate_tensors()
+from model_contract import DEFAULT_LABELS, load_labels, preprocess_image, tensor_details
 
-input_details = interpreter.get_input_details()
-output_details = interpreter.get_output_details()
 
-print('Input details:', input_details)
-print('Output details:', output_details)
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Run one image through the LeafGuard TFLite model.")
+    parser.add_argument("image", type=Path)
+    parser.add_argument("--model", type=Path, required=True)
+    parser.add_argument("--labels", type=Path, default=DEFAULT_LABELS)
+    args = parser.parse_args()
 
-input_shape = input_details[0]['shape']
-input_dtype = input_details[0]['dtype']
+    labels = load_labels(args.labels)
+    interpreter = tf.lite.Interpreter(model_path=str(args.model))
+    interpreter.allocate_tensors()
+    input_detail, output_detail = tensor_details(interpreter)
+    interpreter.set_tensor(input_detail["index"], preprocess_image(args.image))
+    interpreter.invoke()
+    scores = interpreter.get_tensor(output_detail["index"])[0]
+    best_index = int(np.argmax(scores))
+    print(f"Prediction: {labels[best_index]}")
+    print(f"Confidence: {float(scores[best_index]):.6f}")
 
-sample = np.random.random_sample(input_shape).astype(input_dtype)
-interpreter.set_tensor(input_details[0]['index'], sample)
-interpreter.invoke()
-output = interpreter.get_tensor(output_details[0]['index'])
 
-print('Output shape:', output.shape)
-print('Output values:', output)
-print('Output sum:', output.sum())
+if __name__ == "__main__":
+    main()
 ```
 
-#### What to look for in the printed details
-
-You want answers to these questions:
-
-- Is the input shape `224 x 224 x 3` or something else?
-- Is the input dtype `float32`, `uint8`, or `int8`?
-- Is the output shape equal to the number of labels?
-- Does inference succeed without crashing?
-
-### The `labels.txt` file
-
-This small file is critical.
-It maps output index numbers to human-readable class names.
-
-#### Example labels file
-
-```text
-Tomato_Healthy
-Tomato_Early_Blight
-Tomato_Late_Blight
-Potato_Healthy
-Potato_Early_Blight
-Potato_Late_Blight
-```
-
-#### How to create it
-
-You can create `labels.txt` manually by writing one class name per line.
-The order **must exactly match** the order used during training.
-
-#### Why label order matters
-
-Suppose your model output index `2` is actually `Tomato_Late_Blight`.
-If your labels file accidentally places `Potato_Healthy` at line 3, your app will show the wrong disease name even though the model predicted correctly.
-
-This is one of the easiest ways to silently break a demo.
-
-#### Best practice
-
-Export labels automatically from the training notebook whenever possible.
-If you write the file manually, also save the class order in your notebook or report.
-
-### Model sourcing decision guide
-
-| Situation | Best option |
-|-----------|-------------|
-| You want the fastest learning path | Option B: Colab |
-| You want official TensorFlow-guided workflow | Option A: TensorFlow Hub tutorial |
-| You want less custom training code | Option C: Model Maker |
-| You already have a Keras model | Convert it to TFLite |
-| You need a quick demo model | Use a pre-trained or previously exported TFLite model |
-
-### What to store in your project report
-
-When you source your model, document:
-
-- dataset name,
-- number of classes,
-- image size,
-- training source (Hub / Colab / Model Maker),
-- accuracy value,
-- normalization strategy,
-- output label order,
-- final `.tflite` file size.
-
----
-
-## 4. Understanding Model Files, Labels, and Metadata
-
-### The three files students often confuse
-
-You may encounter several different model-related formats.
-
-| Format | Meaning | Used directly in Android? |
-|--------|---------|---------------------------|
-| `.h5` | Keras model file | No |
-| `SavedModel/` | TensorFlow export directory | No |
-| `.tflite` | TensorFlow Lite inference file | Yes |
-
-### What goes into the Android app
-
-In the Android project, you typically place these in `app/src/main/assets/`:
-
-```text
-model.tflite
-labels.txt
-```
-
-### Why `assets/` instead of `res/raw/`?
-
-`assets/` is a common choice because:
-
-- model files can be read as streams or file descriptors,
-- file names remain simple,
-- it is widely used in TFLite examples.
-
-### Example assets folder structure
-
-```text
-app/
-  src/
-    main/
-      assets/
-        model.tflite
-        labels.txt
-```
-
-### Input tensor basics
-
-A tensor is just a multidimensional array.
-
-For image classification, the input tensor often has four dimensions:
-
-```text
-[batch][height][width][channels]
-```
-
-Example:
-
-```text
-[1][224][224][3]
-```
-
-This means:
-
-- batch size = 1 image,
-- height = 224 pixels,
-- width = 224 pixels,
-- channels = 3 (RGB).
-
-### Output tensor basics
-
-For classification, the output is often:
-
-```text
-[1][numClasses]
-```
-
-If the app supports 6 classes, output becomes:
-
-```text
-[1][6]
-```
-
-### Softmax output vs logits
-
-Your model may output:
-
-1. **softmax probabilities**,
-2. **logits** (raw scores before softmax).
-
-If the model uses a final `softmax` layer, then:
-
-- outputs are between 0 and 1,
-- values often sum to about 1.0.
-
-If the model outputs logits, then:
-
-- values can be negative or larger than 1,
-- you may need to apply softmax yourself.
-
-### Quick softmax refresher
-
-Softmax converts raw scores into probabilities.
-
-```text
-probability_i = exp(score_i) / sum(exp(all scores))
-```
-
-In practice, many classification models already include softmax in the final layer.
-Always confirm this from training code.
-
-### Representative example
-
-Suppose the output is:
-
-```text
-[2.1, 4.5, 0.3]
-```
-
-This is probably logits.
-After softmax, it may become something like:
-
-```text
-[0.08, 0.89, 0.03]
-```
-
-### Why metadata matters
-
-Before writing Java code, you should know:
-
-- expected input size,
-- expected input dtype,
-- normalization rule,
-- expected color channel order,
-- output shape,
-- whether output is logits or probabilities.
-
-If any one of these assumptions is wrong, predictions can become useless.
-
-### A model card is valuable
-
-A **model card** or `model-notes.md` should record:
-
-- model source,
-- training dataset,
-- preprocessing,
-- metrics,
-- known limitations,
-- supported labels.
-
-This is good engineering and good viva preparation.
-
----
-
-## 5. Model Conversion Deep Dive
-
-Many students have a Keras or TensorFlow model but not a `.tflite` file.
-This section explains how conversion works and what optimization choices mean.
-
-### Conversion path 1: Convert from `.h5` Keras model
-
-If you saved your model as:
-
-```text
-leafguard_model.h5
-```
-
-then use code like this:
+### 12.6 New File: `model/parity_test.py` (58 lines)
 
 ```python
-import tensorflow as tf
+#!/usr/bin/env python3
+import argparse
+from pathlib import Path
 
-model = tf.keras.models.load_model('leafguard_model.h5')
-
-converter = tf.lite.TFLiteConverter.from_keras_model(model)
-tflite_model = converter.convert()
-
-with open('leafguard_model.tflite', 'wb') as f:
-    f.write(tflite_model)
-```
-
-### Expanded conversion example with checks
-
-```python
-import tensorflow as tf
-
-h5_path = 'leafguard_model.h5'
-tflite_path = 'leafguard_model.tflite'
-
-model = tf.keras.models.load_model(h5_path)
-model.summary()
-
-converter = tf.lite.TFLiteConverter.from_keras_model(model)
-converter.optimizations = [tf.lite.Optimize.DEFAULT]
-
-tflite_model = converter.convert()
-
-with open(tflite_path, 'wb') as f:
-    f.write(tflite_model)
-
-print('Saved:', tflite_path)
-```
-
-### Conversion path 2: Convert from SavedModel format
-
-If you exported a directory like:
-
-```text
-saved_model/
-```
-
-then use:
-
-```python
-import tensorflow as tf
-
-converter = tf.lite.TFLiteConverter.from_saved_model('saved_model')
-tflite_model = converter.convert()
-
-with open('leafguard_savedmodel.tflite', 'wb') as f:
-    f.write(tflite_model)
-```
-
-### Conversion path 3: Convert from concrete functions
-
-This path is less common for beginners, but useful when you have a custom inference function.
-
-```python
-import tensorflow as tf
-
-loaded = tf.saved_model.load('saved_model')
-concrete_func = loaded.signatures['serving_default']
-converter = tf.lite.TFLiteConverter.from_concrete_functions([concrete_func])
-tflite_model = converter.convert()
-```
-
-### TFLite converter optimization options
-
-TensorFlow Lite supports optimization flags that change model size and inference behavior.
-
-#### 1. `tf.lite.Optimize.DEFAULT`
-
-This is the most common starting point.
-
-```python
-converter.optimizations = [tf.lite.Optimize.DEFAULT]
-```
-
-**What it means:**
-
-- Let TensorFlow Lite choose practical optimizations.
-- Often reduces size significantly.
-- Good default choice for many student projects.
-
-#### 2. `tf.lite.Optimize.OPTIMIZE_FOR_SIZE`
-
-```python
-converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_SIZE]
-```
-
-**What it means:**
-
-- Prioritizes smaller file size.
-- Useful when APK size matters.
-- May use stronger compression or quantization behavior depending on the graph.
-
-#### 3. `tf.lite.Optimize.OPTIMIZE_FOR_LATENCY`
-
-```python
-converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_LATENCY]
-```
-
-**What it means:**
-
-- Prioritizes runtime speed.
-- Useful for real-time camera-like experiences.
-- Final result still depends heavily on device hardware.
-
-### Dynamic range quantization
-
-This is one of the easiest quantization options.
-
-```python
-import tensorflow as tf
-
-model = tf.keras.models.load_model('leafguard_model.h5')
-converter = tf.lite.TFLiteConverter.from_keras_model(model)
-converter.optimizations = [tf.lite.Optimize.DEFAULT]
-
-tflite_model = converter.convert()
-
-with open('leafguard_dynamic.tflite', 'wb') as f:
-    f.write(tflite_model)
-```
-
-#### What dynamic range quantization does
-
-- Quantizes mainly the **weights** from float32 to smaller formats such as int8.
-- Activations are often still handled in floating point during runtime.
-- Usually reduces model size with small accuracy loss.
-- No representative dataset is required.
-
-#### When to use it
-
-Use it when:
-
-- you want a quick model size reduction,
-- you want easy deployment,
-- you do not want calibration complexity.
-
-### Integer quantization (`INT8`)
-
-This is more aggressive.
-It quantizes more of the model to integer operations.
-
-#### Why it is attractive
-
-- smaller model,
-- often faster inference on supported hardware,
-- useful for edge deployment.
-
-#### Pros
-
-- Excellent compression.
-- Can be faster on hardware optimized for int8.
-- Good for low-resource devices.
-
-#### Cons
-
-- Accuracy may drop more than with float models.
-- Calibration setup is more involved.
-- Input and output types may change.
-
-### Float16 quantization
-
-This is a middle-ground option.
-Weights are stored in float16 instead of float32.
-
-```python
-import tensorflow as tf
-
-model = tf.keras.models.load_model('leafguard_model.h5')
-converter = tf.lite.TFLiteConverter.from_keras_model(model)
-converter.optimizations = [tf.lite.Optimize.DEFAULT]
-converter.target_spec.supported_types = [tf.float16]
-
-tflite_model = converter.convert()
-
-with open('leafguard_fp16.tflite', 'wb') as f:
-    f.write(tflite_model)
-```
-
-#### Why Float16 is useful
-
-- Smaller than float32.
-- Usually less accuracy drop than full int8.
-- Good compromise for mobile GPUs.
-
-### Full integer quantization
-
-This is the most complete integer conversion path.
-It usually requires a **representative dataset**.
-
-#### Why a representative dataset is required
-
-During conversion, TensorFlow Lite must estimate the numeric ranges of activations.
-It uses sample input data to understand realistic value ranges.
-Without that calibration data, it cannot safely convert activations to int8 with good accuracy.
-
-#### Example representative dataset generator
-
-```python
-import tensorflow as tf
 import numpy as np
+import tensorflow as tf
 
-model = tf.keras.models.load_model('leafguard_model.h5')
+from model_contract import (
+    DEFAULT_KERAS_MODEL,
+    DEFAULT_LABELS,
+    load_labels,
+    preprocess_image,
+    tensor_details,
+    validate_keras_model,
+)
 
-converter = tf.lite.TFLiteConverter.from_keras_model(model)
-converter.optimizations = [tf.lite.Optimize.DEFAULT]
 
-def representative_data_gen():
-    for _ in range(100):
-        sample = np.random.rand(1, 224, 224, 3).astype(np.float32)
-        yield [sample]
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Compare Keras and TFLite predictions for images.")
+    parser.add_argument("images", type=Path, nargs="+")
+    parser.add_argument("--keras-model", type=Path, default=DEFAULT_KERAS_MODEL)
+    parser.add_argument("--tflite-model", type=Path, required=True)
+    parser.add_argument("--labels", type=Path, default=DEFAULT_LABELS)
+    parser.add_argument("--max-confidence-delta", type=float, default=0.02)
+    args = parser.parse_args()
 
-converter.representative_dataset = representative_data_gen
-converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
-converter.inference_input_type = tf.int8
-converter.inference_output_type = tf.int8
+    labels = load_labels(args.labels)
+    keras_model = tf.keras.models.load_model(args.keras_model)
+    validate_keras_model(keras_model, labels)
+    interpreter = tf.lite.Interpreter(model_path=str(args.tflite_model))
+    interpreter.allocate_tensors()
+    input_detail, output_detail = tensor_details(interpreter)
 
-tflite_model = converter.convert()
+    failed = False
+    for image_path in args.images:
+        image = preprocess_image(image_path)
+        keras_scores = np.asarray(keras_model.predict(image, verbose=0))[0]
+        interpreter.set_tensor(input_detail["index"], image)
+        interpreter.invoke()
+        tflite_scores = interpreter.get_tensor(output_detail["index"])[0]
+        keras_index = int(np.argmax(keras_scores))
+        tflite_index = int(np.argmax(tflite_scores))
+        delta = abs(float(keras_scores[keras_index]) - float(tflite_scores[tflite_index]))
+        passed = keras_index == tflite_index and delta <= args.max_confidence_delta
+        failed = failed or not passed
+        print(
+            f"{image_path}: {'PASS' if passed else 'FAIL'} "
+            f"Keras={labels[keras_index]} ({keras_scores[keras_index]:.6f}) "
+            f"TFLite={labels[tflite_index]} ({tflite_scores[tflite_index]:.6f}) "
+            f"delta={delta:.6f}"
+        )
 
-with open('leafguard_int8.tflite', 'wb') as f:
-    f.write(tflite_model)
+    if failed:
+        raise SystemExit("Keras/TFLite parity failed")
+
+
+if __name__ == "__main__":
+    main()
 ```
 
-#### Better representative dataset practice
-
-Random data is useful for a demo, but real representative images are better.
-For best calibration, use actual leaf images from your dataset after the same resize steps used during training.
-
-### Comparing quantized vs non-quantized model sizes
-
-The exact numbers depend on your architecture, but a rough pattern is:
-
-| Model type | Example file size |
-|------------|-------------------|
-| Float32 | 16 MB |
-| Dynamic range quantized | 4-8 MB |
-| Float16 | 8 MB |
-| Full int8 | 4 MB |
-
-These are only example values, but the trend is important.
-Aggressive quantization usually makes the model much smaller.
-
-### How to choose among conversion options
-
-| Goal | Suggested choice |
-|------|------------------|
-| Easiest first success | Float32 or `Optimize.DEFAULT` |
-| Smaller file size | Dynamic range or float16 |
-| Maximum compression | Full int8 |
-| Good GPU balance | Float16 |
-| Lowest risk of accuracy drop | Float32 |
-
-### Common conversion problems
-
-#### Problem 1: Unsupported ops
-
-Some TensorFlow operations do not convert cleanly to TFLite.
-You may see conversion errors about unsupported ops.
-
-**Fixes:**
-
-- simplify the model,
-- use supported layers,
-- enable select TensorFlow ops if appropriate,
-- retrain with a mobile-friendly architecture.
-
-#### Problem 2: Accuracy drop after conversion
-
-Possible causes:
-
-- wrong quantization strategy,
-- poor representative dataset,
-- mismatch in preprocessing,
-- output interpretation error.
-
-#### Problem 3: Android input dtype mismatch
-
-Your Android code may prepare `float[][][][]` input, but your quantized model might expect `byte[]` or `int8` data.
-Always inspect model input details first.
-
-### Best beginner recommendation
-
-For most CSE 2206 projects, start with:
-
-1. a float32 or default-optimized model,
-2. correct preprocessing,
-3. successful Android inference,
-4. then experiment with quantization.
-
-That learning order is safer than immediately jumping to full int8 optimization.
-
----
-
-## 6. Android Project Setup for Offline AI
-
-### Add the TensorFlow Lite dependency
-
-In `app/build.gradle` add:
-
-```gradle
-implementation 'org.tensorflow:tensorflow-lite:2.12.0'
-```
-
-### Add GPU delegate dependency
-
-If you want GPU acceleration, also add:
-
-```gradle
-implementation 'org.tensorflow:tensorflow-lite-gpu:2.12.0'
-```
-
-### Optional support libraries
-
-Depending on your project, you may also use support or metadata libraries, but raw `Interpreter` is enough for this course week.
-
-### Add model files to assets
-
-Create:
-
-```text
-app/src/main/assets/
-```
-
-Then copy:
-
-```text
-model.tflite
-labels.txt
-```
-
-### Loading a model file correctly
-
-The common pattern in Java is to memory-map the model.
-
-```java
-private MappedByteBuffer loadModelFile(AssetManager assetManager, String modelPath) throws IOException {
-    AssetFileDescriptor fileDescriptor = assetManager.openFd(modelPath);
-    FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
-    FileChannel fileChannel = inputStream.getChannel();
-    long startOffset = fileDescriptor.getStartOffset();
-    long declaredLength = fileDescriptor.getDeclaredLength();
-    return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
-}
-```
-
-### Why `MappedByteBuffer` is used
-
-It is efficient for large read-only binary files.
-You do not need to manually copy the full model into a Java byte array first.
-
-### Loading labels
-
-```java
-private List<String> loadLabels(AssetManager assetManager, String labelsPath) throws IOException {
-    List<String> labels = new ArrayList<>();
-    BufferedReader reader = new BufferedReader(new InputStreamReader(assetManager.open(labelsPath)));
-    String line;
-    while ((line = reader.readLine()) != null) {
-        if (!line.trim().isEmpty()) {
-            labels.add(line.trim());
-        }
-    }
-    reader.close();
-    return labels;
-}
-```
-
-### Project checklist before coding the classifier
-
-- [ ] `model.tflite` exists in assets.
-- [ ] `labels.txt` exists in assets.
-- [ ] Label count matches output class count.
-- [ ] Gradle dependency added.
-- [ ] Project sync successful.
-- [ ] You know the expected input size.
-- [ ] You know the required normalization strategy.
-
----
-
-## 7. Input Shapes, Output Shapes, and Tensor Basics
-
-### Why shapes matter
-
-TensorFlow Lite is strict.
-If the model expects a tensor of shape `1 x 224 x 224 x 3`, then you must provide exactly that shape.
-A mismatch can cause:
-
-- runtime exceptions,
-- nonsense predictions,
-- buffer size errors.
-
-### Example input details lookup in Java
-
-```java
-Tensor inputTensor = interpreter.getInputTensor(0);
-int[] shape = inputTensor.shape();
-DataType dataType = inputTensor.dataType();
-
-Log.d("TFLite", "Input shape: " + Arrays.toString(shape));
-Log.d("TFLite", "Input type: " + dataType);
-```
-
-### Example output details lookup
-
-```java
-Tensor outputTensor = interpreter.getOutputTensor(0);
-int[] outputShape = outputTensor.shape();
-DataType outputType = outputTensor.dataType();
-
-Log.d("TFLite", "Output shape: " + Arrays.toString(outputShape));
-Log.d("TFLite", "Output type: " + outputType);
-```
-
-### Most common image input shape
-
-```text
-[1, 224, 224, 3]
-```
-
-### But do not assume blindly
-
-Some models expect:
-
-- `192 x 192 x 3`,
-- `299 x 299 x 3`,
-- `256 x 256 x 3`,
-- `uint8` instead of `float32`,
-- BGR instead of RGB (less common in standard TF pipelines).
-
-### Understanding channel order
-
-If your code reads pixels in RGB order, then:
-
-- channel 0 = red,
-- channel 1 = green,
-- channel 2 = blue.
-
-That order must match training.
-
-### Output probability arrays
-
-If the model has softmax output, a result might look like:
-
-```text
-Tomato_Healthy      0.04
-Tomato_Early_Blight 0.78
-Tomato_Late_Blight  0.10
-Potato_Healthy      0.01
-Potato_Early_Blight 0.05
-Potato_Late_Blight  0.02
-```
-
-### Top-1 prediction
-
-Top-1 means the label with the highest probability.
-
-### Top-3 predictions
-
-Top-3 is often more informative for debugging.
-It lets you inspect whether the correct class is at least near the top.
-
-Example:
-
-```text
-1. Tomato_Early_Blight 0.78
-2. Tomato_Late_Blight 0.10
-3. Potato_Early_Blight 0.05
-```
-
-### Why top-3 helps students
-
-- It shows whether the model is confused among similar diseases.
-- It helps debug mislabeled images.
-- It produces richer viva discussion.
-
----
-
-## 8. Normalization Strategies - Why They Must Match Training
-
-This is the **most common source of wrong predictions**.
-A model can be perfectly valid, and your Java code can compile, but the predictions will still be wrong if normalization does not match training.
-
-### What is normalization?
-
-Camera pixels are usually integers from `0` to `255`.
-Machine learning models are usually trained on transformed values.
-Normalization converts raw pixel values into the numeric range used during training.
-
-### Rule to remember
-
-**Your Android preprocessing must match the training preprocessing exactly.**
-
-Not approximately.
-Not "close enough".
-Exactly.
-
-### Strategy 1: Normalize to `[0, 1]`
-
-This is very common.
-
-```java
-float red = ((pixel >> 16) & 0xFF) / 255.0f;
-float green = ((pixel >> 8) & 0xFF) / 255.0f;
-float blue = (pixel & 0xFF) / 255.0f;
-```
-
-#### When it is commonly used
-
-- simple CNNs built in Keras,
-- many educational image classifiers,
-- pipelines that include `Rescaling(1./255)`.
-
-### Strategy 2: Normalize to `[-1, 1]`
-
-This is common for models like MobileNet-style pipelines.
-
-```java
-float red = (((pixel >> 16) & 0xFF) / 127.5f) - 1.0f;
-float green = (((pixel >> 8) & 0xFF) / 127.5f) - 1.0f;
-float blue = ((pixel & 0xFF) / 127.5f) - 1.0f;
-```
-
-#### Why this works
-
-- `0` becomes `-1.0`
-- `127.5` becomes `0.0`
-- `255` becomes `1.0`
-
-### Strategy 3: ImageNet mean/std normalization
-
-This is often used in PyTorch-like or transfer learning pipelines.
-
-```java
-float red = ((((pixel >> 16) & 0xFF) / 255.0f) - 0.485f) / 0.229f;
-float green = ((((pixel >> 8) & 0xFF) / 255.0f) - 0.456f) / 0.224f;
-float blue = (((pixel & 0xFF) / 255.0f) - 0.406f) / 0.225f;
-```
-
-### How to find what normalization your model used
-
-Check these sources in this order:
-
-1. the training notebook,
-2. the model card or model notes,
-3. the final model export script,
-4. the preprocessing layer inside the network,
-5. the official documentation of the base model.
-
-### Clues from training code
-
-#### Example clue for `[0, 1]`
+### 12.7 New File: `model/test_tflite_contract.py` (73 lines)
 
 ```python
-layers.Rescaling(1./255)
+import unittest
+from pathlib import Path
+
+import numpy as np
+import tensorflow as tf
+
+from model_contract import (
+    DEFAULT_KERAS_MODEL,
+    DEFAULT_LABELS,
+    EXPECTED_CLASS_COUNT,
+    EXPECTED_INPUT_SHAPE,
+    load_labels,
+    preprocess_image,
+    tensor_details,
+    validate_keras_model,
+)
+
+ROOT = Path(__file__).resolve().parent.parent
+TFLITE_MODEL = ROOT / "android-app-kotlin" / "app" / "src" / "main" / "assets" / "model.tflite"
+ANDROID_LABELS = ROOT / "android-app-kotlin" / "app" / "src" / "main" / "assets" / "labels.txt"
+SAMPLES = ROOT / "sample-images"
+
+
+class TFLiteContractTest(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.labels = load_labels(DEFAULT_LABELS)
+        cls.interpreter = tf.lite.Interpreter(model_path=str(TFLITE_MODEL))
+        cls.interpreter.allocate_tensors()
+        cls.input_detail, cls.output_detail = tensor_details(cls.interpreter)
+
+    def test_android_labels_match_canonical_order(self):
+        self.assertEqual(self.labels, load_labels(ANDROID_LABELS))
+        self.assertEqual(EXPECTED_CLASS_COUNT, len(self.labels))
+
+    def test_tflite_tensor_contract(self):
+        self.assertEqual(EXPECTED_INPUT_SHAPE, tuple(self.input_detail["shape"]))
+        self.assertEqual(np.float32, self.input_detail["dtype"])
+        self.assertEqual((1, EXPECTED_CLASS_COUNT), tuple(self.output_detail["shape"]))
+        self.assertEqual(np.float32, self.output_detail["dtype"])
+
+    def test_preprocessing_keeps_raw_rgb_values(self):
+        image = preprocess_image(SAMPLES / "healthy" / "tomato_healthy_01.png")
+        self.assertEqual(EXPECTED_INPUT_SHAPE, image.shape)
+        self.assertEqual(np.float32, image.dtype)
+        self.assertGreaterEqual(float(image.min()), 0.0)
+        self.assertLessEqual(float(image.max()), 255.0)
+
+    def test_three_sample_keras_tflite_parity(self):
+        keras_model = tf.keras.models.load_model(DEFAULT_KERAS_MODEL)
+        validate_keras_model(keras_model, self.labels)
+        samples = [
+            SAMPLES / "early_blight" / "tomato_early_blight_01.png",
+            SAMPLES / "healthy" / "tomato_healthy_01.png",
+            SAMPLES / "late_blight" / "tomato_late_blight_01.png",
+        ]
+        for image_path in samples:
+            image = preprocess_image(image_path)
+            keras_scores = np.asarray(keras_model.predict(image, verbose=0))[0]
+            self.interpreter.set_tensor(self.input_detail["index"], image)
+            self.interpreter.invoke()
+            tflite_scores = self.interpreter.get_tensor(self.output_detail["index"])[0]
+            keras_index = int(np.argmax(keras_scores))
+            tflite_index = int(np.argmax(tflite_scores))
+            self.assertEqual(keras_index, tflite_index)
+            self.assertLessEqual(
+                abs(float(keras_scores[keras_index]) - float(tflite_scores[tflite_index])),
+                0.02,
+            )
+
+
+if __name__ == "__main__":
+    unittest.main()
 ```
 
-#### Example clue for `[-1, 1]`
+### 12.8 Expanded File: `model/model-notes.md` (54 -> 55 lines)
 
-```python
-x = (x / 127.5) - 1.0
+````markdown
+# LeafGuard Week 09 Offline TFLite Contract
+
+## Source and Conversion
+
+- Source Keras artifact: `backend-api/models/leafguard_model.keras`
+- Keras SHA-256: `08f285aff6d9e1ab88d4d5b2269f1cc977714003755f8553887edbf8691b325f`
+- Conversion script: `model/convert_model.py`
+- Android TFLite path: `android-app-kotlin/app/src/main/assets/model.tflite`
+- TFLite size: 9,056,916 bytes
+- TFLite SHA-256: `22ea2d4a47a52b2d9b150e0f74b113def0f12bbdb59209f7e0bce2a9701d41f9`
+- Android labels: `app/src/main/assets/labels.txt`
+
+The TFLite binary is generated from the approved Week 06 Keras artifact and is intentionally not pasted into learning notes. Verify identity after every conversion.
+
+## Tensor Contract
+
+- Input: one `float32` tensor `[1, 224, 224, 3]`
+- Color order: RGB
+- Android caller range: raw `[0,255]`
+- Embedded model preprocessing: `[0,255] -> [-1,1]`
+- Output: one `float32` tensor `[1,38]`
+- Decode: `argmax(output[0])` using the exact canonical 38-label order
+- Uncertain: confidence below `0.50`
+
+Do not divide Android pixels by 255. The converted model preserves embedded preprocessing.
+
+## Compatibility
+
+Both cloud and offline branches return the same eight-field `PredictionResponse`:
+
+`model_label`, `disease`, `confidence`, `uncertain`, `guidance_available`, `symptoms`, `treatment`, `prevention`.
+
+The existing Result enrichment and Room save flow remain unchanged.
+
+## Validation
+
+```bash
+python model/validate_tflite.py sample-images/healthy/tomato_healthy_01.png \
+	--model android-app-kotlin/app/src/main/assets/model.tflite
+python model/parity_test.py sample-images/early_blight/tomato_early_blight_01.png \
+	sample-images/healthy/tomato_healthy_01.png \
+	sample-images/late_blight/tomato_late_blight_01.png \
+	--tflite-model android-app-kotlin/app/src/main/assets/model.tflite
+cd model && python -m unittest -v test_tflite_contract
 ```
 
-#### Example clue for mean/std normalization
+Parity proves conversion consistency, not prediction correctness. In the reproduced three-image check, Keras and TFLite matched with maximum confidence delta below `0.000015`, while the predicted labels did not match the sample folder names.
 
-```python
-transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-```
+## Limitations
 
-### What happens when normalization is wrong?
+- Offline inference does not require FastAPI or Internet.
+- XML guidance is local reference content, not inference.
+- Device speed and memory must be tested manually.
+- Three-image parity is not an accuracy evaluation.
+- Unsupported classes, poor lighting, blur, and dataset shift remain risks.
+````
 
-You may see:
-
-- random-looking predictions,
-- low confidence for obvious images,
-- high confidence for clearly wrong classes,
-- NaN or Inf values in extreme failure cases,
-- output that looks nothing like Python test output.
-
-### Example mismatch scenario
-
-Suppose the model was trained using `[-1, 1]`, but your Android app uses `[0, 1]`.
-Then every input value is shifted upward.
-The network receives a data distribution different from training.
-The learned filters no longer interpret colors correctly.
-Prediction quality can collapse.
-
-### Code example: preprocessing for `[0, 1]`
-
-```java
-private float[][][][] preprocessToZeroOne(Bitmap bitmap) {
-    Bitmap resized = Bitmap.createScaledBitmap(bitmap, 224, 224, true);
-    float[][][][] input = new float[1][224][224][3];
-
-    for (int y = 0; y < 224; y++) {
-        for (int x = 0; x < 224; x++) {
-            int pixel = resized.getPixel(x, y);
-            input[0][y][x][0] = ((pixel >> 16) & 0xFF) / 255.0f;
-            input[0][y][x][1] = ((pixel >> 8) & 0xFF) / 255.0f;
-            input[0][y][x][2] = (pixel & 0xFF) / 255.0f;
-        }
-    }
-
-    return input;
-}
-```
-
-### Code example: preprocessing for `[-1, 1]`
-
-```java
-private float[][][][] preprocessToMinusOnePlusOne(Bitmap bitmap) {
-    Bitmap resized = Bitmap.createScaledBitmap(bitmap, 224, 224, true);
-    float[][][][] input = new float[1][224][224][3];
-
-    for (int y = 0; y < 224; y++) {
-        for (int x = 0; x < 224; x++) {
-            int pixel = resized.getPixel(x, y);
-            input[0][y][x][0] = (((pixel >> 16) & 0xFF) / 127.5f) - 1.0f;
-            input[0][y][x][1] = (((pixel >> 8) & 0xFF) / 127.5f) - 1.0f;
-            input[0][y][x][2] = ((pixel & 0xFF) / 127.5f) - 1.0f;
-        }
-    }
-
-    return input;
-}
-```
-
-### Code example: preprocessing for ImageNet mean/std
-
-```java
-private float[][][][] preprocessWithImageNetStats(Bitmap bitmap) {
-    Bitmap resized = Bitmap.createScaledBitmap(bitmap, 224, 224, true);
-    float[][][][] input = new float[1][224][224][3];
-
-    for (int y = 0; y < 224; y++) {
-        for (int x = 0; x < 224; x++) {
-            int pixel = resized.getPixel(x, y);
-
-            float red = ((pixel >> 16) & 0xFF) / 255.0f;
-            float green = ((pixel >> 8) & 0xFF) / 255.0f;
-            float blue = (pixel & 0xFF) / 255.0f;
-
-            input[0][y][x][0] = (red - 0.485f) / 0.229f;
-            input[0][y][x][1] = (green - 0.456f) / 0.224f;
-            input[0][y][x][2] = (blue - 0.406f) / 0.225f;
-        }
-    }
-
-    return input;
-}
-```
-
-### Which one should LeafGuard use?
-
-Use whichever rule matches the model you actually trained or downloaded.
-If your training notebook includes `Rescaling(1./255)`, then your Android app should typically use `[0, 1]` normalization.
-
-### Best debugging method for normalization issues
-
-Take one known image and run it through:
-
-1. Python inference,
-2. Android inference.
-
-If the model and image are identical but outputs differ heavily, preprocessing is a likely cause.
-
----
-
-## 9. Building the Preprocessing Pipeline in Java
-
-### Step 1: Receive a `Bitmap`
-
-Your Activity usually receives a `Bitmap` from:
-
-- camera capture,
-- gallery selection,
-- file decode.
-
-### Step 2: Resize to model input size
-
-Most models do not accept the original camera size directly.
-Resize first.
-
-```java
-Bitmap resized = Bitmap.createScaledBitmap(bitmap, 224, 224, true);
-```
-
-### Step 3: Extract pixel values
-
-```java
-int pixel = resized.getPixel(x, y);
-```
-
-### Step 4: Separate RGB channels
-
-```java
-int red = (pixel >> 16) & 0xFF;
-int green = (pixel >> 8) & 0xFF;
-int blue = pixel & 0xFF;
-```
-
-### Step 5: Normalize
-
-```java
-float redNorm = red / 255.0f;
-```
-
-### Step 6: Store in input tensor
-
-```java
-input[0][y][x][0] = redNorm;
-```
-
-### Why resizing before normalization is correct
-
-Resize changes spatial resolution.
-Normalization changes numeric scale.
-These are different operations.
-Doing them in the wrong order may make the code messy or inefficient.
-
-### Full preprocessing method for common float model
-
-```java
-private float[][][][] preprocessImage(Bitmap bitmap) {
-    Bitmap resized = Bitmap.createScaledBitmap(bitmap, 224, 224, true);
-    float[][][][] input = new float[1][224][224][3];
-
-    for (int y = 0; y < 224; y++) {
-        for (int x = 0; x < 224; x++) {
-            int pixel = resized.getPixel(x, y);
-            input[0][y][x][0] = ((pixel >> 16) & 0xFF) / 255.0f;
-            input[0][y][x][1] = ((pixel >> 8) & 0xFF) / 255.0f;
-            input[0][y][x][2] = (pixel & 0xFF) / 255.0f;
-        }
-    }
-
-    return input;
-}
-```
-
-### Alternative optimization: use a direct `ByteBuffer`
-
-More advanced TFLite code often uses `ByteBuffer` instead of a 4D Java array.
-This can reduce overhead and give more control over numeric types.
-
-```java
-ByteBuffer inputBuffer = ByteBuffer.allocateDirect(4 * 1 * 224 * 224 * 3);
-inputBuffer.order(ByteOrder.nativeOrder());
-```
-
-Then you push floats sequentially:
-
-```java
-inputBuffer.putFloat(red / 255.0f);
-inputBuffer.putFloat(green / 255.0f);
-inputBuffer.putFloat(blue / 255.0f);
-```
-
-### Should beginners use arrays or `ByteBuffer`?
-
-- Use `float[][][][]` first if it matches your model and you want clarity.
-- Use `ByteBuffer` when you need performance tuning, quantized input handling, or more production-like control.
-
-### Handling rotated images
-
-A captured bitmap may appear sideways because of EXIF or camera orientation.
-If disease regions are rotated badly, the model may perform worse.
-You may need to rotate or correct orientation before preprocessing.
-
-### Cropping vs stretching
-
-When you resize a non-square image to `224 x 224`, the image may stretch.
-For simple student projects, this is acceptable.
-For higher accuracy, you may prefer center crop then resize.
-
-### Memory warning
-
-Do not preprocess extremely large bitmaps directly without scaling them down.
-A huge camera bitmap can trigger memory pressure.
-Scale first whenever possible.
-
----
-
-## 10. Running Inference and Reading Results
-
-### Basic inference code
-
-```java
-float[][][][] input = preprocessImage(bitmap);
-float[][] output = new float[1][labels.size()];
-interpreter.run(input, output);
-```
-
-### What `run()` does
-
-It executes one forward pass of the model.
-The model reads the input tensor and fills the output tensor.
-
-### Finding the best prediction with argmax
-
-```java
-private int argmax(float[] values) {
-    int maxIndex = 0;
-    float maxValue = values[0];
-
-    for (int i = 1; i < values.length; i++) {
-        if (values[i] > maxValue) {
-            maxValue = values[i];
-            maxIndex = i;
-        }
-    }
-
-    return maxIndex;
-}
-```
-
-### Reading top-1 result
-
-```java
-int predictedIndex = argmax(output[0]);
-String predictedLabel = labels.get(predictedIndex);
-float confidence = output[0][predictedIndex];
-```
-
-### Reading top-3 results
-
-```java
-private List<Result> getTopK(float[] probabilities, int k) {
-    List<Result> results = new ArrayList<>();
-
-    for (int i = 0; i < probabilities.length; i++) {
-        results.add(new Result(labels.get(i), probabilities[i]));
-    }
-
-    Collections.sort(results, (a, b) -> Float.compare(b.getConfidence(), a.getConfidence()));
-    return results.subList(0, Math.min(k, results.size()));
-}
-```
-
-### Why top-3 matters in LeafGuard
-
-Plant diseases can look visually similar.
-If the correct class is second highest, that tells you the model is partly understanding the image but is uncertain.
-That is useful for debugging and comparison with the cloud model.
-
-### Confidence meaning
-
-If the model output is softmax, the confidence score is the probability of the predicted class.
-If the scores sum to approximately `1.0`, that is a strong sign the model already includes softmax.
-
-### If output is logits instead of probabilities
-
-You can apply softmax manually.
-
-```java
-private float[] softmax(float[] logits) {
-    float max = logits[0];
-    for (float value : logits) {
-        if (value > max) {
-            max = value;
-        }
-    }
-
-    float sum = 0f;
-    float[] expValues = new float[logits.length];
-    for (int i = 0; i < logits.length; i++) {
-        expValues[i] = (float) Math.exp(logits[i] - max);
-        sum += expValues[i];
-    }
-
-    float[] probabilities = new float[logits.length];
-    for (int i = 0; i < logits.length; i++) {
-        probabilities[i] = expValues[i] / sum;
-    }
-
-    return probabilities;
-}
-```
-
-### Measure latency
-
-```java
-long startTime = System.currentTimeMillis();
-interpreter.run(input, output);
-long latencyMs = System.currentTimeMillis() - startTime;
-```
-
-### Why latency matters
-
-A model that is 97% accurate but takes 4 seconds may feel slow and frustrating.
-A field app should be responsive.
-That is why benchmarking is part of this week.
-
----
-
-## 11. GPU Delegate and NNAPI Acceleration
-
-### What is a delegate in TensorFlow Lite?
-
-A **delegate** is a hardware-specific optimization path.
-Instead of running all operations on the generic CPU backend, TFLite can delegate work to specialized execution code.
-
-Think of it like this:
-
-- CPU mode = default general-purpose execution,
-- GPU delegate = use graphics hardware for faster tensor operations,
-- NNAPI delegate = ask Android's Neural Networks API to use available accelerators.
-
-### CPU inference (default)
-
-This is the baseline and works almost everywhere.
-Typical latency for a medium plant disease classifier can be around:
+### 12.9 New File: `release-records/tflite-provenance.txt` (33 lines)
 
 ```text
-~200-500 ms
+LeafGuard AI - Week 09 TFLite Provenance
+========================================
+
+Status: Conversion and desktop parity validated; device validation required
+
+Source Keras path: backend-api/models/leafguard_model.keras
+Source Keras SHA-256: 08f285aff6d9e1ab88d4d5b2269f1cc977714003755f8553887edbf8691b325f
+Conversion tool: TensorFlow 2.19.1 TFLiteConverter
+Conversion script: model/convert_model.py
+Optimization/quantization: none; float32 model
+
+TFLite path: android-app-kotlin/app/src/main/assets/model.tflite
+TFLite size: 9056916 bytes
+TFLite SHA-256: 22ea2d4a47a52b2d9b150e0f74b113def0f12bbdb59209f7e0bce2a9701d41f9
+Labels path: android-app-kotlin/app/src/main/assets/labels.txt
+Label count: 38 unique labels in canonical order
+
+Tensor contract:
+- Input: RGB float32 [1,224,224,3], raw [0,255]
+- Embedded preprocessing: [0,255] to [-1,1]
+- Output: float32 [1,38]
+
+Reproduced validation:
+- TFLite tensor contract passed.
+- Android labels matched canonical labels.
+- Three repository samples preserved Keras/TFLite top-1 index.
+- Maximum observed confidence delta was below 0.000015.
+- Android teaching snapshot compiled successfully.
+
+Limitations:
+- The three sample predictions did not match their folder labels; parity is not accuracy.
+- Physical-device airplane-mode, latency, memory, and repeated-run tests remain manual gates.
+- The binary should not be duplicated in evidence or silently replaced without updating this record.
 ```
 
-### GPU Delegate
+### 12.10 Expanded File: `app/build.gradle` (55 -> 60 lines)
 
-GPU delegate often reduces latency to something like:
-
-```text
-~50-150 ms
-```
-
-#### What hardware supports it?
-
-Support depends on:
-
-- device GPU,
-- Android version,
-- model operators,
-- driver quality.
-
-Some devices show a big improvement.
-Some show only a small improvement.
-Some may fail and need fallback.
-
-### Add GPU dependency to Gradle
-
-```gradle
-implementation 'org.tensorflow:tensorflow-lite-gpu:2.12.0'
-```
-
-### GPU delegate with CPU fallback
-
-```java
-Interpreter tflite;
-
-try {
-    Interpreter.Options options = new Interpreter.Options();
-    GpuDelegate delegate = new GpuDelegate();
-    options.addDelegate(delegate);
-    tflite = new Interpreter(loadModelFile(assetManager, "model.tflite"), options);
-} catch (Exception e) {
-    tflite = new Interpreter(loadModelFile(assetManager, "model.tflite"));
+```groovy
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'kotlin-kapt'
 }
-```
 
-### Expanded GPU fallback example with cleanup awareness
+android {
+    namespace 'com.leafguard'
+    compileSdk 34
 
-```java
-private Interpreter createInterpreterWithGpuFallback(AssetManager assetManager) throws IOException {
-    MappedByteBuffer modelBuffer = loadModelFile(assetManager, "model.tflite");
-
-    try {
-        Interpreter.Options options = new Interpreter.Options();
-        options.setNumThreads(4);
-        GpuDelegate gpuDelegate = new GpuDelegate();
-        options.addDelegate(gpuDelegate);
-        return new Interpreter(modelBuffer, options);
-    } catch (Exception gpuError) {
-        Log.w("TFLite", "GPU delegate unavailable, falling back to CPU", gpuError);
-        Interpreter.Options cpuOptions = new Interpreter.Options();
-        cpuOptions.setNumThreads(4);
-        return new Interpreter(modelBuffer, cpuOptions);
-    }
-}
-```
-
-### NNAPI Delegate
-
-**NNAPI** stands for **Neural Networks API**.
-It is an Android API that lets ML frameworks access hardware accelerators through a standard interface.
-
-#### Android support
-
-NNAPI is available on Android 8.1+.
-Actual performance depends heavily on vendor hardware and drivers.
-
-### NNAPI delegate example
-
-```java
-Interpreter.Options options = new Interpreter.Options();
-options.setUseNNAPI(true);
-options.setNumThreads(4);
-Interpreter tflite = new Interpreter(loadModelFile(assetManager, "model.tflite"), options);
-```
-
-### When to try NNAPI
-
-Try it when:
-
-- device runs Android 8.1 or newer,
-- you want hardware acceleration but GPU delegate is not ideal,
-- you want to benchmark multiple options.
-
-### CPU vs GPU vs NNAPI comparison table
-
-| Path | Advantages | Limitations |
-|------|------------|-------------|
-| CPU | Stable, universal, simple | Slowest in many cases |
-| GPU | Often fastest for vision models | Device compatibility varies |
-| NNAPI | Can use hardware accelerators | Performance varies by vendor |
-
-### How to benchmark properly
-
-Do not benchmark just one run.
-The first run may include warm-up overhead.
-
-#### Recommended benchmark method
-
-1. Warm up the interpreter 5-10 times.
-2. Run inference 100 times.
-3. Record total time.
-4. Divide by 100 to get average latency.
-
-#### Java benchmark example
-
-```java
-private long benchmarkAverageLatency(Bitmap bitmap, int iterations) {
-    float[][][][] input = preprocessImage(bitmap);
-    float[][] output = new float[1][labels.size()];
-
-    for (int i = 0; i < 10; i++) {
-        interpreter.run(input, output);
+    defaultConfig {
+        applicationId "com.leafguard"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "0.1.0"
     }
 
-    long start = System.currentTimeMillis();
-    for (int i = 0; i < iterations; i++) {
-        interpreter.run(input, output);
-    }
-    long total = System.currentTimeMillis() - start;
-
-    return total / iterations;
-}
-```
-
-### Benchmark recording table
-
-| Device | CPU avg ms | GPU avg ms | NNAPI avg ms | Notes |
-|--------|------------|------------|--------------|-------|
-| Emulator | 420 | N/A | N/A | Emulator often does not reflect real performance |
-| Mid-range phone | 260 | 95 | 130 | Example only |
-| Flagship phone | 140 | 60 | 85 | Example only |
-
-### Important delegate caution
-
-Never assume GPU is always faster on every device.
-Benchmark and then decide.
-
----
-
-## 12. Handling Inference Errors and Low-Confidence Results
-
-A production-ready classifier must handle failures gracefully.
-Do not assume the model always loads, the bitmap is always valid, and the prediction is always trustworthy.
-
-### What "confidence" means
-
-If the output is softmax, each value approximates the probability of a class.
-All class probabilities should sum to roughly `1.0`.
-
-Example:
-
-```text
-[0.10, 0.55, 0.20, 0.05, 0.06, 0.04]
-```
-
-The highest probability is `0.55`.
-That means the model is 55% confident in that class.
-
-### Confidence threshold
-
-A useful UI rule is:
-
-```text
-If maxConfidence < 0.5 -> show "Uncertain - try again"
-```
-
-This is safer than always showing a disease name, especially when:
-
-- the image is blurry,
-- the leaf is not centered,
-- the class is outside the model's training set,
-- lighting is poor.
-
-### Confidence threshold example in Java
-
-```java
-float threshold = 0.5f;
-if (confidence < threshold) {
-    resultTextView.setText("Uncertain - try again with a clearer leaf image");
-} else {
-    resultTextView.setText(predictedLabel + " (" + (confidence * 100f) + "%)");
-}
-```
-
-### Handling interpreter initialization failure gracefully
-
-Possible reasons:
-
-- `model.tflite` missing,
-- corrupt file,
-- unsupported operators,
-- memory issues,
-- delegate creation failure.
-
-#### Example safe initialization
-
-```java
-try {
-    interpreter = new Interpreter(loadModelFile(assetManager, "model.tflite"));
-} catch (IOException e) {
-    Log.e("TFLite", "Model file missing or unreadable", e);
-    showError("Offline model could not be loaded. Please reinstall the app or contact the developer.");
-} catch (Exception e) {
-    Log.e("TFLite", "Unexpected TFLite initialization error", e);
-    showError("Offline prediction is unavailable on this device.");
-}
-```
-
-### Handling model file not found in assets
-
-This is one of the most common setup mistakes.
-
-Symptoms:
-
-- `openFd()` throws exception,
-- app crashes on startup,
-- offline mode never initializes.
-
-#### Better recovery message
-
-```java
-showError("Model file not found in assets. Check app/src/main/assets/model.tflite");
-```
-
-### Memory issues: `OutOfMemoryError`
-
-A full camera photo can be several thousand pixels wide.
-Loading or processing it at full resolution may cause memory pressure.
-
-#### Safer approach
-
-- decode a scaled bitmap,
-- resize early,
-- recycle intermediate bitmaps if needed.
-
-#### Example defensive approach
-
-```java
-try {
-    Bitmap resized = Bitmap.createScaledBitmap(bitmap, 224, 224, true);
-} catch (OutOfMemoryError error) {
-    Log.e("TFLite", "Bitmap too large for preprocessing", error);
-    showError("Image is too large. Please try a smaller image.");
-}
-```
-
-### NaN / Inf outputs
-
-Sometimes output contains `NaN` or `Infinity`.
-This usually points to a preprocessing or tensor mismatch problem.
-
-#### How to detect it
-
-```java
-private boolean hasInvalidValues(float[] values) {
-    for (float value : values) {
-        if (Float.isNaN(value) || Float.isInfinite(value)) {
-            return true;
-        }
-    }
-    return false;
-}
-```
-
-#### How to handle it
-
-```java
-if (hasInvalidValues(output[0])) {
-    showError("Model output invalid. Check preprocessing and model compatibility.");
-    return;
-}
-```
-
-### Thread safety warning
-
-**TFLite `Interpreter` is NOT thread-safe.**
-This means you should not call `run()` from multiple threads at the same time on the same interpreter instance.
-
-#### Safe choices
-
-- use one interpreter per thread, or
-- synchronize access to a shared interpreter.
-
-#### Example using synchronized access
-
-```java
-synchronized (interpreter) {
-    interpreter.run(input, output);
-}
-```
-
-### Running inference off the main thread
-
-Heavy inference should not run on the UI thread.
-If you block the main thread, the app may feel frozen or even trigger ANR errors.
-
-#### `AsyncTask`
-
-Historically used in Android, but now deprecated.
-Do not build new production code around it.
-
-#### `ExecutorService`
-
-This is the best Java-friendly recommendation for this project.
-
-```java
-ExecutorService executorService = Executors.newSingleThreadExecutor();
-executorService.execute(() -> {
-    ClassificationResult result = classifier.classify(bitmap);
-    runOnUiThread(() -> updateUi(result));
-});
-```
-
-#### Kotlin coroutines equivalent
-
-Coroutines are excellent in Kotlin, but this repository uses Java.
-So for the Java equivalent, use `ExecutorService`, `Handler`, or similar background patterns.
-
-### Error handling checklist
-
-A robust classifier should handle:
-
-- [ ] missing model file,
-- [ ] missing labels file,
-- [ ] corrupt model,
-- [ ] huge image memory issue,
-- [ ] invalid output values,
-- [ ] low confidence,
-- [ ] thread safety,
-- [ ] delegate failure fallback.
-
----
-
-## 13. Complete `TFLiteClassifier` Implementation
-
-The following Java class is a production-quality reference for this week.
-It includes:
-
-- model loading with error handling,
-- labels loading from assets,
-- preprocessing using `[0, 1]` normalization,
-- top-1 and top-3 results,
-- confidence threshold,
-- synchronized inference,
-- resource cleanup.
-
-```java
-package com.example.leafguardai.ml;
-
-import android.content.res.AssetFileDescriptor;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.util.Log;
-
-import org.tensorflow.lite.Interpreter;
-
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-public class TFLiteClassifier implements AutoCloseable {
-
-    private static final String TAG = "TFLiteClassifier";
-    private static final int INPUT_SIZE = 224;
-    private static final float CONFIDENCE_THRESHOLD = 0.50f;
-
-    private final Interpreter interpreter;
-    private final List<String> labels;
-
-    public TFLiteClassifier(AssetManager assetManager,
-                            String modelPath,
-                            String labelsPath) throws IOException {
-        this.labels = loadLabels(assetManager, labelsPath);
-        if (labels.isEmpty()) {
-            throw new IOException("Labels file is empty: " + labelsPath);
-        }
-
-        try {
-            this.interpreter = new Interpreter(loadModelFile(assetManager, modelPath));
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to load TFLite model", e);
-            throw e;
-        } catch (Exception e) {
-            Log.e(TAG, "Unexpected interpreter creation failure", e);
-            throw new IOException("Could not initialize TensorFlow Lite interpreter", e);
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 
-    public ClassificationResult classify(Bitmap bitmap) {
-        if (bitmap == null) {
-            return ClassificationResult.error("Bitmap is null");
-        }
-
-        float[][][][] input = preprocessImage(bitmap);
-        float[][] output = new float[1][labels.size()];
-
-        try {
-            synchronized (interpreter) {
-                interpreter.run(input, output);
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Inference failed", e);
-            return ClassificationResult.error("Inference failed: " + e.getMessage());
-        }
-
-        float[] probabilities = output[0];
-        if (containsInvalidValue(probabilities)) {
-            return ClassificationResult.error("Model output contains NaN or Infinity");
-        }
-
-        int topIndex = argmax(probabilities);
-        float topConfidence = probabilities[topIndex];
-        String topLabel = getLabelSafely(topIndex);
-        List<Prediction> top3 = getTopK(probabilities, 3);
-
-        boolean uncertain = topConfidence < CONFIDENCE_THRESHOLD;
-        String displayLabel = uncertain ? "Uncertain - try again" : topLabel;
-
-        return new ClassificationResult(
-                true,
-                displayLabel,
-                topConfidence,
-                uncertain,
-                top3,
-                null
-        );
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
     }
 
-    private float[][][][] preprocessImage(Bitmap bitmap) {
-        Bitmap resized = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, true);
-        float[][][][] input = new float[1][INPUT_SIZE][INPUT_SIZE][3];
+    kotlinOptions {
+        jvmTarget = "11"
+    }
 
-        for (int y = 0; y < INPUT_SIZE; y++) {
-            for (int x = 0; x < INPUT_SIZE; x++) {
-                int pixel = resized.getPixel(x, y);
-                input[0][y][x][0] = ((pixel >> 16) & 0xFF) / 255.0f;
-                input[0][y][x][1] = ((pixel >> 8) & 0xFF) / 255.0f;
-                input[0][y][x][2] = (pixel & 0xFF) / 255.0f;
+    buildFeatures {
+        buildConfig true
+    }
+
+    aaptOptions {
+        noCompress "tflite"
+    }
+}
+
+dependencies {
+    implementation 'androidx.core:core-ktx:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.7.0'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.12.0'
+    implementation 'org.tensorflow:tensorflow-lite:2.14.0'
+
+    def room_version = "2.6.1"
+    implementation "androidx.room:room-runtime:$room_version"
+    implementation "androidx.room:room-ktx:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+}
+```
+
+### 12.11 New File: `ml/TFLiteClassifier.kt` (149 lines)
+
+```kotlin
+package com.leafguard.ml
+
+import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.Color
+import com.leafguard.data.DiseaseRepository
+import com.leafguard.network.PredictionResponse
+import java.io.BufferedReader
+import java.io.FileInputStream
+import java.io.IOException
+import java.io.InputStreamReader
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
+import java.nio.channels.FileChannel
+import org.tensorflow.lite.Interpreter
+
+class TFLiteClassifier @Throws(IOException::class) constructor(
+    context: Context,
+    modelAssetName: String = "model.tflite",
+    labelsAssetName: String = "labels.txt"
+) : AutoCloseable {
+    private val appContext = context.applicationContext
+    private val labels = loadLabels(labelsAssetName)
+    private var interpreter: Interpreter? = loadInterpreter(modelAssetName)
+    private val outputClasses: Int
+
+    init {
+        val activeInterpreter = checkNotNull(interpreter)
+        val inputShape = activeInterpreter.getInputTensor(0).shape()
+        val outputShape = activeInterpreter.getOutputTensor(0).shape()
+        if (!inputShape.contentEquals(intArrayOf(1, INPUT_SIZE, INPUT_SIZE, RGB_CHANNELS))) {
+            close()
+            throw IOException("Expected TFLite input [1, 224, 224, 3]")
+        }
+        if (outputShape.size != 2 || outputShape[0] != 1) {
+            close()
+            throw IOException("Expected TFLite output [1, class_count]")
+        }
+        outputClasses = outputShape[1]
+        if (outputClasses != labels.size) {
+            close()
+            throw IOException("TFLite output count does not match labels")
+        }
+    }
+
+    fun classify(bitmap: Bitmap): PredictionResponse {
+        val activeInterpreter = checkNotNull(interpreter) { "TFLite interpreter is closed" }
+        val output = Array(1) { FloatArray(outputClasses) }
+        activeInterpreter.run(preprocess(bitmap), output)
+        val bestIndex = argmax(output[0])
+        val confidence = output[0][bestIndex]
+        val modelLabel = labels[bestIndex]
+        val displayName = displayLabel(modelLabel)
+        val guidance = try {
+            DiseaseRepository.getInstance(appContext).findByName(displayName)
+        } catch (exception: Exception) {
+            null
+        }
+        return PredictionResponse(
+            modelLabel = modelLabel,
+            disease = displayName,
+            confidence = confidence,
+            uncertain = confidence < CONFIDENCE_THRESHOLD,
+            guidanceAvailable = guidance != null,
+            symptoms = guidance?.symptoms ?: GENERIC_SYMPTOMS,
+            treatment = guidance?.treatment ?: GENERIC_TREATMENT,
+            prevention = guidance?.prevention ?: GENERIC_PREVENTION
+        )
+    }
+
+    private fun preprocess(bitmap: Bitmap): ByteBuffer {
+        val scaled = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, true)
+        val buffer = ByteBuffer.allocateDirect(
+            INPUT_SIZE * INPUT_SIZE * RGB_CHANNELS * FLOAT_BYTES
+        ).order(ByteOrder.nativeOrder())
+        for (y in 0 until INPUT_SIZE) {
+            for (x in 0 until INPUT_SIZE) {
+                val pixel = scaled.getPixel(x, y)
+                buffer.putFloat(Color.red(pixel).toFloat())
+                buffer.putFloat(Color.green(pixel).toFloat())
+                buffer.putFloat(Color.blue(pixel).toFloat())
             }
         }
-
-        return input;
+        buffer.rewind()
+        if (scaled !== bitmap) scaled.recycle()
+        return buffer
     }
 
-    private MappedByteBuffer loadModelFile(AssetManager assetManager, String modelPath) throws IOException {
-        AssetFileDescriptor fileDescriptor = assetManager.openFd(modelPath);
-        FileInputStream inputStream = new FileInputStream(fileDescriptor.getFileDescriptor());
-        FileChannel fileChannel = inputStream.getChannel();
-        long startOffset = fileDescriptor.getStartOffset();
-        long declaredLength = fileDescriptor.getDeclaredLength();
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength);
-    }
-
-    private List<String> loadLabels(AssetManager assetManager, String labelsPath) throws IOException {
-        List<String> loadedLabels = new ArrayList<>();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(assetManager.open(labelsPath)));
-        String line;
-        while ((line = reader.readLine()) != null) {
-            line = line.trim();
-            if (!line.isEmpty()) {
-                loadedLabels.add(line);
+    private fun loadLabels(assetName: String): List<String> {
+        val loaded = mutableListOf<String>()
+        BufferedReader(InputStreamReader(appContext.assets.open(assetName))).use { reader ->
+            reader.forEachLine { line ->
+                val value = line.trim()
+                if (value.isNotEmpty() && !value.startsWith("#")) loaded += value
             }
         }
-        reader.close();
-        return loadedLabels;
-    }
-
-    private boolean containsInvalidValue(float[] values) {
-        for (float value : values) {
-            if (Float.isNaN(value) || Float.isInfinite(value)) {
-                return true;
-            }
+        if (loaded.size != EXPECTED_CLASSES || loaded.size != loaded.toSet().size) {
+            throw IOException("Expected 38 unique labels")
         }
-        return false;
+        return loaded
     }
 
-    private int argmax(float[] values) {
-        int maxIndex = 0;
-        float maxValue = values[0];
-        for (int i = 1; i < values.length; i++) {
-            if (values[i] > maxValue) {
-                maxValue = values[i];
-                maxIndex = i;
-            }
-        }
-        return maxIndex;
-    }
-
-    private String getLabelSafely(int index) {
-        if (index >= 0 && index < labels.size()) {
-            return labels.get(index);
-        }
-        return "Unknown";
-    }
-
-    private List<Prediction> getTopK(float[] probabilities, int k) {
-        List<Prediction> results = new ArrayList<>();
-
-        for (int i = 0; i < probabilities.length; i++) {
-            results.add(new Prediction(getLabelSafely(i), probabilities[i]));
-        }
-
-        Collections.sort(results, new Comparator<Prediction>() {
-            @Override
-            public int compare(Prediction left, Prediction right) {
-                return Float.compare(right.getConfidence(), left.getConfidence());
-            }
-        });
-
-        return new ArrayList<>(results.subList(0, Math.min(k, results.size())));
-    }
-
-    @Override
-    public void close() {
-        if (interpreter != null) {
-            interpreter.close();
+    private fun loadInterpreter(assetName: String): Interpreter {
+        val descriptor = appContext.assets.openFd(assetName)
+        FileInputStream(descriptor.fileDescriptor).use { input ->
+            val model = input.channel.map(
+                FileChannel.MapMode.READ_ONLY,
+                descriptor.startOffset,
+                descriptor.declaredLength
+            )
+            return Interpreter(model, Interpreter.Options().apply { setNumThreads(4) })
         }
     }
 
-    public static class Prediction {
-        private final String label;
-        private final float confidence;
-
-        public Prediction(String label, float confidence) {
-            this.label = label;
-            this.confidence = confidence;
+    private fun argmax(scores: FloatArray): Int {
+        var bestIndex = 0
+        for (index in 1 until scores.size) {
+            if (scores[index] > scores[bestIndex]) bestIndex = index
         }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public float getConfidence() {
-            return confidence;
-        }
+        return bestIndex
     }
 
-    public static class ClassificationResult {
-        private final boolean success;
-        private final String label;
-        private final float confidence;
-        private final boolean uncertain;
-        private final List<Prediction> topPredictions;
-        private final String errorMessage;
+    private fun displayLabel(label: String): String = when (label) {
+        "Apple___Apple_scab" -> "Apple Scab"
+        "Corn___Cercospora_leaf_spot Gray_leaf_spot" -> "Corn Gray Leaf Spot"
+        "Corn___Northern_Leaf_Blight" -> "Corn Northern Leaf Blight"
+        "Potato___Early_blight" -> "Potato Early Blight"
+        "Potato___Late_blight" -> "Potato Late Blight"
+        "Tomato___Early_blight" -> "Tomato Early Blight"
+        "Tomato___Late_blight" -> "Tomato Late Blight"
+        else -> label.replace("___", " ").replace('_', ' ')
+    }
 
-        public ClassificationResult(boolean success,
-                                    String label,
-                                    float confidence,
-                                    boolean uncertain,
-                                    List<Prediction> topPredictions,
-                                    String errorMessage) {
-            this.success = success;
-            this.label = label;
-            this.confidence = confidence;
-            this.uncertain = uncertain;
-            this.topPredictions = topPredictions;
-            this.errorMessage = errorMessage;
-        }
+    override fun close() {
+        interpreter?.close()
+        interpreter = null
+    }
 
-        public static ClassificationResult error(String errorMessage) {
-            return new ClassificationResult(false, null, 0f, false, new ArrayList<Prediction>(), errorMessage);
-        }
-
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public String getLabel() {
-            return label;
-        }
-
-        public float getConfidence() {
-            return confidence;
-        }
-
-        public boolean isUncertain() {
-            return uncertain;
-        }
-
-        public List<Prediction> getTopPredictions() {
-            return topPredictions;
-        }
-
-        public String getErrorMessage() {
-            return errorMessage;
-        }
+    companion object {
+        private const val INPUT_SIZE = 224
+        private const val RGB_CHANNELS = 3
+        private const val FLOAT_BYTES = 4
+        private const val EXPECTED_CLASSES = 38
+        private const val CONFIDENCE_THRESHOLD = 0.50f
+        private const val GENERIC_SYMPTOMS = "Detailed symptoms are not available locally."
+        private const val GENERIC_TREATMENT = "Verify this result with a qualified agricultural source."
+        private const val GENERIC_PREVENTION = "Retake unclear images and continue monitoring the plant."
     }
 }
 ```
 
-### Notes about this implementation
+### 12.12 Expanded File: `ScanActivity.kt` (247 -> 321 lines)
 
-- It assumes `[0, 1]` normalization.
-- It assumes one output score per label.
-- It assumes float output.
-- It uses synchronized inference because the interpreter is not thread-safe.
-- It returns an error object instead of crashing the app.
+```kotlin
+package com.leafguard
 
-### Suggested Activity usage with `ExecutorService`
+import android.Manifest
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.ImageDecoder
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
+import android.view.View
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.ProgressBar
+import android.widget.RadioGroup
+import android.widget.TextView
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.lifecycle.lifecycleScope
+import com.leafguard.ml.TFLiteClassifier
+import com.leafguard.network.PredictionResponse
+import com.leafguard.network.RetrofitClient
+import java.io.File
+import java.io.FileOutputStream
+import java.io.IOException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.asRequestBody
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
-```java
-ExecutorService executorService = Executors.newSingleThreadExecutor();
+class ScanActivity : AppCompatActivity() {
 
-executorService.execute(() -> {
-    long start = System.currentTimeMillis();
-    TFLiteClassifier.ClassificationResult result = classifier.classify(bitmap);
-    long latency = System.currentTimeMillis() - start;
+    private lateinit var imagePreview: ImageView
+    private lateinit var textImageStatus: TextView
+    private lateinit var buttonDetectDisease: Button
+    private lateinit var progressUpload: ProgressBar
+    private lateinit var radioDetectionMode: RadioGroup
+    private lateinit var textDetectionModeDescription: TextView
 
-    runOnUiThread(() -> {
-        if (!result.isSuccess()) {
-            resultTextView.setText(result.getErrorMessage());
-            return;
-        }
+    private var selectedImageUri: Uri? = null
+    private var pendingCameraUri: Uri? = null
+    private var offlineMode = false
 
-        if (result.isUncertain()) {
-            resultTextView.setText("Uncertain - try again");
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            launchCamera()
         } else {
-            resultTextView.setText(result.getLabel());
+            Toast.makeText(this, R.string.camera_permission_denied, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private val cameraLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        val cameraUri = pendingCameraUri
+        if (success && cameraUri != null) {
+            updateSelectedImage(cameraUri)
+        } else {
+            Toast.makeText(this, R.string.camera_cancelled, Toast.LENGTH_SHORT).show()
+        }
+        pendingCameraUri = null
+    }
+
+    private val galleryLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        if (uri != null) {
+            updateSelectedImage(uri)
+        } else {
+            Toast.makeText(this, R.string.gallery_cancelled, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_scan)
+
+        imagePreview = findViewById(R.id.imagePreview)
+        textImageStatus = findViewById(R.id.textImageStatus)
+        buttonDetectDisease = findViewById(R.id.buttonDetectDisease)
+        progressUpload = findViewById(R.id.progressUpload)
+        radioDetectionMode = findViewById(R.id.radioDetectionMode)
+        textDetectionModeDescription = findViewById(R.id.textDetectionModeDescription)
+
+        findViewById<Button>(R.id.buttonTakePhoto).setOnClickListener {
+            openCameraWithPermissionCheck()
+        }
+        findViewById<Button>(R.id.buttonChooseGallery).setOnClickListener {
+            galleryLauncher.launch("image/*")
+        }
+        buttonDetectDisease.setOnClickListener {
+            detectSelectedImage()
+        }
+        radioDetectionMode.setOnCheckedChangeListener { _, checkedId ->
+            offlineMode = checkedId == R.id.radioOfflineMode
+            textDetectionModeDescription.setText(
+                if (offlineMode) {
+                    R.string.detection_mode_offline_description
+                } else {
+                    R.string.detection_mode_cloud_description
+                }
+            )
         }
 
-        confidenceTextView.setText(String.format(Locale.US, "%.2f%%", result.getConfidence() * 100f));
-        latencyTextView.setText(latency + " ms");
-    });
-});
+        savedInstanceState?.getString(KEY_SELECTED_IMAGE_URI)?.let { uriText ->
+            updateSelectedImage(Uri.parse(uriText))
+        }
+    }
+
+    private fun openCameraWithPermissionCheck() {
+        val granted = ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.CAMERA
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (granted) {
+            launchCamera()
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    private fun launchCamera() {
+        try {
+            val imageUri = createImageUri()
+            pendingCameraUri = imageUri
+            cameraLauncher.launch(imageUri)
+        } catch (exception: IOException) {
+            pendingCameraUri = null
+            Toast.makeText(this, R.string.camera_file_error, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    @Throws(IOException::class)
+    private fun createImageUri(): Uri {
+        val imageDirectory = File(getExternalFilesDir(Environment.DIRECTORY_PICTURES), "captures")
+        if (!imageDirectory.exists() && !imageDirectory.mkdirs()) {
+            throw IOException("Could not create image directory")
+        }
+
+        val imageFile = File(imageDirectory, "leafguard_${System.currentTimeMillis()}.jpg")
+        return FileProvider.getUriForFile(
+            this,
+            "${BuildConfig.APPLICATION_ID}.fileprovider",
+            imageFile
+        )
+    }
+
+    private fun updateSelectedImage(uri: Uri) {
+        selectedImageUri = uri
+        imagePreview.setImageURI(uri)
+        textImageStatus.setText(R.string.image_ready_for_upload)
+        buttonDetectDisease.isEnabled = true
+    }
+
+    private fun detectSelectedImage() {
+        val imageUri = selectedImageUri
+        if (imageUri == null) {
+            Toast.makeText(this, R.string.select_image_first, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        setUploadInProgress(true)
+        if (offlineMode) {
+            runOfflineDetection(imageUri)
+        } else {
+            runCloudDetection(imageUri)
+        }
+    }
+
+    private fun runCloudDetection(imageUri: Uri) {
+        val uploadFile = try {
+            copyUriToCacheFile(imageUri)
+        } catch (exception: IOException) {
+            setUploadInProgress(false)
+            Toast.makeText(this, R.string.image_prepare_error, Toast.LENGTH_LONG).show()
+            return
+        }
+
+        val mimeType = contentResolver.getType(imageUri) ?: "image/*"
+        val requestBody = uploadFile.asRequestBody(mimeType.toMediaTypeOrNull())
+        val imagePart = MultipartBody.Part.createFormData("image", uploadFile.name, requestBody)
+
+        RetrofitClient.apiService.uploadImage(imagePart).enqueue(
+            object : Callback<PredictionResponse> {
+                override fun onResponse(
+                    call: Call<PredictionResponse>,
+                    response: Response<PredictionResponse>
+                ) {
+                    uploadFile.delete()
+                    setUploadInProgress(false)
+                    val prediction = response.body()
+                    if (!response.isSuccessful || prediction == null) {
+                        Toast.makeText(
+                            this@ScanActivity,
+                            getString(R.string.server_error_format, response.code()),
+                            Toast.LENGTH_LONG
+                        ).show()
+                        return
+                    }
+                    openResult(prediction)
+                }
+
+                override fun onFailure(
+                    call: Call<PredictionResponse>,
+                    throwable: Throwable
+                ) {
+                    uploadFile.delete()
+                    setUploadInProgress(false)
+                    Toast.makeText(
+                        this@ScanActivity,
+                        R.string.network_error,
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            }
+        )
+    }
+
+    private fun runOfflineDetection(imageUri: Uri) {
+        lifecycleScope.launch {
+            try {
+                val prediction = withContext(Dispatchers.IO) {
+                    TFLiteClassifier(applicationContext).use { classifier ->
+                        classifier.classify(loadBitmap(imageUri))
+                    }
+                }
+                setUploadInProgress(false)
+                openResult(prediction)
+            } catch (exception: IOException) {
+                setUploadInProgress(false)
+                Toast.makeText(
+                    this@ScanActivity,
+                    R.string.offline_prediction_error,
+                    Toast.LENGTH_LONG
+                ).show()
+            } catch (exception: RuntimeException) {
+                setUploadInProgress(false)
+                Toast.makeText(
+                    this@ScanActivity,
+                    R.string.offline_prediction_error,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
+    @Throws(IOException::class)
+    private fun copyUriToCacheFile(uri: Uri): File {
+        val uploadFile = File(cacheDir, "leafguard_upload_${System.currentTimeMillis()}.jpg")
+        try {
+            contentResolver.openInputStream(uri).use { inputStream ->
+                if (inputStream == null) {
+                    throw IOException("Unable to open selected image")
+                }
+                FileOutputStream(uploadFile).use { outputStream ->
+                    inputStream.copyTo(outputStream, bufferSize = 8192)
+                }
+            }
+        } catch (exception: IOException) {
+            uploadFile.delete()
+            throw exception
+        }
+        return uploadFile
+    }
+
+    @Throws(IOException::class)
+    private fun loadBitmap(uri: Uri): Bitmap {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            val source = ImageDecoder.createSource(contentResolver, uri)
+            return ImageDecoder.decodeBitmap(source).copy(Bitmap.Config.ARGB_8888, false)
+        }
+        @Suppress("DEPRECATION")
+        return MediaStore.Images.Media.getBitmap(contentResolver, uri)
+    }
+
+    private fun openResult(prediction: PredictionResponse) {
+        val intent = Intent(this, ResultActivity::class.java).apply {
+            putExtra(ResultActivity.EXTRA_MODEL_LABEL, prediction.modelLabel)
+            putExtra(ResultActivity.EXTRA_DISEASE, prediction.disease)
+            putExtra(ResultActivity.EXTRA_CONFIDENCE, prediction.confidence)
+            putExtra(ResultActivity.EXTRA_UNCERTAIN, prediction.uncertain)
+            putExtra(ResultActivity.EXTRA_GUIDANCE_AVAILABLE, prediction.guidanceAvailable)
+            putExtra(ResultActivity.EXTRA_SYMPTOMS, prediction.symptoms)
+            putExtra(ResultActivity.EXTRA_TREATMENT, prediction.treatment)
+            putExtra(ResultActivity.EXTRA_PREVENTION, prediction.prevention)
+        }
+        startActivity(intent)
+    }
+
+    private fun setUploadInProgress(inProgress: Boolean) {
+        progressUpload.visibility = if (inProgress) View.VISIBLE else View.GONE
+        buttonDetectDisease.isEnabled = !inProgress && selectedImageUri != null
+        findViewById<Button>(R.id.buttonTakePhoto).isEnabled = !inProgress
+        findViewById<Button>(R.id.buttonChooseGallery).isEnabled = !inProgress
+        for (index in 0 until radioDetectionMode.childCount) {
+            radioDetectionMode.getChildAt(index).isEnabled = !inProgress
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(KEY_SELECTED_IMAGE_URI, selectedImageUri?.toString())
+    }
+
+    companion object {
+        private const val KEY_SELECTED_IMAGE_URI = "selected_image_uri"
+    }
+}
 ```
 
----
+### 12.13 Expanded File: `activity_scan.xml` (76 -> 111 lines)
 
-## 14. Comparing Cloud vs Offline - Architecture Decision
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/screen_background">
 
-LeafGuard AI is strongest when you understand **why** you chose a particular architecture.
-This matters in viva questions.
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
 
-### When to use cloud inference
+        <TextView
+            android:id="@+id/textScanTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/scan_title"
+            android:textColor="@color/text_primary"
+            android:textSize="24sp" />
 
-Use cloud inference when:
+        <TextView
+            android:id="@+id/textScanInstruction"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/scan_instruction"
+            android:textColor="@color/text_secondary"
+            android:textSize="16sp" />
 
-- the model is too large for the phone,
-- you need frequent server-side model updates,
-- you want central logging or analytics,
-- you need the best possible accuracy from heavier models,
-- you want to improve the model without forcing app updates.
+        <ImageView
+            android:id="@+id/imagePreview"
+            android:layout_width="match_parent"
+            android:layout_height="280dp"
+            android:layout_marginTop="20dp"
+            android:background="#E8F5E9"
+            android:contentDescription="@string/scan_preview_description"
+            android:scaleType="centerCrop" />
 
-### When to use offline inference
+        <TextView
+            android:id="@+id/textImageStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/no_image_selected"
+            android:textColor="@color/text_secondary" />
 
-Use offline inference when:
+        <Button
+            android:id="@+id/buttonTakePhoto"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/take_photo" />
 
-- the app must work with no internet,
-- user privacy is important,
-- latency is critical,
-- the model is small enough for mobile,
-- you want reduced server cost.
+        <Button
+            android:id="@+id/buttonChooseGallery"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/choose_from_gallery" />
 
-### When cloud may be preferable for accuracy
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/detection_mode_title"
+            android:textColor="@color/text_primary"
+            android:textStyle="bold" />
 
-If the requirement is more than about 95% real-world accuracy and the best model is large, then cloud inference may be the better engineering decision.
-That lets you run a heavier model on a backend GPU.
+        <RadioGroup
+            android:id="@+id/radioDetectionMode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:checkedButton="@id/radioCloudMode"
+            android:orientation="horizontal">
 
-### When offline may be preferable for user experience
+            <RadioButton
+                android:id="@+id/radioCloudMode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/detection_mode_cloud" />
 
-If the app is used in farms or fields with poor connectivity, offline inference gives better reliability even if the model is a little smaller.
+            <RadioButton
+                android:id="@+id/radioOfflineMode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/detection_mode_offline" />
+        </RadioGroup>
 
-### Hybrid approach: what LeafGuard can do
+        <TextView
+            android:id="@+id/textDetectionModeDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/detection_mode_cloud_description"
+            android:textColor="@color/text_secondary" />
 
-A practical hybrid approach is:
+        <Button
+            android:id="@+id/buttonDetectDisease"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:enabled="false"
+            android:text="@string/detect_disease" />
 
-1. try offline model first,
-2. if confidence is high enough, show offline result immediately,
-3. if confidence is low and internet is available, optionally fall back to cloud prediction,
-4. compare or confirm results.
+        <ProgressBar
+            android:id="@+id/progressUpload"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="12dp"
+            android:contentDescription="@string/upload_progress_description"
+            android:visibility="gone" />
+    </LinearLayout>
+</ScrollView>
+```
 
-### Hybrid architecture diagram
+### 12.14 Expanded File: `strings.xml` (76 -> 82 lines)
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LeafGuard AI</string>
+
+    <string name="home_title">LeafGuard AI</string>
+    <string name="home_subtitle">Plant disease detection learning app</string>
+
+    <string name="open_scan">Open Scan</string>
+    <string name="open_result">Open Sample Result</string>
+    <string name="open_history">Open History</string>
+    <string name="open_library">Open Disease Library</string>
+    <string name="open_settings">Open Settings</string>
+
+    <string name="scan_title">Scan Leaf</string>
+    <string name="result_title">Prediction Result</string>
+    <string name="history_title">History</string>
+    <string name="library_title">Disease Library</string>
+    <string name="settings_title">Settings and About</string>
+
+    <string name="placeholder_settings">Course project shell. Settings options will grow in later weeks.</string>
+
+    <string name="disease_library_loading">Loading local disease library</string>
+    <string name="disease_library_empty">No reviewed disease entries are available.</string>
+    <string name="disease_library_error">Could not read the local disease library.</string>
+    <string name="disease_invalid_name">Invalid disease selection.</string>
+    <string name="disease_not_found">Disease entry not found.</string>
+    <string name="disease_plant_format">Plant: %1$s</string>
+    <string name="guidance_local_library">Guidance loaded from the reviewed local XML library.</string>
+
+    <string name="scan_instruction">Take a photo or choose an image, then upload it to the Week 04 backend.</string>
+    <string name="scan_preview_description">Preview of the selected leaf image</string>
+    <string name="take_photo">Take Photo</string>
+    <string name="choose_from_gallery">Choose from Gallery</string>
+    <string name="no_image_selected">No image selected yet.</string>
+    <string name="image_ready_for_upload">Image selected. Ready to detect.</string>
+    <string name="camera_permission_denied">Camera permission denied. You can still choose from gallery.</string>
+    <string name="camera_cancelled">Camera cancelled. No new image selected.</string>
+    <string name="gallery_cancelled">Gallery closed. No new image selected.</string>
+    <string name="camera_file_error">Could not prepare a file for the camera.</string>
+
+    <string name="detect_disease">Detect Disease</string>
+    <string name="detection_mode_title">Detection mode</string>
+    <string name="detection_mode_cloud">Cloud</string>
+    <string name="detection_mode_offline">Offline</string>
+    <string name="detection_mode_cloud_description">Cloud mode uploads the image to the Week 06 backend.</string>
+    <string name="detection_mode_offline_description">Offline mode runs the converted TFLite model on this device.</string>
+    <string name="offline_prediction_error">Offline prediction failed. Verify model and label assets.</string>
+    <string name="upload_progress_description">Uploading image for prediction</string>
+    <string name="select_image_first">Select or capture an image first.</string>
+    <string name="image_prepare_error">Could not prepare the selected image for upload.</string>
+    <string name="server_error_format">Server rejected the request (HTTP %1$d).</string>
+    <string name="network_error">Could not reach the backend. Check the server and emulator URL.</string>
+
+    <string name="result_unknown">Unknown result</string>
+    <string name="model_label_placeholder">Model label: unavailable</string>
+    <string name="model_label_format">Model label: %1$s</string>
+    <string name="confidence_placeholder">Confidence: 0%%</string>
+    <string name="confidence_format">Confidence: %1$d%%</string>
+    <string name="result_uncertain">Low-confidence result: verify before acting.</string>
+    <string name="result_confident">Confidence is above the configured server threshold.</string>
+    <string name="guidance_available">Reviewed project guidance is available.</string>
+    <string name="guidance_not_reviewed">Detailed project guidance is not reviewed for this label.</string>
+    <string name="symptoms_heading">Symptoms</string>
+    <string name="treatment_heading">Treatment</string>
+    <string name="prevention_heading">Prevention</string>
+    <string name="guidance_unavailable">No information available.</string>
+
+    <string name="save_to_history">Save to History</string>
+    <string name="saved_to_history">Saved to History</string>
+    <string name="history_saved">Result saved locally.</string>
+    <string name="history_empty">No saved scans yet.</string>
+    <string name="history_confidence_format">Confidence: %1$.1f%%</string>
+    <string name="history_detail_title">Saved Scan</string>
+    <string name="history_invalid_id">Invalid history record.</string>
+    <string name="history_record_missing">This saved scan no longer exists.</string>
+    <string name="delete_history">Delete Scan</string>
+    <string name="delete_history_title">Delete saved scan?</string>
+    <string name="delete_history_message">This removes the scan from this device.</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="history_deleted">Saved scan deleted.</string>
+</resources>
+```
+
+### 12.15 New File: `assets/labels.txt` (38 lines)
 
 ```text
-                +------------------+
-Captured Image ->| Offline TFLite   |-- high confidence --> Show result
-                +------------------+
-                         |
-                         | low confidence / unavailable
-                         v
-                +------------------+
-                | Cloud API        |---------------> Show fallback result
-                +------------------+
+Apple___Apple_scab
+Apple___Black_rot
+Apple___Cedar_apple_rust
+Apple___Healthy
+Blueberry___Healthy
+Cherry___Powdery_mildew
+Cherry___Healthy
+Corn___Cercospora_leaf_spot Gray_leaf_spot
+Corn___Common_rust
+Corn___Northern_Leaf_Blight
+Corn___Healthy
+Grape___Black_rot
+Grape___Esca_(Black_Measles)
+Grape___Leaf_blight_(Isariopsis_Leaf_Spot)
+Grape___Healthy
+Orange___Haunglongbing_(Citrus_greening)
+Peach___Bacterial_spot
+Peach___Healthy
+Pepper,_bell___Bacterial_spot
+Pepper,_bell___Healthy
+Potato___Early_blight
+Potato___Late_blight
+Potato___Healthy
+Raspberry___Healthy
+Soybean___Healthy
+Squash___Powdery_mildew
+Strawberry___Leaf_scorch
+Strawberry___Healthy
+Tomato___Bacterial_spot
+Tomato___Early_blight
+Tomato___Late_blight
+Tomato___Leaf_Mold
+Tomato___Septoria_leaf_spot
+Tomato___Spider_mites Two-spotted_spider_mite
+Tomato___Target_Spot
+Tomato___Tomato_Yellow_Leaf_Curl_Virus
+Tomato___Tomato_mosaic_virus
+Tomato___Healthy
 ```
 
-### Data usage comparison
+### 12.16 New File: `assets/README.md` (7 lines)
 
-| Feature | Offline TFLite | Cloud API |
-|--------|-----------------|-----------|
-| Internet required | No | Yes |
-| Image leaves device | No | Yes |
-| Server cost | No per-request cost | Yes |
-| Model update ease | Harder | Easier |
-| Latency | Usually lower for small models | Includes network delay |
-| Works in airplane mode | Yes | No |
+```markdown
+# Week 09 Android Model Assets
 
-### Privacy comparison
+- `model.tflite`: generated float32 TFLite model, 9,056,916 bytes.
+- `labels.txt`: 38 canonical labels in model output order.
+- `diseases.xml`: 10 reviewed local guidance entries from Week 08.
 
-Offline AI is stronger for privacy because the image stays on the device.
-That matters if leaf images are tied to farm location or crop management practices.
-
-### Maintenance comparison
-
-Cloud models are easier to update.
-If you discover a new disease class, you can update the backend without publishing a new APK.
-Offline models usually require an app update unless you build a model download system.
-
-### Recommended LeafGuard explanation
-
-For a student project, the best explanation is:
-
-- cloud mode demonstrates backend integration,
-- offline mode demonstrates on-device AI,
-- hybrid mode demonstrates architectural thinking.
-
-### CSE 2206 Viva Q&A
-
-#### Q1. What is TensorFlow Lite?
-**Answer:** TensorFlow Lite is TensorFlow's lightweight runtime for mobile and edge devices. It allows a trained model to run directly on Android without needing a server. In LeafGuard AI, it enables offline plant disease prediction.
-
-#### Q2. Why do we need a `labels.txt` file?
-**Answer:** The model output is usually just an array of scores. `labels.txt` maps each output index to a class name. The order must exactly match the training class order.
-
-#### Q3. Why must preprocessing match training?
-**Answer:** Neural networks learn on a specific input distribution. If Android uses a different resize, color order, or normalization rule, the input values change and prediction accuracy drops sharply. This is why preprocessing mismatch is a common bug.
-
-#### Q4. Why should inference not run on the main thread?
-**Answer:** Model inference can take tens or hundreds of milliseconds. Running it on the main thread can freeze the UI and create a poor user experience or ANR risk. In Java, `ExecutorService` is a good way to move inference to a background thread.
-
-#### Q5. Why might you still keep a cloud model if offline exists?
-**Answer:** Cloud inference can use larger and more accurate models, can be updated more easily, and can act as a fallback when offline confidence is low. A hybrid design gives both reliability and flexibility.
-
----
-
-## 15. Benchmarking, Optimization, and Best Practices
-
-### Best practice 1: Benchmark on a real phone
-
-Emulators are useful for UI checks, but ML performance on an emulator does not represent a real device.
-Always record results on at least one physical Android phone if possible.
-
-### Best practice 2: Warm up first
-
-The first few inferences may be slower.
-Do not use only the first run as your benchmark value.
-
-### Best practice 3: Test several images
-
-One image is not enough.
-Use multiple healthy and diseased images.
-Record:
-
-- predicted label,
-- confidence,
-- latency,
-- whether the result matches expectation.
-
-### Best practice 4: Keep a test table
-
-| Image name | Expected class | Offline class | Offline confidence | Cloud class | Match? |
-|-----------|----------------|---------------|--------------------|------------|--------|
-| leaf_01.jpg | Tomato Healthy | Tomato Healthy | 0.91 | Tomato Healthy | Yes |
-| leaf_02.jpg | Tomato Late Blight | Tomato Early Blight | 0.44 | Tomato Late Blight | No |
-
-### Best practice 5: Use a confidence threshold
-
-Always prefer "uncertain" over confidently wrong UI behavior.
-That is a better user experience and a better engineering decision.
-
-### Best practice 6: Release resources
-
-When the classifier is no longer needed:
-
-```java
-classifier.close();
+Do not sort `labels.txt`, normalize RGB pixels twice, or replace `model.tflite` without rerunning tensor and parity validation.
 ```
 
-Also close delegates if you manage them separately.
 
-### Best practice 7: Log intelligently during development
-
-Useful logs:
-
-- model loaded successfully,
-- input/output tensor shapes,
-- average latency,
-- top-3 probabilities,
-- error cause if inference fails.
-
-### Best practice 8: Avoid repeated heavy initialization
-
-Do not recreate the interpreter for every prediction unless necessary.
-Initialize once and reuse it safely.
-
-### Best practice 9: Keep thread safety in mind
-
-One interpreter should not be shared unsafely across concurrent threads.
-Use synchronization or separate interpreters.
-
-### Best practice 10: Document the whole ML pipeline
-
-A good student project report should clearly state:
-
-- dataset,
-- training process,
-- conversion process,
-- normalization,
-- Android integration steps,
-- benchmark results,
-- limitations.
-
----
-
-## 16. CSE 2206 Viva and Exam Preparation
-
-### Common viva questions
-
-1. What is the difference between TensorFlow and TensorFlow Lite?
-2. Why do we convert a model before using it on Android?
-3. Why do we store the model in `assets/`?
-4. What is normalization and why is it needed?
-5. What is the purpose of `Interpreter.run()`?
-6. What is quantization?
-7. Why might GPU delegate improve performance?
-8. Why do we need a background thread for inference?
-9. What does confidence threshold mean?
-10. Why might a cloud model still be useful?
-
-### Strong answer strategy
-
-When answering viva questions:
-
-- define the concept simply,
-- connect it to LeafGuard AI,
-- mention one practical reason or example,
-- mention one limitation or design trade-off.
-
-### Example strong viva answer
-
-**Question:** Why did you use TensorFlow Lite instead of only cloud prediction?
-
-**Answer:** We used TensorFlow Lite so that LeafGuard AI can classify plant diseases without internet access. This improves privacy and reduces latency because the image stays on the device. We still kept cloud comparison in mind because larger server-side models can be updated more easily and may achieve better accuracy.
-
-### Revision memory tips
-
-Remember this chain:
+### 12.17 Binary Artifact Record
 
 ```text
-Model source -> Convert -> Add to assets -> Load -> Preprocess -> Infer -> Postprocess -> Benchmark
+Path: android-app-kotlin/app/src/main/assets/model.tflite
+Size: 9056916 bytes
+SHA-256: 22ea2d4a47a52b2d9b150e0f74b113def0f12bbdb59209f7e0bce2a9701d41f9
+Git status: local/ignored binary
 ```
 
-If you can explain each arrow in that chain, you understand the week well.
+Verify:
+
+```bash
+stat -c '%s' android-app-kotlin/app/src/main/assets/model.tflite
+sha256sum android-app-kotlin/app/src/main/assets/model.tflite
+cmp model/labels-38.txt android-app-kotlin/app/src/main/assets/labels.txt
+```
+
+### 12.18 Files Week 09 Does Not Rewrite
+
+| Area | Status | Reason |
+|---|---|---|
+| `PredictionResponse.kt` | Unchanged | Both modes return same eight fields |
+| Result/XML guidance files | Unchanged | Week 08 enrichment is reused |
+| Room/history files | Unchanged | Week 07 persistence is reused |
+| FastAPI/Keras backend | Unchanged | Cloud mode remains available |
+| Camera/gallery code | Preserved inside expanded ScanActivity | Same selected URI |
+| Manifest | Unchanged | TFLite needs no permission |
+| Notifications/location/share/analytics | Absent | Week 10 |
+| Settings-driven thresholds/UI redesign | Absent | Later polish |
+
+### 12.19 Verify the Exact End State
+
+```bash
+# Asset identity and labels
+stat -c '%s' android-app-kotlin/app/src/main/assets/model.tflite
+sha256sum android-app-kotlin/app/src/main/assets/model.tflite
+cmp model/labels-38.txt android-app-kotlin/app/src/main/assets/labels.txt
+
+# Focused contract/parity tests
+cd model
+../backend-api/.venv/bin/python -m unittest -v test_tflite_contract
+
+# Android build
+cd ../android-app-kotlin
+./gradlew assembleDebug
+```
+
+Expected focused result:
+
+```text
+Ran 4 tests
+OK
+```
+
+Manual device/emulator checks:
+
+| Test | Expected |
+|---|---|
+| Backend stopped + Offline | Result opens without network |
+| Cloud with backend running | Existing Retrofit result works |
+| Offline matching XML name | Local guidance represented |
+| Offline Save | Week 07 Room stores eight final fields |
+| Missing model/labels | Safe error; controls restored |
+| Repeat offline runs | No interpreter/resource crash |
+| Airplane mode on device | Offline result still works |
 
 ---
 
-## 17. Summary
+## 13. Learning-to-Evidence Map
 
-TensorFlow Lite enables **offline AI on Android**.
-For LeafGuard AI, that means the app can classify plant disease images directly on the device.
-
-The most important technical lessons from this week are:
-
-- getting a valid `.tflite` model,
-- creating the correct `labels.txt`,
-- matching preprocessing exactly,
-- understanding normalization,
-- handling errors safely,
-- keeping inference off the main thread,
-- using confidence thresholds,
-- benchmarking CPU, GPU, and NNAPI options.
-
-If you remember only one sentence, remember this:
-
-**A TensorFlow Lite model is only as good as the preprocessing that feeds it.**
+| Concept | Exercise | Build step | Proof |
+|---|---|---|---|
+| Artifact identity | 1 | 2 | Size/hash record |
+| Tensor/preprocessing | 2 | 3 | Contract tests |
+| Labels/argmax | 2 | 4 | Canonical comparison |
+| Conversion | 3 | 2 | Generated artifact record |
+| Keras/TFLite parity | 3 | 3 | Three-image output |
+| ByteBuffer/classifier | 4 | 5 | Offline emulator result |
+| Shared mode strategy | 5 | 6 | Cloud/offline demos |
+| Failure/resource cleanup | 5 | 7 | Missing-asset and repeat runs |
+| Parity-not-accuracy | 6 | 8 | Honest evidence note |
 
 ---
 
-## 18. Glossary
+## 14. Week 09 Understanding Checklist
 
-### Assets
-Folder in the Android project used to store files like `model.tflite` and `labels.txt`.
-
-### Confidence
-The score associated with a predicted class, usually interpreted as probability if output is softmax.
-
-### Delegate
-A hardware-optimized execution path such as GPU or NNAPI.
-
-### Inference
-Running a trained model on new input to produce a prediction.
-
-### Interpreter
-The TensorFlow Lite runtime class used to execute the model.
-
-### Logits
-Raw model output scores before softmax.
-
-### Normalization
-Transforming raw pixel values into the numeric range used during model training.
-
-### Quantization
-Reducing numeric precision to shrink model size and often improve speed.
-
-### Representative dataset
-Sample data used to calibrate full integer quantization.
-
-### Softmax
-Function that converts scores into probabilities.
-
-### Tensor
-A multidimensional array used as model input or output.
-
----
-
-## 19. Quick Revision Checklist
-
-Before you say you are ready for Week 09 viva, confirm that you can answer all of these:
-
-- [ ] I can explain what TensorFlow Lite is.
-- [ ] I can explain the difference between training and inference.
-- [ ] I know at least three ways to obtain a `.tflite` model.
-- [ ] I understand how to create `labels.txt`.
-- [ ] I know why label order matters.
-- [ ] I know my model's input shape.
-- [ ] I know my model's normalization strategy.
-- [ ] I can load the model from Android assets.
-- [ ] I can run inference in Java.
-- [ ] I can compute top-1 prediction.
-- [ ] I can explain top-3 predictions.
-- [ ] I can explain what confidence means.
-- [ ] I can implement a confidence threshold.
-- [ ] I know why `Interpreter` is not thread-safe.
-- [ ] I can explain why inference should run off the main thread.
-- [ ] I can explain GPU delegate and NNAPI.
-- [ ] I can benchmark latency across 100 runs.
-- [ ] I can compare offline vs cloud architecture.
-- [ ] I can explain when offline is better.
-- [ ] I can explain when cloud is better.
-
+- [ ] I can explain conversion versus retraining.
+- [ ] I can state TFLite size and SHA-256.
+- [ ] I can state input/output shapes and dtypes.
+- [ ] I can explain why RGB values stay in `[0,255]`.
+- [ ] I can calculate the 602,112-byte input buffer.
+- [ ] I can explain direct native-order ByteBuffer use.
+- [ ] I can explain exact 38-label order and argmax.
+- [ ] I can trace interpreter construction/classification/close.
+- [ ] I can explain cloud/offline shared response strategy.
+- [ ] I can run four focused tests.
+- [ ] I can explain three-image parity results.
+- [ ] I can explain why parity is not accuracy.
+- [ ] I can demonstrate offline mode without backend.
+- [ ] I can demonstrate safe missing-asset failure.
+- [ ] I can identify all 8 new and 6 expanded text files.
+- [ ] I know Week 10 owns notifications/location/sharing/polish.
 
 <!-- NAV_FOOTER_START -->
 
 ---
 
-## 📚 Week 09 — Navigation
-
-### All Files In This Week (Complete In Order)
+## Week 09 Navigation
 
 | Step | File | Description |
-|------|------|-------------|
-| 1 | [README.md](README.md) | Week Overview & Objectives |
-| **2** | **learning-notes.md** ← *You are here* | **Theory & Learning Notes** |
-| 3 | [exercises.md](exercises.md) | Practice Exercises |
-| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
-| 5 | [validation-checklist.md](validation-checklist.md) | Validation & Verification |
-| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
-| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
+|---:|---|---|
+| 1 | [README.md](README.md) | Week overview |
+| **2** | **learning-notes.md** - current | Theory and exact source snapshot |
+| 3 | [exercises.md](exercises.md) | Guided practice |
+| 4 | [build-task.md](build-task.md) | Implementation guide |
+| 5 | [validation-checklist.md](validation-checklist.md) | Validation and evidence |
+| 6 | [quiz.md](quiz.md) | Knowledge assessment |
+| 7 | [reflection.md](reflection.md) | Reflection and handoff |
 
----
-
-### Within-Week Navigation
-
-[← Week Overview & Objectives](README.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Theory & Learning Notes** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Practice Exercises →](exercises.md)
-
----
-
-### Week Progression
-
-| ← Previous Week | 🏠 Home | Next Week → |
-|:----------------|:-------:|------------:|
-| [⬅ Week 08: XML Disease Library](../week-08-xml-disease-library/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 10: Notifications, Share & Location ➡](../week-10-notifications-share-location/README.md) |
-
----
+[Previous: Week 08](../week-08-xml-disease-library/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Next: Week 10](../week-10-notifications-share-location/README.md)

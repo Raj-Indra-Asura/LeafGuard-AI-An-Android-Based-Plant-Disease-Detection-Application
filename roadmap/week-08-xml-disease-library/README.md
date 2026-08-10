@@ -1,327 +1,201 @@
-# Week 08: XML Disease Library
+# Week 08: Local XML Disease Library
 
-## What you'll learn & why
+## Week 08 Mindset
 
-This week you build an offline encyclopedia of the 10 plant diseases the app knows, so a user can read symptoms, treatment, and prevention even with no internet. The information lives in a plain text file called `assets/diseases.xml`, and you read it with a small tool called `XmlPullParser` inside `DiseaseLibraryActivity`. **XML (eXtensible Markup Language)** is just a way to write structured data using named tags in angle brackets — like labelled boxes inside boxes — so both humans and programs can read it. This matters because bundling reference data as a file (instead of hard-coding it) keeps the app easy to update and works completely offline.
+Week 07 can persist complete prediction results. Week 08 adds a reviewed local reference catalog that works without calling FastAPI:
 
-## New words this week
+> Parse 10 bundled XML entries -> browse summaries -> open complete details -> enrich matching Result guidance before saving history.
 
-- **XML (eXtensible Markup Language)** — a text format that stores data inside named tags such as `<name>...</name>`; tags can nest to group related information. (See [Glossary](../../GLOSSARY.md).)
-- **XmlPullParser** — the small Android tool that walks through an XML file one tag at a time and hands you each piece of text; `DiseaseLibraryActivity` uses it. (See [Glossary](../../GLOSSARY.md).)
-- **Assets folder** — `app/src/main/assets/` holds raw files (like `diseases.xml`) packaged inside the app and opened with `assets.open("diseases.xml")`. It is **not** the `res/` folder.
-
-> **The real file (match this exactly):** The committed library is `app/src/main/assets/diseases.xml` (in `assets/`, filename `diseases.xml`). Each `<disease>` uses these tags: `<name>`, `<plant>`, `<symptoms>`, `<treatment>`, `<prevention>`. There are **10** `<disease>` entries and each `<name>` must match a line in `assets/labels.txt` **character-for-character**, because the model's predicted label is used to look up its disease card. The richer schema (with `<commonName>`/`<severity>`) shown later in this week is an *optional extension* — the shipped app parses the five tags above.
-
-## Where to practice this week
-
-- Kotlin Android practice (primary): [`../../exercises/android-kotlin/`](../../exercises/android-kotlin/)
-- Java Android practice (secondary): [`../../exercises/android/`](../../exercises/android/)
-- Worked answers: [`../../solutions/week-08/`](../../solutions/week-08/)
-- Notebook walkthrough: [`../../notebooks/week-08/`](../../notebooks/week-08/)
-
-## Repository State After Week 08
-
-Week 08 keeps the saved scan history and adds an offline disease knowledge base. The repository now contains structured reference data that the app can browse and use to explain predictions.
-
-### Structure to browse after this week
-
-- `android-app-kotlin/app/src/main/assets/diseases.xml` contains the disease library packaged with the app.
-- `android-app-kotlin/app/src/main/assets/labels.txt` must stay aligned with the disease names when prediction labels are used for lookup.
-- `android-app-kotlin/app/src/main/java/com/leafguard/DiseaseLibraryActivity.kt` parses and displays the disease library.
-- `android-app-kotlin/app/src/main/res/layout/activity_disease_library.xml` defines the library screen.
-- `android-app-kotlin/app/src/main/res/layout/item_disease_library.xml` defines one disease row or card.
-- `ResultActivity.kt` and `HistoryDetailActivity.kt` can use the parsed library to show symptoms, treatment, and prevention.
-- The Java twin should include the same `assets/diseases.xml` and equivalent parser behavior.
-
-### Files you should create or update this week
-
-- `app/src/main/assets/diseases.xml`.
-- `DiseaseLibraryActivity.kt`.
-- `activity_disease_library.xml` and `item_disease_library.xml`.
-- `ResultActivity.kt` or `HistoryDetailActivity.kt` if prediction results are enriched from XML.
-- `strings.xml` for library labels, empty states, and search text.
-- `docs/evidence/week-08/` screenshots showing library browsing, search, and result guidance.
-
-### What this repository state can do
-
-- Bundle disease information inside the app without needing internet.
-- Parse XML using Android file I/O and `XmlPullParser`.
-- Show a browsable disease library.
-- Connect prediction labels to symptoms, treatment, and prevention text when names match.
-
-### What this repository state cannot do
-
-- It cannot run the ML model on the phone yet.
-- It cannot diagnose without the backend unless Week 09 offline AI is added.
-- It cannot notify, share, or attach location yet.
-- It still depends on correct label-to-disease name matching.
+This week adds reference content, not new disease classes or inference behavior. The Keras model still has 38 canonical labels, while this project has reviewed local guidance for exactly 10 display names.
 
 ---
 
-## Weekly Objective
+## Progressive Handoff
 
-By the end of Week 08, you will create and parse an XML-based disease library that provides detailed information for each plant disease the app can detect.
+| Week | Verified input | New work | Verified output |
+|---:|---|---|---|
+| 06 | Real cloud result | Model validation | Eight-field result |
+| 07 | Eight result values | Room persistence | Local scan history |
+| **08** | **Display disease + guidance fields** | **Bundled XML parser/repository/library** | **Offline reference and reviewed enrichment** |
+| 09 | Validated cloud contract | TFLite conversion/integration | Offline inference |
 
-**Measurable Outcomes:**
-- diseases.xml file in assets/ with 6+ diseases
-- Disease model class with all attributes
-- XML parser implementation using XmlPullParser
-- DiseaseLibraryActivity displaying all diseases
-- Integration with prediction results for enhanced information
-- Search/filter functionality working
-- Complete offline operation
-
----
-
-## Why This Week Matters
-
-**CSE 2206 Syllabus Requirement:** XML Parsing is explicitly required. This week satisfies that requirement while adding valuable functionality.
-
-**Viva Question:** "Show me your XML parsing implementation and explain how it works."
+```text
+assets/diseases.xml
+  -> DiseaseXmlParser
+  -> DiseaseRepository cache
+  -> DiseaseLibraryActivity -> DiseaseDetailActivity
+  `-> ResultActivity exact-name lookup -> Room save
+```
 
 ---
 
-## Syllabus Topics
+## Product State After Week 08
 
-1. **XML Parsing** - XmlPullParser, reading from assets
-2. **Data Modeling** - Disease class, object structure
-3. **Offline Storage** - Assets folder usage
-4. **List Display** - RecyclerView with filtered data
+**Cumulative product contribution: 72%**
+
+The product can now:
+
+- parse exactly 10 reviewed disease entries from a bundled XML asset
+- reject empty, incomplete, or duplicate-name catalog data
+- cache parsed immutable objects through one repository
+- browse disease name, plant, and symptoms preview
+- open complete symptoms, treatment, and prevention details
+- match a prediction's display-friendly `disease` name to local XML
+- replace matching Result guidance before Save is enabled
+- preserve backend guidance when no local reviewed entry matches
+- save enriched guidance through the unchanged Week 07 Room schema
+
+The product still cannot:
+
+- claim local guidance for all 38 model labels
+- search/filter the catalog; that is later UI work
+- infer disease from XML
+- synchronize content remotely
+- edit XML inside the app
+- add severity, location, sharing, analytics, or bottom navigation
+- run offline TFLite inference; Week 09 owns that boundary
 
 ---
 
-## Key Concepts
+## Exact Week 08 Repository Delta
 
-### XML Structure
+| Change | Count | Files |
+|---|---:|---|
+| New | 8 | `data/Disease.kt`, `data/DiseaseXmlParser.kt`, `data/DiseaseRepository.kt`, `DiseaseAdapter.kt`, `DiseaseDetailActivity.kt`, `activity_disease_detail.xml`, `item_disease.xml`, `assets/diseases.xml` |
+| Expanded | 5 | `AndroidManifest.xml`, `DiseaseLibraryActivity.kt`, `ResultActivity.kt`, `activity_disease_library.xml`, `strings.xml` |
+| Gradle changes | 0 | Week 07 already supplies lifecycle and RecyclerView |
+| Room/API/model changes | 0 | Existing contracts remain compatible |
 
-The shipped `assets/diseases.xml` uses these five tags per disease. Each `<name>` matches a line in `labels.txt`:
+Exact cumulative sizes:
+
+| File | Logical lines |
+|---|---:|
+| `AndroidManifest.xml` | 61 |
+| `data/Disease.kt` | 9 |
+| `data/DiseaseXmlParser.kt` | 76 |
+| `data/DiseaseRepository.kt` | 42 |
+| `DiseaseAdapter.kt` | 45 |
+| `DiseaseLibraryActivity.kt` | 70 |
+| `DiseaseDetailActivity.kt` | 67 |
+| `ResultActivity.kt` | 142 |
+| `activity_disease_library.xml` | 41 |
+| `activity_disease_detail.xml` | 63 |
+| `item_disease.xml` | 33 |
+| `strings.xml` | 76 |
+| `assets/diseases.xml` | 73 |
+| **Total** | **798** |
+
+Full contents appear in [learning-notes.md section 12](learning-notes.md#12-end-of-week-08-file-inventory-exact-files-exact-code-exact-size).
+
+---
+
+## Exact XML Contract
+
+Root and repeated structure:
 
 ```xml
-<?xml version="1.0" encoding="utf-8"?>
 <diseases>
     <disease>
-        <name>Tomato Late Blight</name>
-        <plant>Tomato</plant>
-        <symptoms>Water-soaked spots, white mold</symptoms>
-        <treatment>Apply copper fungicide</treatment>
-        <prevention>Use resistant varieties</prevention>
+        <name>...</name>
+        <plant>...</plant>
+        <symptoms>...</symptoms>
+        <treatment>...</treatment>
+        <prevention>...</prevention>
     </disease>
 </diseases>
 ```
 
-### XmlPullParser Architecture
+Required facts:
 
-`DiseaseLibraryActivity` opens the file from `assets/` and reads it tag-by-tag:
+| Quantity | Value |
+|---|---:|
+| Reviewed entries | 10 |
+| Fields per entry | 5 |
+| Duplicate normalized names | 0 |
+| Empty required fields | 0 |
+| Lookup key | Display-friendly disease name |
 
-```
-assets/diseases.xml
-         |
-         v
-assets.open("diseases.xml")  → InputStream
-         |
-         v
-XmlPullParserFactory.newInstance().newPullParser()  → XmlPullParser instance
-         |
-         v
-Loop: parser.next()
-   START_TAG "disease"  → create new DiseaseEntry object
-   START_TAG "name"     → read text → entry.name = text
-   START_TAG "plant"    → read text → entry.plant = text
-   START_TAG "symptoms" → read text → entry.symptoms = text
-   ...
-   END_TAG "disease"    → add DiseaseEntry to list
-         |
-         v
-Return List<DiseaseEntry>
-```
-
-### XmlPullParser Flow
-
-1. Open XML file from assets
-2. Get XmlPullParser instance
-3. Loop through events (START_TAG, END_TAG, TEXT)
-4. Extract data when inside target tags
-5. Build Disease objects
-6. Return list
-
-### Complete Parser Implementation
-
-```java
-public class DiseaseXmlParser {
-
-    public List<Disease> parse(InputStream inputStream) throws XmlPullParserException, IOException {
-        List<Disease> diseases = new ArrayList<>();
-        XmlPullParser parser = Xml.newPullParser();
-        parser.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
-        parser.setInput(inputStream, null);
-
-        int eventType = parser.getEventType();
-        Disease currentDisease = null;
-        String currentTag = null;
-
-        while (eventType != XmlPullParser.END_DOCUMENT) {
-            switch (eventType) {
-                case XmlPullParser.START_TAG:
-                    currentTag = parser.getName();
-                    if ("disease".equals(currentTag)) {
-                        currentDisease = new Disease();
-                    }
-                    break;
-
-                case XmlPullParser.TEXT:
-                    if (currentDisease != null && currentTag != null) {
-                        String text = parser.getText().trim();
-                        switch (currentTag) {
-                            case "label":      currentDisease.setLabel(text);      break;
-                            case "commonName": currentDisease.setCommonName(text); break;
-                            case "symptoms":   currentDisease.setSymptoms(text);   break;
-                            case "treatment":  currentDisease.setTreatment(text);  break;
-                            case "prevention": currentDisease.setPrevention(text); break;
-                            case "severity":   currentDisease.setSeverity(text);   break;
-                        }
-                    }
-                    break;
-
-                case XmlPullParser.END_TAG:
-                    if ("disease".equals(parser.getName()) && currentDisease != null) {
-                        diseases.add(currentDisease);
-                        currentDisease = null;
-                    }
-                    currentTag = null;
-                    break;
-            }
-            eventType = parser.next();
-        }
-        return diseases;
-    }
-}
-```
-
-### Lookup Integration with Predictions
-
-After the model returns a label (e.g., `"Tomato_Late_Blight"`), look up the Disease object to show enriched information:
-
-```java
-// In ResultActivity
-Map<String, Disease> diseaseMap = buildDiseaseMap(parseXml());
-
-Disease info = diseaseMap.get(predictionLabel);
-if (info != null) {
-    tvSymptoms.setText(info.getSymptoms());
-    tvTreatment.setText(info.getTreatment());
-    tvPrevention.setText(info.getPrevention());
-} else {
-    tvSymptoms.setText("Information not found in disease library.");
-}
-```
+The XML `<name>` matches the API `disease` field, such as `Tomato Early Blight`. It does not match canonical `model_label` text such as `Tomato___Early_blight`.
 
 ---
 
-## Prerequisites
+## CSE 2206 Connection
 
-- Week 06 complete (know your ML model labels)
-- Understanding of XML structure
-- Basic file I/O concepts
+Week 08 applies:
 
----
+- bundled Android assets
+- event-driven XML pull parsing
+- immutable data models
+- repository and cache patterns
+- validation and exception handling
+- asynchronous file I/O with coroutines
+- RecyclerView list/detail navigation
+- exact-key integration between local and network data
 
-## Weekly Timeline
+The central question is:
 
-- **Day 1-2:** Create XML file with 6+ diseases (4h)
-- **Day 3-4:** Implement XML parser (4h)  
-- **Day 5:** Integrate with predictions (3h)
-- **Day 6:** Build Disease Library UI (3h)
-- **Day 7:** Testing and documentation (2h)
-
----
-
-## Validation Criteria
-
-- [ ] diseases.xml exists with well-formed XML
-- [ ] All 6+ diseases have complete information
-- [ ] XML parser successfully extracts all fields
-- [ ] No crashes on parse errors
-- [ ] Prediction results enhanced with XML data
-- [ ] Disease library screen displays all diseases
-- [ ] Search functionality works
-- [ ] Works offline
+> How can Android turn bundled structured XML into validated, reusable local objects without coupling parsing directly to every screen?
 
 ---
 
-**Next:** Open `learning-notes.md` for detailed XML parsing concepts (1,822 lines).
+## Milestone Demo
 
+1. Build and launch without requiring the backend.
+2. Open Disease Library.
+3. Show all 10 entries.
+4. Open one detail and show five fields represented.
+5. Produce a matching prediction and show local XML guidance source.
+6. Save the result and verify enriched guidance in Week 07 history.
+7. Produce or simulate an unmatched display name and show safe backend guidance remains.
+8. Explain why 10 reviewed entries and 38 model labels are both correct.
+
+---
+
+## Seven-File Learning Loop
+
+| Step | File | Purpose | Output |
+|---:|---|---|---|
+| 1 | `README.md` | Fix catalog and boundaries | Scope statement |
+| 2 | `learning-notes.md` | Learn XML/repository and exact files | Understanding checklist |
+| 3 | `exercises.md` | Practise schema/parser/lookup | Six exercise files |
+| 4 | `build-task.md` | Build and verify library/enrichment | Working milestone |
+| 5 | `validation-checklist.md` | Prove parsing and integration | Pass/fail evidence |
+| 6 | `quiz.md` | Recall exact contracts | At least 14/18 |
+| 7 | `reflection.md` | Explain evidence and Week 09 handoff | Reflection answers |
+
+---
+
+## Exact Completion Contract
+
+| Quantity | Required value |
+|---|---:|
+| New files | 8 |
+| Expanded files | 5 |
+| Complete changed/new lines | 798 |
+| XML entries | 10 |
+| Required fields per entry | 5 |
+| New Gradle dependencies | 0 |
+| Matching guidance behavior | Local XML replaces three guidance fields |
+| Unmatched behavior | Existing backend guidance remains |
+| Week 07 Room schema changes | 0 |
+| Week 09 offline inference changes | 0 |
+
+Do not move to Week 09 until the milestone and validation checklist pass.
 
 <!-- NAV_FOOTER_START -->
 
 ---
 
-## 📈 Product State After This Week
-
-**Cumulative product completion: 72%** *(official model: [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md))*
-
-- **Your app can now…** show symptoms, treatment, and prevention for every predicted disease, and browse a full 10-disease encyclopedia parsed from `assets/diseases.xml`.
-- **Your app still cannot…** work without internet — predictions still require the cloud backend. Week 09 brings the AI on-device.
-- **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
-
-### Cumulative Repository State After Week 08
-
-This snapshot includes all Week 01-07 files and adds the packaged XML disease library. The app now has both saved scan history and local reference content.
-
-```text
-LeafGuard-AI/
-|-- README.md
-|-- START_HERE.md
-|-- LEARNING_PATH.md
-|-- PRODUCT_PROGRESS_MAP.md
-|-- progress-tracker.md
-|-- roadmap/week-01-project-understanding/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- roadmap/week-02-android-basics-ui/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- roadmap/week-03-camera-gallery/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- roadmap/week-04-fastapi-backend/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- roadmap/week-05-android-networking/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- roadmap/week-06-cloud-ml-model/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- roadmap/week-07-room-sqlite-history/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- roadmap/week-08-xml-disease-library/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- docs/evidence/{week-01/, week-02/, week-03/, week-04/, week-05/, week-06/, week-07/, week-08/}
-|-- backend-api/{main.py, model_loader.py, config.py, labels.py, labels-38.txt, requirements*.txt, test_api.py, README.md, models/}
-|-- model/{README.md, model-notes.md, labels-38.txt, model_contract.py, test_model_contract.py, inspect_model.py, model-acquisition-guide.md}
-|-- android-app-kotlin/app/src/main/
-|   |-- assets/{diseases.xml, labels.txt}
-|   |-- java/com/leafguard/{DiseaseLibraryActivity.kt, ResultActivity.kt, HistoryActivity.kt, HistoryDetailActivity.kt, ScanActivity.kt, MainActivity.kt}
-|   |-- java/com/leafguard/database/{ScanRecord.kt, ScanDao.kt, AppDatabase.kt}
-|   |-- java/com/leafguard/network/{ApiService.kt, RetrofitClient.kt, PredictionResponse.kt}
-|   `-- res/layout/{activity_disease_library.xml, item_disease_library.xml, activity_result.xml, activity_history_detail.xml, activity_history.xml, item_scan_history.xml}
-`-- android-app/ (Java mirror with assets/diseases.xml and XML parsing behavior)
-```
-
----
-
-## 📚 Week 08 — Navigation
-
-### All Files In This Week (Complete In Order)
+## Week 08 Navigation
 
 | Step | File | Description |
-|------|------|-------------|
-| **1** | **README.md** ← *You are here* | **Week Overview & Objectives** |
-| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
-| 3 | [exercises.md](exercises.md) | Practice Exercises |
-| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
-| 5 | [validation-checklist.md](validation-checklist.md) | Validation & Verification |
-| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
-| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
+|---:|---|---|
+| **1** | **README.md** - current | Scope and exact catalog |
+| 2 | [learning-notes.md](learning-notes.md) | Theory and complete source inventory |
+| 3 | [exercises.md](exercises.md) | Guided practice |
+| 4 | [build-task.md](build-task.md) | Implementation guide |
+| 5 | [validation-checklist.md](validation-checklist.md) | Validation and evidence |
+| 6 | [quiz.md](quiz.md) | Knowledge assessment |
+| 7 | [reflection.md](reflection.md) | Reflection and handoff |
 
----
-
-### Within-Week Navigation
-
-*(Start of week)* &nbsp;&nbsp;|&nbsp;&nbsp; **Week Overview & Objectives** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Theory & Learning Notes →](learning-notes.md)
-
----
-
-### Week Progression
-
-| ← Previous Week | 🏠 Home | Next Week → |
-|:----------------|:-------:|------------:|
-| [⬅ Week 07: Room Database & History](../week-07-room-sqlite-history/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 09: TensorFlow Lite Offline AI ➡](../week-09-tensorflow-lite-offline-ai/README.md) |
-
----
+[Previous: Week 07](../week-07-room-sqlite-history/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Next: Week 09](../week-09-tensorflow-lite-offline-ai/README.md)

@@ -1,171 +1,142 @@
-# Week 08: Reflection — XML Disease Library
+# Week 08 Reflection: Reviewed Local Guidance
 
-> **Accuracy note:** the shipped file is `assets/diseases.xml` (parsed in `DiseaseLibraryActivity` with `XmlPullParser`), 10 entries, tags `<name>`/`<plant>`/`<symptoms>`/`<treatment>`/`<prevention>`, `<name>` matching `labels.txt`. Kotlin primary, Java secondary.
+## Purpose
 
-> Fill in each section honestly. This reflection helps you consolidate
-> understanding and prepares you for viva questions on Week 08 topics.
+Save answers in:
 
----
+```text
+docs/evidence/week-08/reflection-answers.md
+```
 
-## 1. XML Parsing Understanding
-
-**Q: Explain in your own words how XmlPullParser works (4+ sentences).**
-
-> *Sample answer for reference — write your OWN version:*
-> XmlPullParser is an event-driven, streaming XML parser. You call `parser.next()` in a loop and it returns integer event codes: START_TAG (opening element), TEXT (text content), END_TAG (closing element), and END_DOCUMENT (end of file). Unlike DOM, it does NOT load the entire XML tree into memory — it reads one event at a time, making it memory-efficient for large files. I use it by checking the current tag name at START_TAG events to know which Disease field to populate, then reading the text content at TEXT events to fill those fields.
-
-Your answer:
-_______________________________________________________________
-_______________________________________________________________
-_______________________________________________________________
-_______________________________________________________________
+Use your own words and cite build, XML count, library, detail, matching, unmatched, and Room evidence.
 
 ---
 
-## 2. Why XML Over JSON for the Disease Library?
+## Section 1: Progressive Growth
 
-**Q: Justify the choice of XML over a JSON file or SQLite database (3+ sentences).**
+### Prompt 1
 
-> *Sample answer:* XML was the required format for CSE 2206 to demonstrate XmlPullParser skills. The disease library is static, human-readable, version-controlled data that doesn't change at runtime — it's shipped with the app in the assets folder. XML tags provide self-documenting structure (e.g., `<symptoms>`) that is easy to maintain and extend. JSON would be lighter, but XML was chosen for its educational value and for the course assessment requirement.
+What did Week 07 already persist, and what local reference ability did Week 08 add?
 
-Your answer:
-_______________________________________________________________
-_______________________________________________________________
-_______________________________________________________________
+### Prompt 2
 
----
+Why are 10 reviewed entries and 38 model labels both correct?
 
-## 3. Repository Pattern Benefit
+### Prompt 3
 
-**Q: What problem does DiseaseRepository solve that wasn't present in earlier weeks? (2+ sentences).**
-
-> *Sample answer:* Without DiseaseRepository, ResultActivity would re-parse the XML file every time a prediction is made — every file read and parse takes ~20ms even for small files, and repeated reads waste I/O. DiseaseRepository parses once, stores diseases in a HashMap, and all subsequent lookups are O(1) in-memory operations. It also provides a single point to add caching logic, error handling, and potential future features like remote disease updates.
-
-Your answer:
-_______________________________________________________________
-_______________________________________________________________
-_______________________________________________________________
+What does XML guidance prove, and why is it not offline inference?
 
 ---
 
-## 4. Biggest Challenge
+## Section 2: XML and Architecture
 
-**Q: What was the most difficult part of implementing the XML disease library this week?**
+### Prompt 4
 
-*Options to consider: getting the XML structure right, debugging parser logic, integrating with ResultActivity, threading, label matching...*
+Explain all five XML fields and why each is required.
 
-Your answer:
-_______________________________________________________________
-_______________________________________________________________
-_______________________________________________________________
+### Prompt 5
 
----
+Explain the pull-parser state machine and three catalog defects it rejects.
 
-## 5. Threading Mistake & Fix
+### Prompt 6
 
-**Q: What happens if you call `repo.loadIfNeeded()` on the main thread? Why is this wrong?**
+Why are `Disease` values immutable?
 
-> *Sample answer:* Android throws a `NetworkOnMainThreadException`-equivalent (or StrictMode violation) and the UI freezes while XML is being read and parsed. The main thread should never do file I/O because even small operations can cause "Application Not Responding" (ANR) if they take more than ~5ms on the main thread. The fix is to call `loadIfNeeded()` inside an `Executors.newSingleThreadExecutor()` block and update UI via `runOnUiThread()`.
+### Prompt 7
 
-Your answer:
-_______________________________________________________________
-_______________________________________________________________
-_______________________________________________________________
+Explain repository singleton, application context, caching, and normalized lookup.
+
+### Prompt 8
+
+Why does asset parsing run on `Dispatchers.IO`?
 
 ---
 
-## 6. Label Matching Problem
+## Section 3: UI and Integration
 
-**Q: The model predicts `"Tomato___Late_blight"` but your XML has `<label>Tomato___Late_blight</label>`. What could go wrong?**
+### Prompt 9
 
-> *Things to consider: extra spaces, different capitalization, underscores vs spaces, different dataset naming conventions.*
+Explain the list -> adapter -> display-name extra -> detail lookup flow.
 
-Your answer:
-_______________________________________________________________
-_______________________________________________________________
+### Prompt 10
 
----
+Why does Result lookup use `disease` instead of `model_label`?
 
-## 7. Week 08 Self-Assessment
+### Prompt 11
 
-Rate yourself honestly (1 = not understood, 5 = can teach this):
+Explain matching, unmatched, and parser-error guidance behavior.
 
-| Skill | 1–5 |
-|-------|-----|
-| Understand XmlPullParser event loop | |
-| Write Disease.java model class from scratch | |
-| Implement full DiseaseXmlParser.java | |
-| Implement DiseaseRepository singleton | |
-| Integrate disease info into ResultActivity | |
-| Build DiseaseLibraryActivity with RecyclerView | |
-| Write unit tests for XML parser | |
+### Prompt 12
 
-**Honest total: _____ / 35**
+Why must Save wait for lookup, and how did you prove Room stored the enriched text?
 
 ---
 
-## 8. What Would You Improve?
+## Section 4: Debugging and Evidence
 
-If you had 2 more hours, what would you add or improve?
+### Prompt 13
 
-*Ideas: disease detail screen, crop filter buttons, symptom image gallery, remote XML updates, disease severity statistics dashboard...*
+```text
+Observed problem:
+First hypothesis:
+Discriminating check:
+Actual cause:
+Fix:
+Focused retest:
+Milestone retest:
+Evidence:
+```
 
-Your answer:
-_______________________________________________________________
-_______________________________________________________________
-_______________________________________________________________
+### Prompt 14
 
----
-
-## 9. Connection to Previous Weeks
-
-**Q: How does this week connect to Week 07 (Room database)?**
-
-> *Sample answer:* Week 07 stores scan history in Room (label, confidence, date, image path). This week adds meaning to that label — when a user views their history, the label `"Tomato___Late_blight"` can now be enriched with symptoms and treatment from the XML repository. Together, they form the complete result experience: past scan record (Room) + disease knowledge base (XML).
-
-Your answer:
-_______________________________________________________________
-_______________________________________________________________
+Which evidence best proves the catalog works offline? What does it not prove?
 
 ---
 
-## 10. Key Takeaway
+## Section 5: Confidence Table
 
-**Write ONE sentence that summarizes your most important learning from Week 08:**
+| Topic | Confidence 1-10 | Evidence | Next practice if below 7 |
+|---|---:|---|---|
+| XML schema | | | |
+| Pull parsing | | | |
+| Validation/rejection | | | |
+| Repository caching | | | |
+| Coroutine asset I/O | | | |
+| RecyclerView list/detail | | | |
+| Result exact-name lookup | | | |
+| Room enrichment | | | |
 
-_______________________________________________________________
+---
 
+## Section 6: Week 09 Handoff
+
+Complete three sentences:
+
+1. **What exists now:** describe local reviewed reference guidance.
+2. **What still requires cloud:** describe current prediction inference.
+3. **What Week 09 adds:** describe TFLite/offline inference without confusing it with XML lookup.
+
+---
+
+## Completion Check
+
+- [ ] I explained 10 versus 38.
+- [ ] I explained all five XML fields.
+- [ ] I cited parser rejection evidence.
+- [ ] I explained repository caching.
+- [ ] I cited backend-off list/detail evidence.
+- [ ] I cited matching and unmatched Result evidence.
+- [ ] I cited enriched Room history evidence.
+- [ ] I did not describe XML as inference.
+- [ ] I completed the Week 09 handoff.
+- [ ] I updated the progress tracker.
 
 <!-- NAV_FOOTER_START -->
 
 ---
 
-## 📚 Week 08 — Navigation
+## Week 08 Navigation
 
-### All Files In This Week (Complete In Order)
+[README](README.md) | [Learning Notes](learning-notes.md) | [Exercises](exercises.md) | [Build Task](build-task.md) | [Validation](validation-checklist.md) | [Quiz](quiz.md) | **Reflection - current**
 
-| Step | File | Description |
-|------|------|-------------|
-| 1 | [README.md](README.md) | Week Overview & Objectives |
-| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
-| 3 | [exercises.md](exercises.md) | Practice Exercises |
-| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
-| 5 | [validation-checklist.md](validation-checklist.md) | Validation & Verification |
-| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
-| **7** | **reflection.md** ← *You are here* | **Reflection & Consolidation** |
-
----
-
-### Within-Week Navigation
-
-[← Knowledge Assessment Quiz](quiz.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Reflection & Consolidation** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Week 09: TensorFlow Lite Offline AI (Start) →](../week-09-tensorflow-lite-offline-ai/README.md)
-
----
-
-### Week Progression
-
-| ← Previous Week | 🏠 Home | Next Week → |
-|:----------------|:-------:|------------:|
-| [⬅ Week 07: Room Database & History](../week-07-room-sqlite-history/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 09: TensorFlow Lite Offline AI ➡](../week-09-tensorflow-lite-offline-ai/README.md) |
-
----
+[Previous: Quiz](quiz.md) | [Learning Path](../../LEARNING_PATH.md) | [Next: Week 09](../week-09-tensorflow-lite-offline-ai/README.md)

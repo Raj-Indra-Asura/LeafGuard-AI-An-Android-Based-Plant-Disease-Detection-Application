@@ -1,424 +1,159 @@
-# Week 10: Notifications, Share, and Location
+# Week 10: Sharing, Optional Location, and Scan Reminders
 
-## What you'll learn & why
+## Mindset
 
-This week you connect LeafGuard AI to three built-in Android features that make an app feel finished. You will show a **notification** (the little message that slides down from the top of the phone) to remind the user to scan their plants. You will add a **share** button so a result can be sent to WhatsApp, Gmail, or any other app. You will optionally tag a scan with the phone's **location** (its GPS latitude and longitude) so the user knows where a diseased leaf was found. These are all things real apps do every day, and each one is a required topic in your CSE 2206 course.
+Week 09 completes cloud/offline prediction, guidance, and history. Week 10 adds three user utilities without changing inference:
 
-## New words this week
+> Share a text result, optionally attach last-known location when saving, and schedule/cancel one daily local scan reminder.
 
-See the shared [glossary](../../GLOSSARY.md) for more. The key terms this week:
+Privacy and denial handling are part of the feature: sharing excludes image/location, location is opt-in, denial still saves normally, and notifications remain disabled without permission.
 
-- **Notification** — a short message your app posts to the phone's status bar, even when the app is closed.
-- **Notification channel** — a named category of notifications (Android 8+) that the user can turn on or off. LeafGuard's channel id is `leafguard_scan_reminders`.
-- **PendingIntent** — a "saved action" you hand to the system so it can open your app later when the user taps the notification.
-- **Share intent** — an `Intent` with action `ACTION_SEND` that asks Android to show the list of apps you can share to.
-- **Location / GPS** — the phone's position on Earth, given as two numbers: latitude and longitude.
+## Progressive Handoff
 
-## Repository State After Week 10
+| Week | Input | Week 10 use |
+|---:|---|---|
+| 07 | Room history | Add optional nullable location through migration |
+| 08 | Final guidance | Include reviewed text in share template |
+| 09 | Cloud/offline result | Utility actions reuse either mode |
+| **10** | Complete result workflow | Share, location, reminder settings |
+| 11 | Complete feature set | Automated testing/debug/performance |
 
-Week 10 keeps the complete core diagnosis flow and adds Android system integrations. The repository now shows how LeafGuard communicates with the operating system, other apps, and optional device location services.
+## Product State
 
-### Structure to browse after this week
+**Cumulative completion: 88%**
 
-- `android-app-kotlin/app/src/main/java/com/leafguard/utils/NotificationHelper.kt` creates the notification channel and posts scan reminders.
-- `android-app-kotlin/app/src/main/AndroidManifest.xml` includes notification and location permissions when required by the target Android version.
-- `MainActivity.kt` or another startup point creates the notification channel before posting notifications.
-- `ResultActivity.kt` and `HistoryDetailActivity.kt` include share-intent behavior for diagnosis text or image results.
-- `ScanActivity.kt` may request location and attach latitude/longitude to a scan.
-- `database/ScanRecord.kt`, `ScanDao.kt`, and related history UI may include latitude and longitude fields.
-- `strings.xml` contains user-facing notification, share, and permission messages.
-- The Java track should mirror the same system-integration behavior.
+Now available:
 
-### Files you should create or update this week
+- plain-text `ACTION_SEND` chooser with result disclaimer
+- optional location checkbox during Save
+- coarse/fine runtime permission request only after opt-in
+- save without location after denial/unavailability
+- nullable latitude/longitude in Room version 2
+- non-destructive migration from schema 1 to 2
+- location/not-saved state in history detail
+- notification channel
+- Android 13 notification permission handling
+- one unique approximately daily WorkManager reminder
+- persisted reminder switch and cancellation
 
-- `utils/NotificationHelper.kt`.
-- `AndroidManifest.xml` for `POST_NOTIFICATIONS`, location permissions, and any required system declarations.
-- `MainActivity.kt` for channel setup or reminder entry points.
-- `ResultActivity.kt` and `HistoryDetailActivity.kt` for share actions.
-- `ScanActivity.kt` and Room files if saving optional location with scans.
-- `strings.xml` for notification, share, and location text.
-- `docs/evidence/week-10/` showing notification, share sheet, and optional location proof.
+Still outside Week 10:
 
-### What this repository state can do
+- background location tracking or maps
+- sharing image files or coordinates
+- exact-alarm reminders
+- analytics, bottom navigation redesign, broad settings, animations
+- Week 11 automated test expansion/performance profiling
+- Week 12 signing and release packaging
 
-- Post a reminder notification through a proper Android notification channel.
-- Open the Android share sheet with a scan result.
-- Optionally request location and save coordinates with a scan.
-- Demonstrate app-to-system and app-to-app communication.
+## Exact Delta
 
-### What this repository state cannot do
+| Change | Count | Files |
+|---|---:|---|
+| New | 2 | `utils/NotificationHelper.kt`, `utils/ScanReminderWorker.kt` |
+| Expanded | 11 | Gradle, manifest, Room entity/database, Result/HistoryDetail/Settings Activities and layouts, strings |
+| Model/API/XML changes | 0 | Week 09 and earlier contracts are reused |
 
-- It cannot prove long-term stability until Week 11 testing is complete.
-- It cannot be considered final submission packaging yet.
-- It should not request permissions silently; denial paths still need testing evidence.
-- It still needs a release build and final documentation in Week 12.
+| File | Lines |
+|---|---:|
+| `app/build.gradle` | 61 |
+| `AndroidManifest.xml` | 64 |
+| `database/ScanRecord.kt` | 33 |
+| `database/AppDatabase.kt` | 45 |
+| `utils/NotificationHelper.kt` | 82 |
+| `utils/ScanReminderWorker.kt` | 20 |
+| `ResultActivity.kt` | 222 |
+| `HistoryDetailActivity.kt` | 119 |
+| `SettingsActivity.kt` | 66 |
+| `activity_result.xml` | 136 |
+| `activity_history_detail.xml` | 114 |
+| `activity_settings.xml` | 29 |
+| `strings.xml` | 97 |
+| **Total** | **1,088** |
 
----
+Full files appear in [learning-notes.md section 12](learning-notes.md#12-end-of-week-10-file-inventory-exact-files-exact-code-exact-size).
 
-## Weekly Objective
+## Exact Contracts
 
-Implement Android system integrations: notifications, sharing, and location tagging.
+### Room Migration
 
-**Measurable Outcomes:**
-- Notification channel created
-- Reminder notification working
-- Share intent implemented
-- Location permission handling
-- Optional: GPS coordinates saved with scans
-- Complete system integration demonstration
+Schema 1's 10 columns remain. Schema 2 adds:
 
----
-
-## Why This Week Matters
-
-**CSE 2206 Requirements:**
-- **Notifications** - Mandatory syllabus topic
-- **App-to-app communication** - Share intent demonstrates this
-- **Location** - Maps and location topic (attempt required)
-
-**Viva Question:** "Explain what a NotificationChannel is and why Android 8 introduced it."
-
----
-
-## Syllabus Topics
-
-1. **Notifications** - NotificationChannel, NotificationCompat, PendingIntent
-2. **App-to-app Communication** - Share intent, ACTION_SEND
-3. **Location Services** - FusedLocationProviderClient, GPS permissions
-4. **System Integration** - Using Android framework features via intents and system services
-
----
-
-## Key Concepts
-
-### Notification Architecture (API 26+)
-
-Android 8 (API 26) introduced **NotificationChannels**. Every notification must belong to a channel, which the user can manage independently in Settings.
-
-```
-App creates NotificationChannel (once, on startup)
-       |
-       v
-NotificationManager registers the channel with the OS
-       |
-       v
-App builds Notification using NotificationCompat.Builder
-       |
-       v
-NotificationManager.notify(id, notification)
-       |
-       v
-Android shows notification in the status bar
-       |
-       v
-User taps → PendingIntent fires → MainActivity opens
+```text
+latitude REAL NULL
+longitude REAL NULL
 ```
 
-**Key classes:**
-| Class | Role |
-|---|---|
-| `NotificationChannel` | Defines importance level, sound, vibration |
-| `NotificationCompat.Builder` | Builds the visible notification |
-| `PendingIntent` | Wraps the Intent that runs when tapped |
-| `NotificationManagerCompat` | Posts the notification (compat wrapper) |
+Existing rows migrate with null location. No destructive migration is allowed.
 
-**Minimal implementation (Kotlin — primary track):**
+### Permissions
 
-In LeafGuard's real code this lives in `NotificationHelper` (a Kotlin `object` in
-package `com.leafguard.utils`). The channel id is `leafguard_scan_reminders` and the
-notification id is `1001`.
+| Permission | Requested when | Denial behavior |
+|---|---|---|
+| Coarse/fine location | User checks Include Location and saves | Save without location |
+| POST_NOTIFICATIONS (Android 13+) | User enables reminders | Toggle off; reminders cancelled |
 
-```kotlin
-// Create the channel once (safe to call again; Android ignores duplicates)
-if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-    val channel = NotificationChannel(
-        "leafguard_scan_reminders",       // channel id
-        "Scan Reminders",                 // user-visible name
-        NotificationManager.IMPORTANCE_DEFAULT
-    )
-    channel.description = "Reminds you to scan your plants weekly"
-    val nm = context.getSystemService(NotificationManager::class.java)
-    nm?.createNotificationChannel(channel)
-}
+### Sharing
 
-// Build and post the notification
-val intent = Intent(context, MainActivity::class.java)
-val pendingIntent = PendingIntent.getActivity(
-    context, 1001, intent,
-    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-)
+Share contains disease, confidence, three guidance fields, and caution. It excludes model files, image, database, location, and secrets.
 
-val builder = NotificationCompat.Builder(context, "leafguard_scan_reminders")
-    .setSmallIcon(android.R.drawable.ic_menu_camera)
-    .setContentTitle("Time to check your plants!")
-    .setContentText("Open LeafGuard AI and scan a leaf today.")
-    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-    .setContentIntent(pendingIntent)
-    .setAutoCancel(true)
+### Reminder
 
-NotificationManagerCompat.from(context).notify(1001, builder.build())
-```
+Unique work name prevents duplicate schedules. Interval is approximately 24 hours; WorkManager timing is not exact.
 
-**Java (secondary track):**
-```java
-// Create channel (do this once, e.g. in NotificationHelper)
-if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-    NotificationChannel channel = new NotificationChannel(
-        "leafguard_scan_reminders",   // channel id
-        "Scan Reminders",             // user-visible name
-        NotificationManager.IMPORTANCE_DEFAULT
-    );
-    channel.setDescription("Reminds you to scan your plants weekly");
-    NotificationManager nm = context.getSystemService(NotificationManager.class);
-    nm.createNotificationChannel(channel);
-}
+## CSE 2206 Connection
 
-// Build and post a notification
-PendingIntent pi = PendingIntent.getActivity(
-    context, 1001,
-    new Intent(context, MainActivity.class),
-    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
-);
+- implicit Intents and chooser
+- dangerous runtime permissions
+- privacy-minimizing optional data
+- Room schema versions/migrations
+- SharedPreferences
+- notification channels and PendingIntent
+- WorkManager and unique periodic work
+- backward-compatible Android API behavior
 
-NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "leafguard_scan_reminders")
-    .setSmallIcon(android.R.drawable.ic_menu_camera)
-    .setContentTitle("Time to check your plants!")
-    .setContentText("Open LeafGuard AI and scan a leaf today.")
-    .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-    .setContentIntent(pi)
-    .setAutoCancel(true);
+## Milestone Demo
 
-NotificationManagerCompat.from(context).notify(1001, builder.build());
-```
+1. Share result through chooser and inspect text.
+2. Save without location.
+3. Save with location permission granted and show coordinates.
+4. Deny location and show save still succeeds without coordinates.
+5. Upgrade an existing v1 database and show history remains.
+6. Enable reminder and grant notification permission.
+7. Show unique work/channel configuration.
+8. Disable reminder and prove cancellation.
+9. Explain privacy boundaries.
 
----
+## Seven-File Loop
 
-### Share Intent Architecture
+| Step | File | Output |
+|---:|---|---|
+| 1 | `README.md` | Scope/contracts |
+| 2 | `learning-notes.md` | Theory + exact files |
+| 3 | `exercises.md` | Six evidence plans |
+| 4 | `build-task.md` | Working utilities |
+| 5 | `validation-checklist.md` | Pass/fail proof |
+| 6 | `quiz.md` | >=14/18 |
+| 7 | `reflection.md` | Week 11 handoff |
 
-Android's **Share sheet** lets your app send data to any other app that can handle it. No direct integration with the target app is needed.
+## Completion Contract
 
-```
-LeafGuard ResultActivity
-       |
-       | user taps Share
-       v
-Intent(ACTION_SEND) with text/image MIME type
-       |
-       v
-Android resolves all installed apps that accept this type
-       |
-       v
-Share sheet appears: WhatsApp, Gmail, Messages, Drive...
-       |
-       v
-User picks an app → that app's Activity receives the Intent
-```
-
-**Share text result (Kotlin — primary track).** In LeafGuard this lives in `ResultActivity` (and `HistoryDetailActivity`):
-```kotlin
-private fun shareResult(diseaseName: String, confidence: Float) {
-    val shareText = "LeafGuard AI detected: $diseaseName" +
-        " (${Math.round(confidence)}% confidence)\n" +
-        "Scanned with LeafGuard AI"
-
-    val shareIntent = Intent(Intent.ACTION_SEND).apply {
-        type = "text/plain"
-        putExtra(Intent.EXTRA_TEXT, shareText)
-        putExtra(Intent.EXTRA_SUBJECT, "Plant Disease Scan Result")
-    }
-    startActivity(Intent.createChooser(shareIntent, "Share result via"))
-}
-```
-
-**Java (secondary track):**
-```java
-private void shareResult(String diseaseName, float confidence) {
-    String shareText = "LeafGuard AI detected: " + diseaseName
-        + " (" + Math.round(confidence * 100) + "% confidence)\n"
-        + "Scanned with LeafGuard AI";
-
-    Intent shareIntent = new Intent(Intent.ACTION_SEND);
-    shareIntent.setType("text/plain");
-    shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
-    shareIntent.putExtra(Intent.EXTRA_SUBJECT, "Plant Disease Scan Result");
-
-    startActivity(Intent.createChooser(shareIntent, "Share result via"));
-}
-```
-
-**Share image + text:**
-```java
-private void shareResultWithImage(Uri imageUri, String text) {
-    Intent shareIntent = new Intent(Intent.ACTION_SEND);
-    shareIntent.setType("image/jpeg");
-    shareIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-    shareIntent.putExtra(Intent.EXTRA_TEXT, text);
-    shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-    startActivity(Intent.createChooser(shareIntent, "Share via"));
-}
-```
-
----
-
-### Location Services Architecture
-
-```
-App requests ACCESS_FINE_LOCATION permission
-       |
-       v
-FusedLocationProviderClient.getLastLocation()
-       |
-       +--> Location available → extract lat/lng → save to DB
-       |
-       +--> Location null → request fresh location update
-              |
-              v
-         LocationRequest + LocationCallback
-              |
-              v
-         GPS/network returns fix → save lat/lng
-```
-
-**Permission declaration (AndroidManifest.xml):**
-```xml
-<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-```
-
-**Get last known location:**
-```java
-FusedLocationProviderClient fusedLocationClient =
-    LocationServices.getFusedLocationProviderClient(this);
-
-if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-        == PackageManager.PERMISSION_GRANTED) {
-
-    fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
-        if (location != null) {
-            double lat = location.getLatitude();
-            double lng = location.getLongitude();
-            Log.d(TAG, "Location: " + lat + ", " + lng);
-        }
-    });
-}
-```
-
-**Gradle dependency:**
-```gradle
-implementation 'com.google.android.gms:play-services-location:21.0.1'
-```
-
----
-
-## Prerequisites
-
-- Week 07 complete (Room database to store location with scan records)
-- Understanding of Android permissions model
-- Week 09 complete (result screen to add Share button to)
-
----
-
-## Weekly Timeline
-
-- **Day 1-2:** Notification implementation (4h)
-- **Day 3-4:** Share functionality (3h)
-- **Day 5-6:** Location tagging (4h - attempt, document if difficult)
-- **Day 7:** Testing and documentation (2h)
-
----
-
-## Validation Criteria
-
-- [ ] Notification channel created
-- [ ] Notification displays correctly
-- [ ] Tapping notification opens app
-- [ ] Share button functional
-- [ ] Can share to WhatsApp, email, etc.
-- [ ] Location permission requested
-- [ ] Location saved with scan (or documented as attempted)
-- [ ] All features work without crashes
-
----
-
-**Next:** `learning-notes.md` for 2,335 lines of in-depth coverage.
-
+| Quantity | Value |
+|---|---:|
+| New files | 2 |
+| Expanded files | 11 |
+| Logical lines | 1,088 |
+| Room version | 2 |
+| New nullable columns | 2 |
+| New permissions | 3 |
+| Unique periodic work | 1 |
+| Prediction contract changes | 0 |
 
 <!-- NAV_FOOTER_START -->
 
 ---
 
-## 📈 Product State After This Week
+## Navigation
 
-**Cumulative product completion: 88%** *(official model: [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md))*
+[Learning Notes](learning-notes.md) | [Exercises](exercises.md) | [Build Task](build-task.md) | [Validation](validation-checklist.md) | [Quiz](quiz.md) | [Reflection](reflection.md)
 
-- **Your app can now…** notify the user, share a diagnosis to other apps via a share intent, and attach location to scans — every planned feature now exists.
-- **Your app still cannot…** guarantee stability under stress, and it is not yet a signed, installable release. Week 11 hardens it; Week 12 ships it.
-- **Applies equally to both tracks:** Kotlin (`android-app-kotlin/`, primary) and Java (`android-app/`, secondary).
-
-### Cumulative Repository State After Week 10
-
-This snapshot includes all Week 01-09 files and adds Android system integrations: notifications, share intents, and optional location fields.
-
-```text
-LeafGuard-AI/
-|-- README.md
-|-- START_HERE.md
-|-- LEARNING_PATH.md
-|-- PRODUCT_PROGRESS_MAP.md
-|-- progress-tracker.md
-|-- roadmap/week-01-project-understanding/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- roadmap/week-02-android-basics-ui/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- roadmap/week-03-camera-gallery/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- roadmap/week-04-fastapi-backend/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- roadmap/week-05-android-networking/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- roadmap/week-06-cloud-ml-model/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- roadmap/week-07-room-sqlite-history/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- roadmap/week-08-xml-disease-library/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- roadmap/week-09-tensorflow-lite-offline-ai/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- roadmap/week-10-notifications-share-location/{README.md, learning-notes.md, exercises.md, build-task.md, validation-checklist.md, quiz.md, reflection.md}
-|-- docs/evidence/{week-01/, week-02/, week-03/, week-04/, week-05/, week-06/, week-07/, week-08/, week-09/, week-10/}
-|-- backend-api/{main.py, model_loader.py, config.py, labels.py, labels-38.txt, requirements*.txt, test_api.py, README.md, models/}
-|-- model/{README.md, model-notes.md, labels-38.txt, model_contract.py, test_model_contract.py, inspect_model.py, convert_model.py, validate_tflite.py, parity_test.py, model-acquisition-guide.md}
-|-- android-app-kotlin/app/src/main/
-|   |-- AndroidManifest.xml
-|   |-- assets/{diseases.xml, labels.txt, model.tflite}
-|   |-- java/com/leafguard/utils/NotificationHelper.kt
-|   |-- java/com/leafguard/{MainActivity.kt, ScanActivity.kt, ResultActivity.kt, HistoryActivity.kt, HistoryDetailActivity.kt, DiseaseLibraryActivity.kt, SettingsActivity.kt, AnalyticsActivity.kt}
-|   |-- java/com/leafguard/database/{ScanRecord.kt, ScanDao.kt, AppDatabase.kt}
-|   |-- java/com/leafguard/ml/TFLiteClassifier.kt
-|   |-- java/com/leafguard/network/{ApiService.kt, RetrofitClient.kt, PredictionResponse.kt}
-|   `-- res/{layout/, values/, drawable/, menu/, xml/}
-`-- android-app/ (Java mirror with NotificationHelper.java, share, and optional location support)
-```
-
----
-
-## 📚 Week 10 — Navigation
-
-### All Files In This Week (Complete In Order)
-
-| Step | File | Description |
-|------|------|-------------|
-| **1** | **README.md** ← *You are here* | **Week Overview & Objectives** |
-| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
-| 3 | [exercises.md](exercises.md) | Practice Exercises |
-| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
-| 5 | [validation-checklist.md](validation-checklist.md) | Validation & Verification |
-| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
-| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
-
----
-
-### Within-Week Navigation
-
-*(Start of week)* &nbsp;&nbsp;|&nbsp;&nbsp; **Week Overview & Objectives** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Theory & Learning Notes →](learning-notes.md)
-
----
-
-### Week Progression
-
-| ← Previous Week | 🏠 Home | Next Week → |
-|:----------------|:-------:|------------:|
-| [⬅ Week 09: TensorFlow Lite Offline AI](../week-09-tensorflow-lite-offline-ai/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 11: Testing, Debugging & Performance ➡](../week-11-testing-debugging-performance/README.md) |
-
----
+[Previous: Week 09](../week-09-tensorflow-lite-offline-ai/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Next: Week 11](../week-11-testing-debugging-performance/README.md)

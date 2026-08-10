@@ -1,184 +1,217 @@
-# Week 08 Validation Checklist — XML Disease Library
+# Week 08 Validation Checklist: XML Disease Library
 
-## 🎬 Milestone Demo (proves the cumulative product state)
+## Milestone Demo
 
-> **Demo:** Scan a leaf and show full symptoms/treatment/prevention advice on the Result screen, then open the Disease Library and browse all 10 diseases (**cumulative product: 72%**).
->
-> This single live demo proves the product state defined in [PRODUCT_PROGRESS_MAP.md](../../PRODUCT_PROGRESS_MAP.md). You may not advance to Week 09 until this demo works and every item below passes.
+> Browse all 10 reviewed entries without the backend, open complete detail, show matching local XML guidance on Result and in saved Room history, then show an unmatched name safely preserves backend guidance.
 
+Every item must be yes before Week 09.
 
-> Complete all items before marking Week 08 done. **How to use this:** for each row, answer **Yes** or **No**. Every row should be **Yes** before you finish the week. A **No** just tells you what to go back and fix.
->
-> **Accuracy note:** the shipped `assets/diseases.xml` uses five tags — `<name>`, `<plant>`, `<symptoms>`, `<treatment>`, `<prevention>` — with **10** `<disease>` entries whose `<name>` matches `assets/labels.txt` exactly. Extra fields (scientific name, severity, etc.) are an optional extension if you chose the richer schema.
+Record each result in `docs/evidence/week-08/validation.md`. `NOT TESTED` is not a pass.
 
 ---
 
-## 1. XML File Quality
+## 1. Progressive Boundary
 
-| # | Check | Yes / No |
-|---|-------|-----|
-| 1.1 | `assets/diseases.xml` exists | |
-| 1.2 | XML opens in browser without parse errors | |
-| 1.3 | Root element is `<diseases>` | |
-| 1.4 | At least 10 `<disease>` entries present | |
-| 1.5 | All 5 shipped fields present per disease (`name`, `plant`, `symptoms`, `treatment`, `prevention`) | |
-| 1.6 | No empty `<name>` elements | |
-| 1.7 | Each `<name>` matches a line in `labels.txt` exactly (e.g., `Tomato Late Blight`, with spaces — not underscores) | |
-| 1.8 | UTF-8 encoding declared in XML header | |
-| 1.9 | Covers at least 4 different crops | |
-| 1.10 | Includes both diseased and healthy entries | |
+- [ ] Week 07 save/history flow still works.
+- [ ] Room schema remains unchanged.
+- [ ] FastAPI/Keras/Retrofit contracts remain unchanged.
+- [ ] XML is reference content, not inference.
+- [ ] Ten reviewed entries are distinguished from 38 model labels.
+- [ ] Week 09 TFLite work is deferred.
+
+Pass rule: all 6.
 
 ---
 
-## 2. Disease.java Model Class
+## 2. Exact Repository State
 
-| # | Check | Yes / No |
-|---|-------|-----|
-| 2.1 | Class has all 8 fields: label, commonName, scientificName, affectedCrop, symptoms, treatment, prevention, severity | |
-| 2.2 | Default (no-arg) constructor present | |
-| 2.3 | All getters and setters present | |
-| 2.4 | Class compiles without errors | |
-| 2.5 | Fields use correct Java types (String) | |
+- [ ] Exactly 8 new files are documented.
+- [ ] Exactly 5 expanded files are documented.
+- [ ] Complete total is 798 logical lines.
+- [ ] No Gradle dependency is added.
+- [ ] Complete files match learning-notes Section 12.
+- [ ] Android debug build succeeds.
+- [ ] No later search/severity/location/share/polish code is required.
 
----
-
-## 3. DiseaseXmlParser.java
-
-| # | Check | Yes / No |
-|---|-------|-----|
-| 3.1 | Uses `XmlPullParser` (NOT DOM or SAX) | |
-| 3.2 | `parse(InputStream)` method signature correct | |
-| 3.3 | Parses correct count of diseases (matches XML) | |
-| 3.4 | All 8 fields extracted for each disease | |
-| 3.5 | Text trimmed (no leading/trailing whitespace) | |
-| 3.6 | `currentTag` reset at END_TAG event | |
-| 3.7 | Declares `throws XmlPullParserException, IOException` | |
-| 3.8 | InputStream is not closed inside parser (caller closes it) | |
+Pass rule: all 7.
 
 ---
 
-## 4. DiseaseRepository.java
+## 3. XML Catalog Integrity
 
-| # | Check | Yes / No |
-|---|-------|-----|
-| 4.1 | Implements singleton pattern (`getInstance()`) | |
-| 4.2 | `loadIfNeeded()` parses XML only once per app session | |
-| 4.3 | `loadIfNeeded()` is `synchronized` | |
-| 4.4 | Uses `getApplicationContext()` to avoid memory leaks | |
-| 4.5 | Diseases stored in `Map<String, Disease>` keyed by label | |
-| 4.6 | `findByLabel(String)` returns correct disease | |
-| 4.7 | Returns `null` gracefully if label not found | |
-| 4.8 | Handles `XmlPullParserException` without crashing | |
-| 4.9 | Handles `IOException` without crashing | |
-| 4.10 | `getAllDiseases()` returns all entries | |
+- [ ] Asset path is `app/src/main/assets/diseases.xml`.
+- [ ] Root element is `<diseases>`.
+- [ ] Exactly 10 `<disease>` entries exist.
+- [ ] Exactly 10 names exist.
+- [ ] Exactly 10 plants exist.
+- [ ] Exactly 10 symptoms exist.
+- [ ] Exactly 10 treatments exist.
+- [ ] Exactly 10 prevention values exist.
+- [ ] Required text values are non-empty.
+- [ ] Normalized names are unique.
+- [ ] Catalog contains no invented severity/label/location fields.
 
----
-
-## 5. ResultActivity Integration
-
-| # | Check | Yes / No |
-|---|-------|-----|
-| 5.1 | Disease info loaded on background thread | |
-| 5.2 | UI updated via `runOnUiThread()` | |
-| 5.3 | Correct disease shown for Tomato Late Blight prediction | |
-| 5.4 | Correct disease shown for Apple Scab prediction | |
-| 5.5 | "Healthy" prediction shown in green color | |
-| 5.6 | High severity shown in red | |
-| 5.7 | Unknown label shows raw label text (no crash) | |
-| 5.8 | Works when no internet connection | |
+Pass rule: all 11.
 
 ---
 
-## 6. DiseaseLibraryActivity
+## 4. Parser Behavior
 
-| # | Check | Yes / No |
-|---|-------|-----|
-| 6.1 | Activity listed in AndroidManifest.xml | |
-| 6.2 | Opens from MainActivity menu or button | |
-| 6.3 | RecyclerView displays all diseases | |
-| 6.4 | Diseases show common name, scientific name, crop, severity | |
-| 6.5 | Severity color coded (red/amber/green) | |
-| 6.6 | SearchView filters by disease name | |
-| 6.7 | SearchView filters by crop name | |
-| 6.8 | Diseases sorted alphabetically | |
-| 6.9 | Loads on background thread (no ANR) | |
-| 6.10 | Back button returns to MainActivity | |
+- [ ] Parser uses `XmlPullParser` events.
+- [ ] New disease resets temporary fields.
+- [ ] Text maps to the correct five properties.
+- [ ] End disease creates an immutable object.
+- [ ] Incomplete entry is rejected.
+- [ ] Blank required value is rejected.
+- [ ] Duplicate normalized name is rejected.
+- [ ] Empty catalog is rejected.
+- [ ] Original display capitalization is preserved.
+- [ ] No hardcoded fallback hides a failure.
 
----
-
-## 7. Testing
-
-| # | Check | Yes / No |
-|---|-------|-----|
-| 7.1 | Unit test: single disease parsed correctly | |
-| 7.2 | Unit test: multiple diseases parsed correctly | |
-| 7.3 | Unit test: empty XML returns empty list | |
-| 7.4 | Unit test: malformed XML throws exception | |
-| 7.5 | Manual: open Disease Library 5× — no crash | |
-| 7.6 | Manual: search and clear — list restores fully | |
-| 7.7 | Manual: rotate screen in DiseaseLibraryActivity — no crash | |
-| 7.8 | Logcat: no `OutOfMemoryError` during XML parsing | |
+Pass rule: all 10.
 
 ---
 
-## Scoring
+## 5. Repository and I/O
 
-| Section | Items | Passing |
-|---------|-------|---------|
-| XML File Quality | 10 | |
-| Disease Model | 5 | |
-| XML Parser | 8 | |
-| Repository | 10 | |
-| ResultActivity | 8 | |
-| Library Activity | 10 | |
-| Testing | 8 | |
-| **Total** | **59** | |
+- [ ] Repository uses application context.
+- [ ] Repository is a singleton.
+- [ ] Asset filename is defined once.
+- [ ] First access parses the XML.
+- [ ] Later access returns cached list.
+- [ ] `findByName` normalizes lookup.
+- [ ] Library parsing runs on `Dispatchers.IO`.
+- [ ] Detail lookup runs on `Dispatchers.IO`.
+- [ ] Result lookup runs on `Dispatchers.IO`.
+- [ ] UI updates return through lifecycle coroutine context.
 
-**Pass threshold: 50/59 (≥85%)**
+Pass rule: all 10.
 
 ---
 
-## Common Mistakes to Avoid
+## 6. Library List
 
-1. **Forgetting to close InputStream** — always close in `finally` or use try-with-resources
-2. **Parsing on main thread** — always use `Executors` or `AsyncTask`
-3. **Label mismatch** — model output uses `___` separators, ensure XML labels match exactly
-4. **Not resetting currentTag** — failing to reset at `END_TAG` causes wrong field assignments
-5. **OutOfMemoryError** — do NOT load entire file as String; always use streaming XmlPullParser
-6. **Multiple parses** — without `isLoaded` flag, XML is parsed on every lookup (slow)
-7. **Context leak** — using Activity context in singleton; always use `getApplicationContext()`
+- [ ] Loading indicator is visible during load.
+- [ ] RecyclerView uses `LinearLayoutManager`.
+- [ ] Adapter count becomes 10.
+- [ ] Each row shows name.
+- [ ] Each row shows plant.
+- [ ] Each row shows a two-line symptoms preview.
+- [ ] Successful list hides empty state.
+- [ ] Failure hides list and shows safe empty/error state.
+- [ ] Library works with FastAPI stopped.
+- [ ] Row tap passes only display disease name.
 
+Pass rule: all 10.
+
+---
+
+## 7. Disease Detail
+
+- [ ] Detail Activity is registered.
+- [ ] Missing name shows safe feedback and closes.
+- [ ] Unknown name shows safe feedback and closes.
+- [ ] Valid name loads cached repository entry.
+- [ ] Detail shows disease name.
+- [ ] Detail shows plant.
+- [ ] Detail shows full symptoms.
+- [ ] Detail shows full treatment.
+- [ ] Detail shows full prevention.
+- [ ] Detail works with backend stopped.
+
+Pass rule: all 10.
+
+---
+
+## 8. Result Enrichment
+
+- [ ] Initial Week 06 result still renders.
+- [ ] Save is disabled during XML lookup.
+- [ ] Lookup uses API `disease`, not `model_label`.
+- [ ] Exact matching name loads local entry.
+- [ ] Match replaces symptoms only with XML symptoms.
+- [ ] Match replaces treatment only with XML treatment.
+- [ ] Match replaces prevention only with XML prevention.
+- [ ] Match shows local-library source status.
+- [ ] Match sets reviewed guidance available.
+- [ ] No match preserves existing backend guidance.
+- [ ] Read/parse error preserves existing backend guidance.
+- [ ] Save is enabled after every terminal lookup path.
+- [ ] Saved matching Room record contains enriched guidance.
+
+Pass rule: all 13.
+
+---
+
+## 9. Failure and Boundary Behavior
+
+- [ ] Malformed catalog never crashes Library.
+- [ ] Malformed catalog never blanks Result guidance.
+- [ ] No unreviewed fallback list appears.
+- [ ] No network request is needed for catalog browsing.
+- [ ] XML does not alter confidence/uncertainty/model label.
+- [ ] XML does not alter Room table structure.
+- [ ] Search and severity are absent from Week 08 target.
+- [ ] Offline model inference is absent.
+
+Pass rule: all 8.
+
+---
+
+## 10. Evidence and Understanding
+
+- [ ] Android build output saved.
+- [ ] Six XML count outputs saved.
+- [ ] 10-entry offline list evidence saved.
+- [ ] Complete detail evidence saved.
+- [ ] Matching local-source Result saved.
+- [ ] Enriched Room detail evidence saved.
+- [ ] Unmatched preservation evidence saved.
+- [ ] Malformed-catalog behavior saved.
+- [ ] Catalog contract note saved.
+- [ ] Quiz score is at least 14/18.
+- [ ] Reflection cites observed evidence.
+- [ ] Progress tracker is updated.
+- [ ] No personal image/app database is committed.
+
+Pass rule: all 13.
+
+---
+
+## Failure Routing
+
+| Failure | Return to | Focused recheck |
+|---|---|---|
+| Wrong counts | XML asset | Six count commands |
+| Incomplete accepted | Parser validation | Malformed test copy |
+| List fails | Repository/I/O | Backend-off Library |
+| Detail wrong | Name extra/lookup | One known entry |
+| Match not enriched | `disease` lookup key | Exact XML name |
+| Guidance blanked | Error/unmatched fallback | Missing-name case |
+| Wrong Room text | Save timing | Match then save/detail |
+
+---
+
+## Completion Criteria
+
+Week 08 is complete only when:
+
+1. Exact 13-file snapshot builds.
+2. XML contains 10 complete unique entries.
+3. Parser rejects incomplete/duplicate/empty catalogs.
+4. Repository parses once and caches.
+5. List/detail work without backend.
+6. Matching Result uses local reviewed guidance.
+7. Unmatched/error Result preserves backend guidance.
+8. Room saves final enriched values without schema changes.
+9. XML is not described as inference.
 
 <!-- NAV_FOOTER_START -->
 
 ---
 
-## 📚 Week 08 — Navigation
+## Week 08 Navigation
 
-### All Files In This Week (Complete In Order)
+[README](README.md) | [Learning Notes](learning-notes.md) | [Exercises](exercises.md) | [Build Task](build-task.md) | **Validation - current** | [Quiz](quiz.md) | [Reflection](reflection.md)
 
-| Step | File | Description |
-|------|------|-------------|
-| 1 | [README.md](README.md) | Week Overview & Objectives |
-| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
-| 3 | [exercises.md](exercises.md) | Practice Exercises |
-| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
-| **5** | **validation-checklist.md** ← *You are here* | **Validation & Verification** |
-| 6 | [quiz.md](quiz.md) | Knowledge Assessment Quiz |
-| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
-
----
-
-### Within-Week Navigation
-
-[← Build Implementation Guide](build-task.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Validation & Verification** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Knowledge Assessment Quiz →](quiz.md)
-
----
-
-### Week Progression
-
-| ← Previous Week | 🏠 Home | Next Week → |
-|:----------------|:-------:|------------:|
-| [⬅ Week 07: Room Database & History](../week-07-room-sqlite-history/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 09: TensorFlow Lite Offline AI ➡](../week-09-tensorflow-lite-offline-ai/README.md) |
-
----
+[Previous: Build Task](build-task.md) | [Learning Path](../../LEARNING_PATH.md) | [Next: Quiz](quiz.md)
