@@ -1,609 +1,184 @@
-# Week 06 Quiz: Real ML Model Integration
+# Week 06 Quiz: Real Cloud Model Contracts
 
-## Week 06 project reality check
+## Instructions
 
-> Note: The committed `assets/model.tflite` is a placeholder TEXT file, not a real trained model. Until a real model is provided, the backend uses a **mock predictor** (in `model_loader.py`) and the on-device `TFLiteClassifier` uses a **green-channel heuristic fallback**, so the app still runs end-to-end. The real trained model arrives in **Week 09**. Low or odd confidence values are normal this week because predictions are placeholders.
+Answer after the build task and validation checklist. Do not read the key first.
 
-## Related materials
-
-- Exercises: [backend](../../exercises/backend/) and [ML](../../exercises/ml/)
-- Solutions: [Week 06 solutions](../../solutions/week-06/)
-- Notebooks: [Week 06 notebooks](../../notebooks/week-06/)
-- Glossary: [GLOSSARY.md](../../GLOSSARY.md)
-
-Test your understanding of machine learning model integration concepts from Week 06. This quiz covers preprocessing, inference, label mapping, confidence scores, error handling, and best practices for integrating pre-trained models into mobile applications.
-
-**Instructions**: Answer all questions. For multiple choice, select the best answer. For code questions, write clean, correct code. For short answer, write 2-4 sentences.
+Passing score: **14 out of 18**.
 
 ---
 
-## Part 1: Multiple Choice (2 points each)
+## Multiple Choice
 
-### Question 1
-What is the purpose of adding a batch dimension to a preprocessed image before inference?
+### 1. What changes in Week 06?
 
-A) To compress the image for faster transmission
-B) Models expect input shape (batch_size, height, width, channels) even for single images
-C) To normalize pixel values to the correct range
-D) To convert RGB images to grayscale
+A) Android multipart contract
+B) Mock execution becomes validated Keras execution
+C) Room history is added
+D) TFLite runs on Android
 
-**Your answer**: ______
+Answer: ____
 
----
+### 2. Which property proves byte-for-byte model identity most strongly?
 
-### Question 2
-Your model was trained with images normalized to [0, 1] range (pixel values divided by 255). You accidentally feed images with pixel values in [0, 255] range. What will most likely happen?
+A) Filename
+B) Folder name
+C) SHA-256
+D) Keras extension
 
-A) The model will crash with a runtime error
-B) The model will run but predictions will be poor/random
-C) The model will automatically normalize the input
-D) The predictions will be identical to correct normalization
+Answer: ____
 
-**Your answer**: ______
+### 3. What input shape does the approved model expect?
 
----
+A) `(1, 224, 224, 3)`
+B) `(224, 224)`
+C) `(1, 256, 256, 3)`
+D) `(38, 224, 224)`
 
-### Question 3
-A model outputs the following array for a 10-label problem: `[0.05, 0.72, 0.08, 0.10, 0.03, 0.02]`. What is the predicted class index and confidence score?
+Answer: ____
 
-A) Class 0, confidence 0.05
-B) Class 1, confidence 0.72
-C) Class 1, confidence 1.00
-D) Class 5, confidence 0.02
+### 4. What pixel range should the backend caller supply?
 
-**Your answer**: ______
+A) `[0,1]`
+B) `[-1,1]`
+C) Raw `[0,255]` as `float32`
+D) Integer labels
 
----
+Answer: ____
 
-### Question 4
-Why should machine learning models be loaded once at FastAPI startup rather than inside the request handler?
+### 5. Why must labels not be sorted?
 
-A) Models cannot be loaded inside functions
-B) Loading models takes 5-10 seconds; loading once improves request latency
-C) FastAPI doesn't allow file I/O inside request handlers
-D) Multiple model instances improve parallelism
+A) Sorting is slow
+B) Output index meaning depends on original order
+C) Python cannot sort underscores
+D) FastAPI requires random order
 
-**Your answer**: ______
+Answer: ____
 
----
+### 6. Which health combination proves real mode is ready?
 
-### Question 5
-Your model predicts "Tomato Early Blight" with 85% confidence for a corn leaf image. What does this demonstrate?
+A) `use_mock=true`, `model_loaded=false`
+B) `use_mock=false`, `model_loaded=true`
+C) `status=ok` only
+D) `class_count=10`
 
-A) The model is working correctly
-B) Confidence score reflects accuracy
-C) Models can be confidently wrong on out-of-distribution inputs
-D) The corn leaf actually has early blight
+Answer: ____
 
-**Your answer**: ______
+### 7. What should happen when real mode has no loaded model?
 
----
+A) Return fake success
+B) Return HTTP 503
+C) Retrain automatically
+D) Change Android fields
 
-### Question 6
-What HTTP status code should be returned when a client sends a prediction request without including an image file?
+Answer: ____
 
-A) 200 OK
-B) 400 Bad Request
-C) 404 Not Found
-D) 500 Internal Server Error
+### 8. What does one real prediction prove?
 
-**Your answer**: ______
+A) Independent 98.75% accuracy
+B) Real artifact execution through the existing API
+C) Every plant disease is supported
+D) Offline parity
 
----
-
-### Question 7
-Your model expects RGB images (3 channels), but a user uploads a PNG with alpha channel (RGBA, 4 channels). What should your preprocessing code do?
-
-A) Return an error - RGBA not supported
-B) Convert RGBA to RGB by dropping the alpha channel
-C) Keep all 4 channels - the model will adapt
-D) Convert to grayscale first, then to RGB
-
-**Your answer**: ______
+Answer: ____
 
 ---
 
-### Question 8
-What is the main advantage of using a 10-label plant disease contract instead of a 38-class model for a learning project?
+## True or False
 
-A) Higher accuracy on all diseases
-B) Faster inference time
-C) Easier to train with limited resources, demonstrates integration skills
-D) Better support for multiple crops
+### 9. Week 06 changes the Week 05 `PredictionResponse` fields.
 
-**Your answer**: ______
+Answer: ____
 
----
+### 10. The approved model contains embedded scaling from `[0,255]` to `[-1,1]`.
 
-### Question 9
-If `predictions = MODEL.predict(img_array)` returns shape `(1, 6)`, how do you extract the predicted class index?
+Answer: ____
 
-A) `class_idx = predictions[0]`
-B) `class_idx = np.argmax(predictions)`
-C) `class_idx = np.argmax(predictions[0])`
-D) `class_idx = max(predictions)`
+### 11. Dividing pixels by 255 before this model is safe generic preprocessing.
 
-**Your answer**: ______
+Answer: ____
 
----
+### 12. The Keras binary should be committed so every learner has it.
 
-### Question 10
-What does it mean when a model's confidence is 45% for the top prediction and 38% for the second prediction?
+Answer: ____
 
-A) The model is highly certain about the top prediction
-B) The model is uncertain and both classes are plausible
-C) The model is broken and needs retraining
-D) The image quality is perfect
+### 13. High confidence guarantees a correct diagnosis.
 
-**Your answer**: ______
+Answer: ____
 
 ---
 
-## Part 2: True/False (1 point each)
+## Short Answer
 
-### Question 11
-A confidence score of 0.95 (95%) guarantees the prediction is correct.
+### 14. Explain the full artifact identity record required before loading the model.
 
-**Your answer**: ______ (True/False)
+Answer:
 
----
+### 15. Explain every dimension in `(1, 224, 224, 3)` and why output `(1, 38)` must match labels.
 
-### Question 12
-Image preprocessing steps (resize, normalize) must match the model's training preprocessing exactly.
+Answer:
 
-**Your answer**: ______ (True/False)
+### 16. Why would caller-side `/255.0` silently damage this model's input contract?
 
----
+Answer:
 
-### Question 13
-Loading a model multiple times per second (once per API request) is acceptable for production systems.
+### 17. Name the evidence needed to prove real mode, beyond setting `USE_MOCK=false`.
 
-**Your answer**: ______ (True/False)
+Answer:
 
----
+### 18. Name three claims or implementation areas that remain outside Week 06.
 
-### Question 14
-Label mapping order must match the model's training class indices, or predictions will be incorrect.
-
-**Your answer**: ______ (True/False)
+Answer:
 
 ---
 
-### Question 15
-A model trained only on tomato and potato diseases can accurately detect diseases in corn plants.
+## Answer Key
 
-**Your answer**: ______ (True/False)
-
----
-
-## Part 3: Code Completion (5 points each)
-
-### Question 16
-Complete the preprocessing function to properly prepare an image for a model expecting 224×224 RGB images normalized to [0, 1]:
-
-```python
-from PIL import Image
-import numpy as np
-import io
-
-def preprocess_image(image_bytes):
-    # Open image from bytes
-    image = Image.open(io.BytesIO(image_bytes))
-
-    # Convert RGBA to RGB if needed
-    if image.mode == 'RGBA':
-        # YOUR CODE HERE (1 line)
-
-
-    # Resize to 224x224
-    # YOUR CODE HERE (1 line)
-
-
-    # Convert to numpy array and normalize to [0, 1]
-    # YOUR CODE HERE (1 line)
-
-
-    # Add batch dimension
-    # YOUR CODE HERE (1 line)
-
-
-    return img_array
-```
-
-**Your code**:
-```python
-# RGBA conversion:
-
-
-# Resize:
-
-
-# Normalize:
-
-
-# Batch dimension:
-
-```
-
----
-
-### Question 17
-Complete the error handling for the `/predict` endpoint:
-
-```python
-@app.post('/predict')
-async def predict(image: UploadFile = File(...)):
-    try:
-        # Check if image is in request
-        # YOUR CODE HERE (3-4 lines)
-        # Return 400 error with message "No image provided" if missing
-
-
-
-
-
-        image_file = image
-        image_bytes = await image_file.read()
-
-        # Preprocess and inference
-        img_array = preprocess_image(image_bytes)
-        predictions = MODEL.predict(img_array)
-
-        # Decode output
-        class_idx = int(np.argmax(predictions[0]))
-        confidence = float(predictions[0][class_idx])
-        disease_name = LABELS[class_idx]
-
-        return {
-            "status": "success",
-            "prediction": {
-                "disease": disease_name,
-                "confidence": confidence,
-                "symptoms": get_symptoms(disease_name),
-                "treatment": get_recommendation(disease_name),
-                "prevention": get_prevention(disease_name)
-            }
-        }
-
-    except Exception as e:
-        # YOUR CODE HERE (2 lines)
-        # Return 500 error with generic message
-
-
-```
-
-**Your code**:
-```python
-# Missing image check:
-
-
-
-
-
-# Exception handling:
-
-
-```
-
----
-
-### Question 18
-Write code to extract and return the top 3 predictions instead of just the top 1:
-
-```python
-# Given:
-predictions = MODEL.predict(img_array)  # Shape: (1, 6)
-
-# YOUR CODE HERE (5-8 lines)
-# Create a list of top 3 predictions with disease names and confidences
-# Expected output format:
-# [
-#     {"disease": "Tomato Early Blight", "confidence": 0.78},
-#     {"disease": "Tomato Late Blight", "confidence": 0.15},
-#     {"disease": "Tomato Septoria Leaf Spot", "confidence": 0.04}
-# ]
-
-top_predictions = []
-
-
-
-
-
-
-
-
-```
-
-**Your code**:
-```python
-
-
-
-
-
-
-
-
-```
-
----
-
-## Part 4: Short Answer (5 points each)
-
-### Question 19
-Explain the difference between model confidence and model accuracy. Why might a model have 80% confidence but still be wrong?
-
-**Your answer** (2-4 sentences):
-
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-
----
-
-### Question 20
-Your model takes 3 seconds to process each image, which is too slow for production. List three strategies you could use to improve inference speed, and briefly explain each.
-
-**Your answer** (3-6 sentences covering 3 strategies):
-
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-
----
-
-### Question 21
-Why is it important to display confidence scores to users in an AI-powered mobile app? What UI elements could you use to communicate confidence effectively?
-
-**Your answer** (2-4 sentences):
-
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-
----
-
-### Question 22
-You're using a 10-label placeholder/mock contract (tomato and potato diseases only) but want to expand to support 10 more crops in the future. What would you need to change in your code? What wouldn't need to change?
-
-**Your answer** (3-5 sentences):
-
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-
----
-
-## Part 5: Debugging Scenario (10 points each)
-
-### Question 23
-**Scenario**: Your FastAPI endpoint runs without errors, but every image you test returns the same prediction: "Tomato Healthy" with 99% confidence, even for diseased leaves and non-plant images.
-
-**What are three possible causes of this problem? For each cause, describe how you would diagnose it.**
-
-**Cause 1**:
-___________________________________________________________________
-**How to diagnose**:
-___________________________________________________________________
-___________________________________________________________________
-
-**Cause 2**:
-___________________________________________________________________
-**How to diagnose**:
-___________________________________________________________________
-___________________________________________________________________
-
-**Cause 3**:
-___________________________________________________________________
-**How to diagnose**:
-___________________________________________________________________
-___________________________________________________________________
-
----
-
-### Question 24
-**Scenario**: Your model works fine in Postman tests, but when testing from your Android app, you always get a 500 error. FastAPI console shows: `ValueError: cannot reshape array of size 150528 into shape (1,224,224,3)`.
-
-**What is the problem? How would you fix it? Show the specific code change needed.**
-
-**Problem explanation**:
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-
-**Solution code**:
-```python
-
-
-
-
-```
-
----
-
-## Part 6: Design Question (10 points)
-
-### Question 25
-**Scenario**: You're building LeafGuard AI for farmers in rural areas with slow internet connections. Each prediction request currently takes 2-3 seconds due to network latency (500ms) + image upload (1500ms) + inference (500ms).
-
-**Design a solution to improve the user experience. Consider:**
-- How could you reduce perceived latency?
-- What features could work offline?
-- How would you handle cases where network is unavailable?
-- What data should be cached locally?
-
-Write a brief technical design (8-12 sentences) explaining your approach.
-
-**Your design**:
-
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-
----
-
-## Answer Key (For Instructor Use)
-
-### Part 1: Multiple Choice
 1. B
-2. B
-3. B
-4. B
-5. C
+2. C
+3. A
+4. C
+5. B
 6. B
 7. B
-8. C
-9. C
-10. B
+8. B
+9. False
+10. True
+11. False
+12. False
+13. False
 
-### Part 2: True/False
-11. False (high confidence doesn't guarantee correctness)
-12. True (preprocessing must match training)
-13. False (load once at startup)
-14. True (order matters for mapping)
-15. False (model only knows trained classes)
+Short-answer requirements:
 
-### Part 3: Code Completion
-
-**Question 16**:
-```python
-image = image.convert('RGB')
-image = image.resize((224, 224))
-img_array = np.array(image, dtype=np.float32) / 255.0
-img_array = np.expand_dims(img_array, axis=0)
-```
-
-**Question 17**:
-```python
-if image is None:
-    raise HTTPException(status_code=400, detail="No image provided")
-
-raise HTTPException(status_code=500, detail="Internal server error")
-```
-
-**Question 18**:
-```python
-top_k_indices = np.argsort(predictions[0])[-3:][::-1]
-for idx in top_k_indices:
-    top_predictions.append({
-        "disease": LABELS[int(idx)],
-        "confidence": float(predictions[0][idx])
-    }
-```
-
-### Part 4: Short Answer (Key Points)
-
-**Question 19**: Confidence is model's internal certainty, not ground truth. Models can be wrong because they're trained on limited data, face out-of-distribution inputs, or confuse similar-looking classes.
-
-**Question 20**:
-1. Use TensorFlow Lite (smaller, optimized models)
-2. Deploy on GPU instead of CPU
-3. Implement caching for duplicate images
-
-**Question 21**: Transparency builds trust. Users need to know when predictions are uncertain. Use progress bars, color-coded indicators, or explicit percentage text.
-
-**Question 22**: Need to: retrain/replace model with more classes, update label mapping, update symptoms, treatment, and prevention guidance. Don't need to change: preprocessing logic, endpoint structure, error handling, Android networking code.
-
-### Part 5: Debugging
-
-**Question 23**:
-1. Model file corrupted/wrong model loaded - verify model by printing predictions for known image
-2. Preprocessing broken (all images become identical) - save preprocessed image and visually inspect
-3. Label mapping incorrect - test with training set images with known labels
-
-**Question 24**: Image dimensions don't match expected size. 150528 = 224×224×3, but array isn't shaped correctly. Fix: Ensure reshape or expand_dims adds batch dimension properly.
-
-### Part 6: Design (Key Points)
-- On-device inference using TensorFlow Lite
-- Cache previous predictions locally
-- Show loading indicators during upload
-- Offline mode with Room database
-- Progressive image loading
-- Background processing
-- Explain network requirements to users
+| Question | Full-credit ideas |
+|---:|---|
+| 14 | Source repository, pinned commit/path, license review, local path, exact size, SHA-256, tracked status |
+| 15 | Batch, height, width, RGB channels; 38 scores require the same 38 labels in order |
+| 16 | Embedded transform expects raw values; predivision causes double normalization and wrong range |
+| 17 | TensorFlow import, valid inspector/tests, `/health` with false/true/38, real HTTP 200 response |
+| 18 | Any three of independent accuracy claim, TFLite conversion, offline Android inference, history, training, production deployment |
 
 ---
 
-## Scoring
+## Remediation Map
 
-**Total Points: 100**
+| Missed questions | Review |
+|---|---|
+| 1, 9, 18 | Progressive boundary |
+| 2, 12, 14 | Artifact identity and provenance |
+| 3, 5, 15 | Tensor/output/label contract |
+| 4, 10, 11, 16 | Embedded preprocessing |
+| 6, 7, 17 | Real-mode health and failure behavior |
+| 8, 13 | Confidence, execution, and accuracy limitations |
 
-- Part 1 (Multiple Choice): 20 points
-- Part 2 (True/False): 5 points
-- Part 3 (Code): 15 points
-- Part 4 (Short Answer): 20 points
-- Part 5 (Debugging): 20 points
-- Part 6 (Design): 10 points
-- Bonus (if applicable): +5 points for exceptionally thorough answers
-
-**Grading Scale**:
-- 90-100: Excellent understanding
-- 80-89: Good understanding
-- 70-79: Satisfactory understanding
-- 60-69: Needs improvement
-- Below 60: Significant gaps, review material
-
----
-
-**Student Name**: _________________________
-
-**Date Completed**: _________________________
-
-**Score**: ______ / 100
-
-**Instructor Comments**:
-
-___________________________________________________________________
-___________________________________________________________________
-___________________________________________________________________
-
+If your score is below 14, review mapped sections, rewrite missed answers in your own words, and retake before Week 07.
 
 <!-- NAV_FOOTER_START -->
 
 ---
 
-## 📚 Week 06 — Navigation
+## Week 06 Navigation
 
-### All Files In This Week (Complete In Order)
+[README](README.md) | [Learning Notes](learning-notes.md) | [Exercises](exercises.md) | [Build Task](build-task.md) | [Validation](validation-checklist.md) | **Quiz - current** | [Reflection](reflection.md)
 
-| Step | File | Description |
-|------|------|-------------|
-| 1 | [README.md](README.md) | Week Overview & Objectives |
-| 2 | [learning-notes.md](learning-notes.md) | Theory & Learning Notes |
-| 3 | [exercises.md](exercises.md) | Practice Exercises |
-| 4 | [build-task.md](build-task.md) | Build Implementation Guide |
-| 5 | [validation-checklist.md](validation-checklist.md) | Validation & Verification |
-| **6** | **quiz.md** ← *You are here* | **Knowledge Assessment Quiz** |
-| 7 | [reflection.md](reflection.md) | Reflection & Consolidation |
-
----
-
-### Within-Week Navigation
-
-[← Validation & Verification](validation-checklist.md) &nbsp;&nbsp;|&nbsp;&nbsp; **Knowledge Assessment Quiz** *(current)* &nbsp;&nbsp;|&nbsp;&nbsp; [Reflection & Consolidation →](reflection.md)
-
----
-
-### Week Progression
-
-| ← Previous Week | 🏠 Home | Next Week → |
-|:----------------|:-------:|------------:|
-| [⬅ Week 05: Android Networking](../week-05-android-networking/README.md) | [Learning Path](../../LEARNING_PATH.md) | [Week 07: Room Database & History ➡](../week-07-room-sqlite-history/README.md) |
-
----
+[Previous: Validation](validation-checklist.md) | [Learning Path](../../LEARNING_PATH.md) | [Next: Reflection](reflection.md)
