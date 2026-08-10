@@ -11,65 +11,65 @@ Passing score: 14 out of 18.
 ## Multiple Choice
 
 ### 1. What does Week 04 add?
-A) Android Retrofit networking  
-B) A standalone FastAPI backend  
-C) Room history  
+A) Android Retrofit networking
+B) A standalone FastAPI backend
+C) Room history
 D) Offline TFLite
 
 Answer: ____
 
 ### 2. Which method should upload an image?
-A) GET  
-B) POST  
-C) DELETE  
+A) GET
+B) POST
+C) DELETE
 D) PATCH
 
 Answer: ____
 
 ### 3. What is the required multipart field name?
-A) `file`  
-B) `photo`  
-C) `image`  
+A) `file`
+B) `photo`
+C) `image`
 D) `bitmap`
 
 Answer: ____
 
 ### 4. What does JSON provide?
-A) Structured response data  
-B) Android layouts  
-C) Model training  
+A) Structured response data
+B) Android layouts
+C) Model training
 D) Camera permission
 
 Answer: ____
 
 ### 5. What does HTTP 413 mean here?
-A) Success  
-B) Missing route  
-C) Upload too large  
+A) Success
+B) Missing route
+C) Upload too large
 D) Model loaded
 
 Answer: ____
 
 ### 6. Why use mock mode?
-A) To claim real accuracy  
-B) To test the API contract before real inference  
-C) To replace validation  
+A) To claim real accuracy
+B) To test the API contract before real inference
+C) To replace validation
 D) To connect Room
 
 Answer: ____
 
 ### 7. Which page provides interactive FastAPI documentation?
-A) `/docs`  
-B) `/android`  
-C) `/room`  
+A) `/docs`
+B) `/android`
+C) `/room`
 D) `/camera`
 
 Answer: ____
 
 ### 8. Which work belongs to Week 05?
-A) Health endpoint  
-B) Android uploads an image to FastAPI  
-C) Mock response shape  
+A) Health endpoint
+B) Android uploads an image to FastAPI
+C) Mock response shape
 D) API tests
 
 Answer: ____

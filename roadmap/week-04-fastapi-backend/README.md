@@ -91,7 +91,7 @@ By the end of Week 04, you will be able to:
 1. Explain the Android-client and FastAPI-server boundary.
 2. Create and run a Python virtual environment.
 3. Explain GET and POST requests.
-4. trace a multipart upload named `image`.
+4. Trace a multipart upload named `image`.
 5. Read the JSON returned by `/predict`.
 6. Test successful and invalid requests.
 7. Explain why Android networking and real inference wait.
