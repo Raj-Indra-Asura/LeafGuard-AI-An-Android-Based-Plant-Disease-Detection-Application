@@ -719,7 +719,7 @@ source .venv/bin/activate
 python -m pip install -r requirements-dev.txt
 
 # 4. Prove the contract automatically
-USE_MOCK=true python -m unittest test_api.py
+USE_MOCK=true python -m unittest test_api
 
 # 5. Start the local server in mock mode
 USE_MOCK=true uvicorn main:app --reload
