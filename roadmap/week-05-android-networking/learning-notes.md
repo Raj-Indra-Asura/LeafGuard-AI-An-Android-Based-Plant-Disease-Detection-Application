@@ -6,6 +6,711 @@ These notes teach only what is needed to connect the Week 03 Android image URI t
 
 Section 12 is the authoritative reconstruction appendix. It contains every changed or new Kotlin-track file in full, with exact logical line counts. The snapshot was compiled independently with `./gradlew assembleDebug`.
 
+## Beginner Bridge: Complete This Before Section 1
+
+Week 05 combines Android, the Week 04 API contract, file access, a third-party networking library, asynchronous execution, and UI state. A beginner can understand each idea separately but still get lost when they first appear together.
+
+Learn them in this order:
+
+```text
+verify Week 03 image URI
+    -> verify Week 04 API independently
+    -> understand Android network permission and addresses
+    -> understand Retrofit, OkHttp, and Gson roles
+    -> map JSON to Kotlin
+    -> turn URI content into upload bytes
+    -> construct multipart field image
+    -> enqueue without blocking the UI
+    -> handle every completion path
+    -> pass values to ResultActivity
+    -> test success and failure separately
+```
+
+Every lesson has a checkpoint. If a checkpoint fails, stop at that boundary. Do not paste the complete `ScanActivity` from Section 12 and hope the pieces become clear later.
+
+### Bridge Lesson A: Prove Both Inputs Before Connecting Them
+
+#### Learn
+
+Week 05 starts with two independent, already-tested systems:
+
+| System | Required proof | If it fails |
+|---|---|---|
+| Week 03 Android image input | Camera/gallery returns a URI and preview works | Return to Week 03 |
+| Week 04 FastAPI | Eight tests pass and `/docs` accepts field `image` | Return to Week 04 |
+
+Networking cannot repair a broken camera URI or a broken backend. Connecting two unverified components creates too many possible causes.
+
+The full flow crosses boundaries:
+
+```text
+Android UI
+    -> selectedImageUri
+    -> ContentResolver
+    -> temporary file
+    -> OkHttp multipart request
+    -> emulator network
+    -> FastAPI /predict
+    -> JSON response
+    -> Gson
+    -> PredictionResponse
+    -> Intent extras
+    -> ResultActivity
+```
+
+#### Checkpoint
+
+Before adding Retrofit, show:
+
+1. a selected image preview in Android
+2. eight passing backend tests
+3. a successful `/predict` call in `/docs`
+4. the eight returned JSON keys
+
+#### If stuck
+
+Use the Week 03 and Week 04 validation checklists. Do not troubleshoot Android networking until both earlier boundaries pass.
+
+---
+
+### Bridge Lesson B: What Actually Happens During an Android Network Call
+
+#### Learn
+
+Android is the HTTP client in Week 05. It creates a request and waits for the server's response:
+
+```text
+user taps Detect
+    -> Android prepares image bytes
+    -> Android sends POST /predict
+    -> FastAPI validates and responds
+    -> Android receives status + JSON
+    -> Android updates the UI
+```
+
+The request still has the same Week 04 parts:
+
+| HTTP part | Android supplies |
+|---|---|
+| Base URL | `http://10.0.2.2:8000/` |
+| Relative path | `predict` |
+| Method | POST |
+| Body encoding | multipart form data |
+| File field | `image` |
+| Filename | temporary cache filename |
+| MIME type | selected image type or safe fallback |
+| Bytes | copied URI content |
+
+The response supplies:
+
+- an HTTP status
+- headers
+- JSON success data or error detail
+
+HTTP does not automatically know which Activity should display the result. Your code decides what each response means and how the UI changes.
+
+#### Checkpoint
+
+State which program creates every request item in the table and which program creates the response status and body.
+
+#### If stuck
+
+Place the Week 04 `/docs` request beside the planned Retrofit request. Circle the parts that must remain identical.
+
+---
+
+### Bridge Lesson C: Retrofit, OkHttp, and Gson Have Different Jobs
+
+#### Learn
+
+The three networking dependencies form a stack:
+
+```text
+your Activity
+    -> Retrofit: turns an annotated interface into a typed API call
+    -> OkHttp: creates and transports the HTTP request
+    -> Gson converter: converts JSON to Kotlin values
+```
+
+| Component | Week 05 responsibility | It does not own |
+|---|---|---|
+| Retrofit | Method/path annotations and typed call interface | Image selection or result UI |
+| OkHttp | Request body, multipart encoding, connection, timeout, logging | JSON property design |
+| Gson converter | JSON deserialization into `PredictionResponse` | HTTP transport |
+| `ApiService` | One declaration of the API operation | Base client configuration |
+| `RetrofitClient` | Base URL, converter, timeouts, logging | Activity state |
+
+Annotated interface skeleton:
+
+```kotlin
+interface ApiService {
+    @Multipart
+    @POST("predict")
+    fun uploadImage(
+        @Part image: MultipartBody.Part
+    ): Call<PredictionResponse>
+}
+```
+
+Line-by-line:
+
+| Code | Meaning |
+|---|---|
+| `interface` | Describes operations without manually implementing transport |
+| `@Multipart` | Request contains multipart form data |
+| `@POST("predict")` | Use POST and append `predict` to the base URL |
+| `@Part` | Supplied value belongs in the multipart body |
+| `Call<PredictionResponse>` | A request operation that can later return parsed response data |
+
+Retrofit generates the concrete implementation at runtime. Your code calls the interface; it does not write socket code.
+
+#### Checkpoint
+
+Explain why removing the Gson converter, removing `@Multipart`, and changing `@POST("predict")` cause three different problems.
+
+#### If stuck
+
+Make one sentence for each dependency beginning with “This dependency is responsible for ...”.
+
+---
+
+### Bridge Lesson D: Gradle Dependencies and Sync
+
+#### Learn
+
+Android code can import Retrofit classes only after Gradle knows which library artifacts to download.
+
+The Week 05 dependency roles are:
+
+| Dependency | Adds |
+|---|---|
+| Retrofit | `Retrofit`, `Call`, callback support, HTTP annotations |
+| converter-gson | JSON-to-Kotlin converter integration |
+| logging-interceptor | Development request/status logging |
+
+Adding a dependency changes the build input. **Gradle sync** resolves it; **assembleDebug** compiles the app with it.
+
+Debug in this order:
+
+```text
+dependency line correct
+    -> Gradle sync succeeds
+    -> imports resolve
+    -> compile succeeds
+```
+
+Do not add Room, TensorFlow Lite, coroutines networking wrappers, or another HTTP library to solve a Retrofit setup error. Additional dependencies widen the problem.
+
+#### Checkpoint
+
+Explain the difference between:
+
+- declaring a dependency
+- syncing Gradle
+- importing a class
+- compiling the app
+
+#### If stuck
+
+Read the first Gradle error, not the final cascade. Confirm internet access, artifact spelling, and the repository's existing Gradle configuration before changing versions.
+
+---
+
+### Bridge Lesson E: Emulator Addressing and the Base URL
+
+#### Learn
+
+The emulator behaves like a separate device behind a virtual network:
+
+```text
+Android emulator
+    localhost -> emulator itself
+    10.0.2.2  -> special route to development computer
+                         |
+                         `-> FastAPI on port 8000
+```
+
+Therefore:
+
+```text
+http://localhost:8000/     wrong for host FastAPI from the standard emulator
+http://10.0.2.2:8000/      correct Week 05 emulator base URL
+```
+
+The Retrofit base URL must end with `/` so it can safely resolve the relative path `predict`:
+
+```text
+base:     http://10.0.2.2:8000/
+relative: predict
+result:   http://10.0.2.2:8000/predict
+```
+
+A physical phone is different. It normally uses the development computer's reachable LAN address, requires both devices on a trusted network, may require a firewall rule, and needs an appropriately restricted network-security configuration. A machine-specific LAN address must not become shared repository truth.
+
+Address debugging order:
+
+1. Is FastAPI running?
+2. Does `http://localhost:8000/health` work on the development computer?
+3. Is Android running in the standard emulator?
+4. Does the app use `10.0.2.2`, port `8000`, and a trailing slash?
+5. Does Logcat report connection refusal, timeout, or cleartext rejection?
+6. Is a local firewall blocking the connection?
+
+These observations are different:
+
+- **connection refused** often means no process is listening at that host/port
+- **timeout** often means the route is unreachable or blocked
+- **404** means a server answered but the path was wrong
+- **cleartext not permitted** means Android security blocked HTTP before the normal request completed
+
+#### Checkpoint
+
+Explain why the browser on your computer uses `localhost` while the emulator app uses `10.0.2.2`.
+
+#### If stuck
+
+Prove `/health` on the host first. Then use Logcat to classify the Android failure instead of changing the backend response code.
+
+---
+
+### Bridge Lesson F: INTERNET Permission and Local Cleartext Security
+
+#### Learn
+
+Android requires this manifest permission for network access:
+
+```xml
+<uses-permission android:name="android.permission.INTERNET" />
+```
+
+It is an install-time permission, so there is no runtime permission dialog. This differs from the Week 03 camera permission.
+
+Week 05 uses local `http://` for a learning server. HTTP is cleartext transport: another party on an untrusted network may be able to observe or modify traffic. Android 9+ blocks cleartext by default for this reason.
+
+The network security configuration makes a narrow development exception:
+
+```text
+deny cleartext by default
+    -> permit only the emulator-to-host development address
+    -> use HTTPS for production
+```
+
+Security boundaries:
+
+- `INTERNET` permission allows the app to use networking.
+- network security config controls transport policy.
+- CORS is a browser cross-origin policy; it is not Android authentication.
+- HTTPS protects transport; it does not by itself authenticate app users.
+
+Do not “fix” a cleartext error by enabling cleartext globally.
+
+#### Checkpoint
+
+Explain why Week 03 camera permission needs a runtime request but `INTERNET` does not. Then explain why a local HTTP exception must not become the production policy.
+
+#### If stuck
+
+Search Logcat for `CLEARTEXT`. If present, verify the manifest references the expected XML resource and the exception matches the emulator host.
+
+---
+
+### Bridge Lesson G: JSON-to-Kotlin Mapping
+
+#### Learn
+
+FastAPI serializes Python values into JSON. Gson deserializes that JSON into a Kotlin object.
+
+```text
+FastAPI PredictionResult
+    -> JSON text over HTTP
+    -> GsonConverterFactory
+    -> PredictionResponse properties
+```
+
+JSON uses snake_case keys such as `model_label`. Kotlin usually uses camelCase properties such as `modelLabel`. `@SerializedName` records the exact mapping.
+
+| JSON | Kotlin | Why |
+|---|---|---|
+| `model_label` | `modelLabel` | naming styles differ |
+| `guidance_available` | `guidanceAvailable` | naming styles differ |
+| `confidence` | `confidence` | same name |
+
+The Kotlin type must also fit the JSON type:
+
+| JSON value | Suitable Kotlin type |
+|---|---|
+| `"Tomato - Healthy"` | `String` |
+| `0.86` | `Float` |
+| `true` | `Boolean` |
+
+Nullability is written with `?`, such as `String?`. A nullable property requires a safe fallback before display. A non-null property expresses a stronger contract but deserialization still needs testing against the actual server.
+
+There are three response-shape outcomes:
+
+1. **HTTP success and valid body**: use the parsed object.
+2. **HTTP success and null/empty body**: treat it as an unexpected server contract failure.
+3. **JSON conversion failure**: Retrofit reports failure because Gson could not create the expected object.
+
+Do not force a nullable response with `!!`. A friendly error is better than a crash.
+
+#### Trace
+
+For every Week 04 field, trace:
+
+```text
+JSON key -> Kotlin property -> Intent extra -> Result view
+```
+
+#### Checkpoint
+
+Complete the eight-row response table in `exercises.md`. Explain why renaming a Kotlin property without an annotation can break mapping.
+
+#### If stuck
+
+Compare one actual `/predict` JSON response with `PredictionResponse.kt`, character by character for key names and value types.
+
+---
+
+### Bridge Lesson H: A URI Is Access, Not a File Path
+
+#### Learn
+
+Week 03 stores a `Uri`. It may use a `content://` scheme controlled by a content provider:
+
+```text
+content://provider/item/123
+```
+
+That is not guaranteed to be a normal filesystem path. `File(uri.path)` may point to a meaningless or inaccessible path.
+
+Use `ContentResolver`:
+
+```text
+Uri
+    -> contentResolver.openInputStream(uri)
+    -> readable InputStream
+    -> copy bytes to cacheDir
+    -> temporary File
+```
+
+Roles:
+
+| Type | Meaning | Cleanup |
+|---|---|---|
+| `Uri` | Android reference to content | No deletion by Week 05 |
+| `InputStream` | Sequential access to bytes | Close immediately after copying |
+| cache `File` | App-owned temporary upload source | Delete after response/failure |
+| `RequestBody` | OkHttp view of file bytes + media type | Owned by request |
+| `MultipartBody.Part` | Named form part | Owned by request |
+
+Why copy to cache:
+
+- OkHttp can stream from an app-owned file.
+- the original provider content remains unchanged.
+- cache is temporary and app-private.
+- the file can be explicitly deleted after the request ends.
+
+The copy must handle:
+
+- `openInputStream` returning null
+- unavailable or revoked content
+- read/write `IOException`
+- cleanup after partial copies
+
+A buffer copies chunks rather than loading the complete image into one large extra memory allocation. The exact chunk size is an implementation detail; correctness depends on copying until end-of-stream and closing resources.
+
+MIME type comes from `ContentResolver.getType(uri)` when available. If unavailable, the Week 05 implementation uses a safe image fallback consistent with the selected input contract.
+
+#### Checkpoint
+
+Explain why `Uri`, `InputStream`, and `File` are three different representations. State when the stream closes and when the cache file is deleted.
+
+#### If stuck
+
+Draw ownership arrows for the original image and temporary copy. The app may delete only the copy it created for upload.
+
+---
+
+### Bridge Lesson I: Constructing the Multipart Part
+
+#### Learn
+
+Multipart construction happens in layers:
+
+```text
+cache File
+    -> RequestBody(media type + bytes)
+    -> MultipartBody.Part(form name + filename + body)
+```
+
+Conceptual skeleton:
+
+```kotlin
+val requestBody = uploadFile.asRequestBody(/* TODO: MIME type */)
+val imagePart = MultipartBody.Part.createFormData(
+    "image",
+    uploadFile.name,
+    requestBody
+)
+```
+
+`createFormData` arguments:
+
+| Argument | Week 05 value | Purpose |
+|---|---|---|
+| form name | `"image"` | Must match FastAPI parameter |
+| filename | cache filename | Upload metadata |
+| body | `requestBody` | MIME type and bytes |
+
+OkHttp adds the multipart boundary and required part headers. Do not manually concatenate binary bytes or hardcode a boundary.
+
+The Kotlin parameter name `imagePart` is local code style. The string `"image"` is the network contract. Changing the variable name does not change the request; changing the string does.
+
+#### Checkpoint
+
+Point to the one value FastAPI uses for parameter binding. Explain the separate purposes of filename and MIME type.
+
+#### If stuck
+
+Trigger a deliberate wrong form name only in a local experiment, observe `422`, then restore `"image"`. Record why the server was reachable even though the request failed.
+
+---
+
+### Bridge Lesson J: Asynchronous Calls Protect the Main Thread
+
+#### Learn
+
+Android's **main thread** handles input, drawing, and most view updates. A network call may take seconds or fail after a timeout. Blocking the main thread would freeze the UI and may cause an Application Not Responding error.
+
+Retrofit provides:
+
+- `execute()` for a synchronous blocking call
+- `enqueue(...)` for an asynchronous callback call
+
+Week 05 uses `enqueue(...)`.
+
+```text
+main thread: tap -> prepare UI -> enqueue -> return to event loop
+network work:                    request travels and waits
+callback:                                  response or failure -> update UI
+```
+
+With standard Retrofit Android configuration, callbacks are delivered on the Android main thread, so the Week 05 callback can update views. Extra CPU-heavy work still must not be performed in the callback.
+
+Exactly one terminal callback occurs for a call:
+
+| Callback | Meaning |
+|---|---|
+| `onResponse` | An HTTP response arrived, even if status is 400 or 503 |
+| `onFailure` | No usable response object was produced, such as connection failure, timeout, cancellation, or conversion failure |
+
+`onResponse` does not mean success. It means the server responded. You must still check `isSuccessful` and body validity.
+
+Activity lifecycle concern:
+
+- a request may outlive a visible screen
+- callbacks must not assume a destroyed Activity is still usable
+- the exact Week 05 snapshot keeps the flow simple, but later architecture may move requests into lifecycle-aware layers
+
+For this week, avoid repeatedly tapping Detect by disabling controls while one request is active.
+
+#### Checkpoint
+
+Explain why HTTP 503 reaches `onResponse` while a stopped server normally reaches `onFailure`. Explain why `execute()` is forbidden on the UI thread.
+
+#### If stuck
+
+Write two columns named **response arrived** and **no usable response**. Place each error observation into one column before writing callback code.
+
+---
+
+### Bridge Lesson K: Model Upload as a UI State Machine
+
+#### Learn
+
+Do not treat loading as one ProgressBar line. The screen has states:
+
+| State | Image available | Progress | Controls | Next action |
+|---|---:|---:|---|---|
+| No image | No | Hidden | Selection enabled; Detect disabled | Select image |
+| Ready | Yes | Hidden | Detect enabled | Start upload |
+| Uploading | Yes | Visible | Image and Detect controls disabled | Wait |
+| Success | Yes | Hidden | Controls restored | Open Result |
+| HTTP error | Yes | Hidden | Controls restored | Explain and retry |
+| Network error | Yes | Hidden | Controls restored | Explain and retry |
+| Preparation error | Maybe | Hidden | Controls restored | Reselect or retry |
+
+Every path out of **Uploading** must:
+
+1. remove the temporary file when it exists
+2. hide progress
+3. restore appropriate controls
+4. navigate only for a valid success
+5. otherwise show a safe message
+
+This prevents common bugs:
+
+- permanent spinner
+- permanently disabled button
+- duplicate requests
+- leaked temporary files
+- opening ResultActivity with missing data
+
+A helper such as `setUploadInProgress(...)` centralizes repeated UI transitions. The exact helper name is less important than applying the same state rules to every terminal path.
+
+#### Checkpoint
+
+Complete the state table in `exercises.md` before implementing callbacks. Verify that every row after Uploading restores the UI.
+
+#### If stuck
+
+Search the callback code for every `return`. Confirm cleanup and UI restoration happen before each terminal return.
+
+---
+
+### Bridge Lesson L: Separate HTTP, Network, Conversion, and Preparation Errors
+
+#### Learn
+
+“Upload failed” is not enough information for debugging. Classify the failure first:
+
+| Observation | Boundary reached | Likely category | First check |
+|---|---|---|---|
+| URI cannot open | Before HTTP | Content access/preparation | URI access and stream exception |
+| Cleartext rejected | Android transport policy | Security configuration | Manifest and XML policy |
+| Connection refused | Host/port reached but no listener | Server unavailable/address | Backend process and base URL |
+| Timeout | No timely response | Reachability/server delay | Host, firewall, timeout, server log |
+| HTTP 400 | FastAPI route examined content | Invalid image | MIME/bytes and server detail |
+| HTTP 413 | FastAPI measured upload | Too large | Selected file size |
+| HTTP 422 | FastAPI could not bind request shape | Multipart contract | Form name `image` |
+| HTTP 503 | FastAPI answered but model unavailable | Server mode | `/health` and configuration |
+| Conversion failure | Response arrived but JSON did not map | Contract mismatch | Actual JSON keys/types |
+| HTTP 200 with null body | Response violated expected success shape | Contract failure | Server response and converter |
+
+Safe user messages should state what the user can do. Developer details belong in Logcat or server logs and must not reveal secrets or raw image bodies.
+
+Debugging rule:
+
+> Find the last boundary that definitely worked.
+
+Examples:
+
+- An HTTP 422 proves Android reached FastAPI.
+- A server access log with POST proves the address and permission worked.
+- A `/health` response proves reachability, not multipart correctness.
+- A parsed `PredictionResponse` proves JSON mapping, not model accuracy.
+
+#### Checkpoint
+
+For each row, say whether to inspect Android Logcat, FastAPI logs, `/health`, request construction, or JSON mapping first.
+
+#### If stuck
+
+Use `validation-checklist.md` Failure Routing. Change only the owner of the observed failure.
+
+---
+
+### Bridge Lesson M: Pass Data to ResultActivity Safely
+
+#### Learn
+
+Retrofit returns `PredictionResponse` to `ScanActivity`. Android navigation does not automatically share that object. Week 05 puts the eight values into Intent extras.
+
+```text
+PredictionResponse
+    -> named Intent extras
+    -> start ResultActivity
+    -> read extras with the same names
+    -> apply safe defaults
+    -> format for display
+```
+
+Intent extra names are another local contract. A value written under one key cannot be read under a different key.
+
+Confidence conversion:
+
+```text
+server value: 0.86
+display calculation: 0.86 x 100
+display value: 86%
+```
+
+Keep confidence on the 0.0–1.0 scale until the display layer. Do not multiply it in `PredictionResponse`, because that would change its meaning relative to the API contract.
+
+The screen must represent:
+
+- canonical model label
+- readable disease name
+- confidence percentage
+- uncertainty
+- guidance availability
+- symptoms
+- treatment
+- prevention
+
+Safe defaults prevent a direct or malformed ResultActivity launch from crashing. They do not make an invalid network response valid; `ScanActivity` should navigate only after checking response success and body validity.
+
+#### Checkpoint
+
+Trace one field from JSON key to Kotlin property to Intent key to view. Repeat for a snake_case field and a Boolean field.
+
+#### If stuck
+
+Create an eight-row trace table. A missing row reveals where data is being discarded.
+
+---
+
+### Bridge Lesson N: A Safe Step-by-Step Integration Rehearsal
+
+Complete one layer at a time:
+
+1. Run the Week 04 backend tests.
+2. Start FastAPI in explicit mock mode.
+3. Verify `/health` and `/predict` outside Android.
+4. Add only the three networking dependencies and build.
+5. Add `PredictionResponse`; build.
+6. Add `ApiService` and `RetrofitClient`; build.
+7. Add permission and restricted local transport configuration; build.
+8. Confirm Week 03 camera/gallery still works.
+9. Trace URI-to-cache copy without sending.
+10. Construct multipart `image`.
+11. Enqueue the call and implement all terminal states.
+12. Pass all eight values to ResultActivity.
+13. Demo one successful upload.
+14. Stop FastAPI and demo one retryable failure.
+15. Restart FastAPI and prove recovery.
+
+Why build repeatedly:
+
+> A build after each small layer identifies which layer introduced a compile or resource error.
+
+Do not make all eleven file changes and perform the first build at the end.
+
+---
+
+### Week 05 Beginner Readiness Gate
+
+Before Section 12 or `build-task.md`, verify:
+
+- [ ] Week 03 camera and gallery behavior still passes.
+- [ ] Week 04's eight backend tests pass.
+- [ ] I can explain Retrofit, OkHttp, and Gson separately.
+- [ ] I can explain why the emulator uses `10.0.2.2`.
+- [ ] I know why the base URL ends with `/`.
+- [ ] I can distinguish INTERNET permission from runtime camera permission.
+- [ ] I can explain why local cleartext is narrowly restricted.
+- [ ] I can map all eight JSON fields to Kotlin types.
+- [ ] I can explain why a content URI is not a filesystem path.
+- [ ] I can trace `Uri -> InputStream -> File -> RequestBody -> Part`.
+- [ ] I know why the form name is exactly `image`.
+- [ ] I can distinguish `onResponse` from `onFailure`.
+- [ ] I can restore the UI and delete the cache file on every terminal path.
+- [ ] I can classify 400, 413, 422, 503, timeout, refusal, and conversion failure.
+- [ ] I can trace all eight values into ResultActivity.
+- [ ] I can explain why a mock result proves integration, not model accuracy.
+
+If any item is unclear, repeat the matching bridge lesson and exercise. This sequence connects to CSE 2206 topics in mobile networking, component communication, asynchronous UI work, resource management, Gradle dependency management, JSON data interchange, security policy, and defensive error handling.
+
 ---
 
 ## 1. How Week 05 Grows From Weeks 03 and 04
