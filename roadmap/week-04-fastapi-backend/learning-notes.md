@@ -11,6 +11,717 @@ The notes have two jobs:
 
 Use the conceptual sections first. Use Section 12 only after you can explain the request-response flow in your own words; exact code counts are evidence of scope, not a substitute for understanding.
 
+## Beginner Bridge: Read This Before Section 1
+
+Week 04 is the first time this roadmap introduces a web API. That is a larger jump than the earlier Android-only weeks because you are learning a second program, a second language, and communication between programs at the same time.
+
+Do not begin with the complete files in Section 12. Learn the ideas in this order:
+
+```text
+programs and responsibilities
+    -> request and response
+    -> URL, method, headers, and body
+    -> JSON and multipart data
+    -> Python and FastAPI basics
+    -> one small GET route
+    -> one file-upload route
+    -> validation and safe errors
+    -> mock prediction
+    -> automated and manual testing
+    -> complete Week 04 implementation
+```
+
+Each lesson below has a **Learn**, **Trace**, **Checkpoint**, and **If stuck** part. Do not continue when a checkpoint is unclear. Return to the smallest unclear lesson instead of copying the full backend.
+
+### Bridge Lesson A: What an API Is
+
+#### Learn
+
+An application programming interface, or **API**, is an agreement for how one program asks another program to do something.
+
+For LeafGuard AI:
+
+- the **client** asks for a prediction
+- the **server** receives the image and produces a response
+- the **API contract** states exactly how that request and response must look
+
+An API is not the server itself. The API is the set of agreed paths, methods, inputs, outputs, and errors that the server implements.
+
+Beginner analogy:
+
+> A restaurant is the server, a customer is the client, and the menu is the API contract. The customer orders using a known item name; the kitchen returns the promised kind of result.
+
+The Week 04 client is `/docs`, curl, or an automated test. Android becomes a client in Week 05.
+
+#### Trace
+
+```text
+client creates request
+    -> network delivers request
+    -> FastAPI selects a route
+    -> route validates input
+    -> route performs work
+    -> FastAPI creates response
+    -> client reads status and body
+```
+
+The server does not reach into the Android app to fetch an image. The client must send the image in a request.
+
+#### Checkpoint
+
+Explain these in your own words:
+
+1. What is the difference between a client, a server, and an API?
+2. Why can `/docs` test Week 04 without Android?
+3. Which side starts the request?
+4. What parts of the agreement would break if a client renamed `image` to `photo`?
+
+#### If stuck
+
+Draw two boxes named **API tester** and **FastAPI**. Draw one request arrow toward FastAPI and one response arrow back. Do not continue until both directions make sense.
+
+---
+
+### Bridge Lesson B: One HTTP Request Has Several Parts
+
+#### Learn
+
+**HTTP** is the request-response protocol used here. A request is not only a URL. It has several parts:
+
+| Part | Week 04 example | Question it answers |
+|---|---|---|
+| Scheme | `http` | Which communication rules are used? |
+| Host | `localhost` | Which computer should receive it? |
+| Port | `8000` | Which program on that computer? |
+| Path | `/predict` | Which server capability? |
+| Method | `POST` | What kind of action? |
+| Headers | `Content-Type: multipart/form-data; ...` | How should metadata and body be interpreted? |
+| Body | image multipart part | What data is being sent? |
+
+Together, the local prediction URL is:
+
+```text
+http://localhost:8000/predict
+|--|   |-------| |--| |------|
+scheme   host    port    path
+```
+
+The response also has parts:
+
+| Part | Example | Purpose |
+|---|---|---|
+| Status code | `200` | Machine-readable outcome category |
+| Headers | `Content-Type: application/json` | Description of response data |
+| Body | `{ "disease": "...", ... }` | Returned data or safe error detail |
+
+#### Trace
+
+For `GET /health`, there is no upload body:
+
+```text
+GET /health
+    -> route returns runtime information
+    -> HTTP 200
+    -> JSON body
+```
+
+For `POST /predict`, there is an image body:
+
+```text
+POST /predict
+Content-Type: multipart/form-data; boundary=<generated value>
+
+<multipart part named image>
+    -> route validates and processes bytes
+    -> HTTP status
+    -> JSON body
+```
+
+The boundary is a generated separator between form parts. `/docs`, curl, Retrofit, and OkHttp generate it. You should not type or hardcode it.
+
+#### Checkpoint
+
+Given `http://localhost:8000/health`, identify the scheme, host, port, and path. Then explain why changing only the path from `/health` to `/predict` does not automatically upload a file.
+
+#### If stuck
+
+Use the browser for `/health`, then inspect it in `/docs`. Compare the visible path, method, status, and response body.
+
+---
+
+### Bridge Lesson C: GET, POST, and Status Codes
+
+#### Learn
+
+The HTTP **method** communicates the request's intent:
+
+- `GET` retrieves a representation and should not be used to submit data such as an image upload.
+- `POST` submits data for processing and is used by `/predict`.
+
+The **status code** summarizes the result. The JSON body gives more detail.
+
+| Code | Category | Week 04 interpretation | Client response |
+|---:|---|---|---|
+| 200 | Success | Request was accepted and completed | Parse success JSON |
+| 400 | Bad request content | A part arrived, but its content is empty or invalid | Correct the file |
+| 413 | Payload too large | Image exceeds the configured limit | Choose a smaller image |
+| 422 | Request shape invalid | Required `image` part is missing or malformed | Correct the multipart contract |
+| 500 | Unexpected server failure | An unplanned internal operation failed | Show a safe error; inspect server logs |
+| 503 | Service unavailable | Real mode was requested but no usable model exists | Fix server model configuration |
+
+Why `422` differs from `400`:
+
+```text
+no part named image
+    -> FastAPI cannot bind the route parameter
+    -> 422 before route work begins
+
+part named image contains fake bytes
+    -> FastAPI binds the parameter
+    -> route inspects the content
+    -> 400
+```
+
+The exact status matters to Week 05 because Android uses it to distinguish request-shape problems from content and server problems.
+
+#### Checkpoint
+
+Predict the status for:
+
+1. a valid PNG under `image`
+2. valid PNG bytes under `photo`
+3. text bytes pretending to be an image
+4. an image larger than the configured limit
+5. a valid image while real mode has no model
+
+Check your answers against `exercises.md` only after writing your first prediction.
+
+#### If stuck
+
+Ask two questions in order:
+
+1. Did FastAPI receive the required request shape?
+2. If yes, was the received content acceptable?
+
+---
+
+### Bridge Lesson D: JSON Is Structured Data, Not a Screen
+
+#### Learn
+
+**JSON** is a text format for exchanging named values. It has a small set of value types:
+
+| JSON type | Example | Week 04 use |
+|---|---|---|
+| string | `"Tomato - Healthy"` | labels and guidance text |
+| number | `0.86` | confidence |
+| boolean | `true` | uncertainty and guidance flags |
+| object | `{ "status": "ok" }` | a named response record |
+| array | `[{...}, {...}]` | disease list |
+| null | `null` | missing value, when a contract permits it |
+
+JSON keys are case-sensitive. `model_label`, `modelLabel`, and `Model_Label` are different keys.
+
+The successful prediction contract has exactly eight keys:
+
+```text
+model_label
+disease
+confidence
+uncertain
+guidance_available
+symptoms
+treatment
+prevention
+```
+
+The server's Pydantic response model documents and checks this output shape. In Week 05, Gson maps the same JSON shape to Kotlin properties.
+
+The meanings matter:
+
+- `model_label` is the exact canonical class label.
+- `disease` is readable display text.
+- `confidence` remains a decimal in the range 0.0–1.0.
+- `uncertain` is a server decision based on its configured threshold.
+- `guidance_available` says whether reviewed guidance exists for that label.
+
+A confidence of `0.86` is stored as `0.86`; turning it into `86%` is a display task for Week 05.
+
+#### Trace
+
+```text
+Python PredictionResult
+    -> FastAPI serializes values
+    -> JSON travels in HTTP response
+    -> API tester displays JSON text
+```
+
+**Serialization** means converting program values into a transport format such as JSON. **Deserialization** means converting received JSON back into program values.
+
+#### Checkpoint
+
+For each of the eight keys, state its JSON type and meaning. Explain why `model_label` and `disease` are not duplicates.
+
+#### If stuck
+
+Open the response model in `backend-api/main.py` and make a two-column list: **field** and **meaning**. Do not copy the complete endpoint.
+
+---
+
+### Bridge Lesson E: The Minimum Python Needed This Week
+
+#### Learn
+
+You do not need to master Python before Week 04, but you must recognize these pieces:
+
+| Python form | Meaning |
+|---|---|
+| `from fastapi import FastAPI` | Import a name from an installed package |
+| `app = FastAPI(...)` | Create an object and assign it to `app` |
+| `def name(...):` | Define a function |
+| `async def name(...):` | Define a function that can wait for asynchronous work |
+| `return value` | Send a value back to the caller |
+| `if condition:` | Run a block only when a condition is true |
+| `try` / `except` / `finally` | Handle expected failures and guaranteed cleanup |
+| `value: str` | Type hint: `value` should be a string |
+| `-> PredictionResult` | Type hint for the returned value |
+| `await image.read(...)` | Pause this request while an asynchronous operation completes |
+
+Python uses indentation to group code. Four spaces normally mean “inside this function, condition, or error block.”
+
+Minimal route skeleton:
+
+```python
+@app.get("/example")
+async def example():
+    # TODO: Return a small JSON-compatible dictionary.
+    ...
+```
+
+The decorator line beginning with `@` registers the function as a route handler. The decorator is not a comment.
+
+Error-handling mental model:
+
+```text
+try:
+    operation that may fail
+except KnownProblem:
+    return or raise the intended safe error
+finally:
+    release the resource whether success or failure occurred
+```
+
+In `/predict`, `finally` closes the uploaded file even if decoding or prediction fails.
+
+#### Trace
+
+Read one route in `main.py` from top to bottom and identify:
+
+1. decorator
+2. function name
+3. parameters
+4. validation conditions
+5. returned model
+6. cleanup
+
+#### Checkpoint
+
+Explain why indentation matters, what `await` does at a beginner level, and why cleanup belongs in `finally`.
+
+#### If stuck
+
+Do not debug FastAPI and Python syntax simultaneously. First run:
+
+```text
+python -m py_compile main.py
+```
+
+A syntax or indentation error must be fixed before testing HTTP behavior.
+
+---
+
+### Bridge Lesson F: How FastAPI Connects HTTP to Python
+
+#### Learn
+
+FastAPI uses decorators and type information to connect an HTTP request to a Python function.
+
+```python
+@app.post("/predict")
+async def predict(image: UploadFile = File(...)):
+    # TODO: Validate the supplied upload.
+    ...
+```
+
+Line-by-line meaning:
+
+| Code | Meaning |
+|---|---|
+| `@app.post("/predict")` | Register POST requests for `/predict` |
+| `async def predict` | Define the route handler |
+| `image` | Python parameter and required multipart field name |
+| `UploadFile` | Uploaded-file wrapper with metadata and file access |
+| `File(...)` | Mark this value as required uploaded form data |
+| `...` | Required, not an optional default |
+
+FastAPI performs request binding before it calls the function. That is why a missing `image` part can produce `422` without entering the route body.
+
+Pydantic's `BaseModel` describes structured output:
+
+```python
+class ExampleResponse(BaseModel):
+    message: str
+    ok: bool
+```
+
+FastAPI uses that model to:
+
+- document the response in `/docs`
+- validate and serialize returned values
+- generate an OpenAPI description that other tools can understand
+
+`/docs` is generated interactive documentation, not a separate manually programmed screen.
+
+#### Trace
+
+```text
+HTTP POST /predict
+    -> FastAPI matches method + path
+    -> FastAPI binds multipart image
+    -> predict(image=...)
+    -> route returns PredictionResult
+    -> FastAPI validates and serializes JSON
+```
+
+#### Checkpoint
+
+Explain the difference between:
+
+- a route path and a Python function name
+- request validation and response validation
+- `UploadFile` metadata and the actual uploaded bytes
+
+#### If stuck
+
+Use `/docs` to compare `/health` and `/predict`. Notice which one has a request-body control and which one does not.
+
+---
+
+### Bridge Lesson G: Multipart Uploads From Form to Bytes
+
+#### Learn
+
+JSON is good for text, numbers, booleans, arrays, and objects. Images are binary data, so this route uses **multipart form data**.
+
+A simplified request looks like this:
+
+```text
+POST /predict HTTP/1.1
+Content-Type: multipart/form-data; boundary=generated-boundary
+
+--generated-boundary
+Content-Disposition: form-data; name="image"; filename="leaf.jpg"
+Content-Type: image/jpeg
+
+<binary image bytes>
+--generated-boundary--
+```
+
+This is for understanding only. Let the client library generate the boundary and headers.
+
+Three different facts must not be confused:
+
+| Fact | Example | What it helps with |
+|---|---|---|
+| Form field name | `image` | FastAPI binds the correct parameter |
+| Filename | `leaf.jpg` | Descriptive upload metadata |
+| MIME type | `image/jpeg` | Declared content category |
+
+None of these alone proves that the bytes are a real image. A malicious or broken client can call text bytes `leaf.jpg` and declare `image/jpeg`. Pillow decoding is the stronger content check.
+
+`UploadFile` exposes:
+
+- `filename`
+- `content_type`
+- asynchronous `read(...)`
+- asynchronous `close()`
+
+The size-limited read uses `maximum + 1` bytes. If that extra byte exists, the upload is too large. This avoids loading an unlimited request into memory.
+
+#### Trace
+
+```text
+multipart request
+    -> required field name check
+    -> declared MIME type check
+    -> bounded byte read
+    -> empty/size check
+    -> Pillow decode
+    -> RGB conversion and resize
+```
+
+#### Checkpoint
+
+Explain why the server checks all of these:
+
+1. field name
+2. MIME type
+3. byte length
+4. image decoding
+
+#### If stuck
+
+Imagine a text file renamed to `leaf.png`. List which checks it might pass and which check should reject it.
+
+---
+
+### Bridge Lesson H: Image Preprocessing and the Week 06 Boundary
+
+#### Learn
+
+After validation, Pillow and NumPy convert the image into the shape the predictor interface expects:
+
+```text
+uploaded bytes
+    -> decoded image
+    -> RGB color mode
+    -> 224 x 224 pixels
+    -> float32 NumPy array
+    -> batch shape (1, 224, 224, 3)
+```
+
+Shape meaning:
+
+| Position | Value | Meaning |
+|---:|---:|---|
+| 1 | `1` | one image in this batch |
+| 2 | `224` | image height |
+| 3 | `224` | image width |
+| 4 | `3` | red, green, and blue channels |
+
+The Week 04 implementation deliberately keeps pixel values in the raw `0`–`255` range. The approved later model contains its own rescaling behavior. Adding another divide-by-255 operation would change the input contract and may silently reduce prediction quality.
+
+Critical rule:
+
+> Preprocessing must match the approved model. “Normalization is usually good” is not enough reason to change it.
+
+Week 04 proves the array shape and type for the stable predictor boundary. Week 06 verifies the real model and its exact scaling assumptions.
+
+#### Checkpoint
+
+Explain every dimension in `(1, 224, 224, 3)`, why RGB has three channels, and why you must not invent a second normalization step.
+
+#### If stuck
+
+Read the preprocessing test in `test_api.py`. Identify the expected shape, data type, and representative pixel scale before changing any preprocessing code.
+
+---
+
+### Bridge Lesson I: Mock Mode Is a Controlled Substitute
+
+#### Learn
+
+A **mock** replaces an unfinished or unavailable dependency while preserving its interface.
+
+The Week 04 mock:
+
+- receives the same image-array shape as the future model
+- returns one canonical label and confidence
+- produces repeatable output for the same input
+- lets API tests run without TensorFlow or a model file
+
+The current mock result depends on the image's mean intensity. It is deterministic for the same input; it does not always return one fixed class.
+
+```text
+same input array
+    -> same mean intensity
+    -> same selected mock class
+    -> same mock confidence
+```
+
+This design can prove that values travel through the pipeline. It cannot prove biological or model correctness.
+
+`/health` exposes whether the service is using mock mode. Never hide an unavailable real model by silently claiming a mock result is real.
+
+#### Checkpoint
+
+Complete both sentences:
+
+1. Mock mode proves ...
+2. Mock mode does not prove ...
+
+Then explain why deterministic behavior makes automated tests easier.
+
+#### If stuck
+
+Run the same valid upload twice in mock mode. Compare the response, then state why matching responses still do not demonstrate real disease detection.
+
+---
+
+### Bridge Lesson J: Validation, Errors, and Cleanup Form One Safety Chain
+
+#### Learn
+
+Validation should move from cheap checks to deeper checks:
+
+```text
+request shape
+    -> declared type
+    -> bounded size
+    -> decodable bytes
+    -> predictor availability
+    -> prediction
+    -> response construction
+```
+
+This order avoids expensive work on obviously bad input.
+
+Expected problems should become specific `HTTPException` responses. Unexpected problems should be logged on the server and converted to a generic safe response. Do not send stack traces, local file paths, environment values, or raw exception details to clients.
+
+The route's error structure has three roles:
+
+| Block | Role |
+|---|---|
+| `except HTTPException: raise` | Preserve the intentional status and safe detail |
+| generic `except Exception` | Log unexpected failure and return generic 500 |
+| `finally` | Close the upload on every path |
+
+Server logs are for developers. Response details are for clients. They should not contain the same amount of internal information.
+
+#### Checkpoint
+
+Explain why these are separate:
+
+- logging an internal exception
+- returning a safe client error
+- closing the upload
+
+#### If stuck
+
+Trace one successful upload and one spoofed-image upload. Confirm that both end at `finally`.
+
+---
+
+### Bridge Lesson K: Virtual Environments and Running the Server
+
+#### Learn
+
+A Python installation can serve many projects. A virtual environment gives this project its own package directory.
+
+```text
+system Python
+    -> create .venv
+    -> activate .venv
+    -> install Week 04 packages into .venv
+    -> run FastAPI with that environment
+```
+
+Use `python -m ...` commands when possible because they use the currently selected Python interpreter.
+
+Beginner verification sequence:
+
+```text
+1. confirm Python version
+2. create .venv once
+3. activate .venv in every new terminal
+4. install requirements-dev.txt
+5. verify imports
+6. run tests
+7. start Uvicorn
+```
+
+Activation changes which `python` and installed commands the terminal finds. It does not modify the project source.
+
+| Symptom | Likely cause | First check |
+|---|---|---|
+| `python: command not found` | Platform uses `python3` or Python is missing | Run the platform command from `backend-api/README.md` |
+| `No module named fastapi` | Wrong interpreter or requirements not installed | Check active environment, then use `python -m pip` |
+| `uvicorn: command not found` | Environment inactive or executable not on path | Use `python -m uvicorn main:app --reload` |
+| `Could not import module "main"` | Wrong working directory or import error | Run from `backend-api/`; inspect the first traceback |
+| Address already in use | Another process owns port 8000 | Stop it or use a deliberate alternate port |
+
+Useful interpreter checks:
+
+```text
+python --version
+python -c "import sys; print(sys.executable)"
+python -m pip --version
+python -c "import fastapi, uvicorn; print('imports OK')"
+```
+
+On Windows, `where python` lists matching interpreters. On macOS/Linux, `which python` does the same after activation.
+
+Do not commit `.venv/` or `.env`. The requirements files describe reproducible packages; the local environment directory is machine-specific.
+
+#### Checkpoint
+
+Close and reopen a terminal, then explain why activation must happen again. Confirm that `python` and `python -m pip` point to the same environment.
+
+#### If stuck
+
+Record the exact command, working directory, first error line, and `sys.executable`. Guessing without those four facts often creates more confusion.
+
+---
+
+### Bridge Lesson L: Testing in Layers
+
+#### Learn
+
+Different tests answer different questions:
+
+| Layer | Tool | Question |
+|---|---|---|
+| Syntax/import | Python command | Can the application load? |
+| Automated contract | `unittest` + FastAPI test client | Do repeatable success and failure cases match the contract? |
+| Interactive API | `/docs` | Can a person construct and inspect requests? |
+| Manual invalid case | `/docs` or curl | Does a visible failure stay safe and understandable? |
+| Week boundary | Git/source inspection | Did Week 04 avoid Android and real-model claims? |
+
+Start with the cheapest failing layer. If the app cannot import, opening a browser cannot fix it. If automated tests fail, connect no Android client yet.
+
+When a test fails, read it in this order:
+
+1. failing test name
+2. expected value
+3. actual value
+4. responsible route or helper
+5. smallest correction
+6. focused retest
+7. complete eight-test suite
+
+`/docs` is useful because FastAPI generates it from the same route definitions and models used by the server.
+
+#### Checkpoint
+
+Explain what automated tests prove that one screenshot does not, and what a `/docs` demonstration proves that source inspection alone does not.
+
+#### If stuck
+
+Do not change multiple files after one failing assertion. Locate the smallest owner using the failure-routing table in `validation-checklist.md`.
+
+---
+
+### Week 04 Beginner Readiness Gate
+
+Before Section 12 or `build-task.md`, answer all items without copying:
+
+- [ ] I can draw one request and one response.
+- [ ] I can identify method, path, headers, body, status, and response body.
+- [ ] I can explain why `/predict` uses POST.
+- [ ] I can distinguish 400, 413, 422, 500, and 503.
+- [ ] I can name the multipart field `image`.
+- [ ] I can explain why MIME type and image decoding are separate checks.
+- [ ] I can name and type all eight success fields.
+- [ ] I can explain what FastAPI and Pydantic each contribute.
+- [ ] I can trace bytes from upload to `(1, 224, 224, 3)`.
+- [ ] I can explain why the Week 04 mock is not AI evidence.
+- [ ] I can create, activate, and verify the virtual environment.
+- [ ] I can explain the purpose of automated tests, `/docs`, logs, and cleanup.
+
+If any item is unclear, repeat its bridge lesson and complete the matching exercise before looking at the complete implementation.
+
+This learning sequence supports CSE 2206 client-server architecture, data interchange, validation, dependency isolation, asynchronous I/O, and component testing. It prepares the exact contract that Android consumes in Week 05.
+
 ### Required Input From Earlier Weeks
 
 Week 04 does not restart the project. It assumes these outputs already exist and have been validated:
