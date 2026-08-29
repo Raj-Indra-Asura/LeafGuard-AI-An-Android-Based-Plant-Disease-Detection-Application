@@ -155,7 +155,7 @@ Use the browser for `/health`, then inspect it in `/docs`. Compare the visible p
 
 The HTTP **method** communicates the request's intent:
 
-- `GET` retrieves a representation and should not carry out an image prediction upload.
+- `GET` retrieves a representation and should not be used to submit data such as an image upload.
 - `POST` submits data for processing and is used by `/predict`.
 
 The **status code** summarizes the result. The JSON body gives more detail.

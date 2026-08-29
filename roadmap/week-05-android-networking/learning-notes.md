@@ -234,7 +234,7 @@ Therefore:
 
 ```text
 http://localhost:8000/     wrong for host FastAPI from the standard emulator
-http://10.0.2.2:8000/      correct Week 05 emulator base URL
+http://10.0.2.2:8000/     correct Week 05 emulator base URL
 ```
 
 The Retrofit base URL must end with `/` so it can safely resolve the relative path `predict`:
